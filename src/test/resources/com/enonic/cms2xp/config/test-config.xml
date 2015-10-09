@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config>
+
+  <!-- Source (CMS) -->
+  <source>
+    <jdbcDriver>org.h2.Driver</jdbcDriver>
+    <jdbcUrl>jdbc:h2:~/test</jdbcUrl>
+    <jdbcUser>user</jdbcUser>
+    <jdbcPassword>password</jdbcPassword>
+    <blobStoreDir>./blobs</blobStoreDir>
+    <resourcesDir>./resources</resourcesDir>
+  </source>
+
+  <!-- Target (XP) -->
+  <target>
+    <exportDir>./export</exportDir>
+  </target>
+
+</config>
