@@ -1,6 +1,9 @@
 package com.enonic.cms2xp.migrate;
 
+import org.hibernate.Session;
+
 import com.enonic.cms2xp.config.MainConfig;
+import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
 
 public final class ExportData
 {
@@ -14,6 +17,11 @@ public final class ExportData
     public void execute()
         throws Exception
     {
+        final Session session = new HibernateSessionProvider( config ).getSession();
+
+        System.out.println( "DB connected: " + session.isConnected() );
+        session.close();
+
         System.out.println( this.config );
     }
 }
