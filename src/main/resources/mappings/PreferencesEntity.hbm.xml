@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.enonic.cms.core.preference" default-access="field">
+  <class name="com.enonic.cms.core.preference.PreferenceEntity" table="TPREFERENCES" mutable="true">
+
+    <id name="key" type="com.enonic.cms.store.hibernate.type.PreferenceKeyUserType">
+      <column name="PRF_SKEY" length="255"/>
+      <generator class="assigned"/>
+    </id>
+    <property name="value" type="string" column="PRF_SVALUE" length="1024" not-null="true"/>
+  </class>
+  <query name="PreferenceEntity.findByKeyLike" cacheable="false">
+    from PreferenceEntity x
+    where x.key like :key
+  </query>
+  <query name="PreferenceEntity.deleteByLike" cacheable="false">
+    delete from PreferenceEntity x where x.key like :key
+  </query>
+</hibernate-mapping>
+    

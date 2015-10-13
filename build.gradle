@@ -15,8 +15,7 @@ mainClassName = 'com.enonic.cms2xp.Main'
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'org.slf4j:slf4j-simple:1.7.12'
-    compile 'org.hibernate:hibernate-core:5.0.2.Final'
-    compile 'com.h2database:h2:1.4.189'
+    compile 'com.enonic.cms:cms-core:4.7.10-SNAPSHOT'
     compile 'com.enonic.xp:core-api:6.1.0-SNAPSHOT'
     testCompile 'junit:junit:4.12'
 }

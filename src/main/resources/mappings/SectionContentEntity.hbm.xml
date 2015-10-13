@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.enonic.cms.core.structure.menuitem.section" default-access="field">
+  <class name="com.enonic.cms.core.structure.menuitem.section.SectionContentEntity" table="TSECTIONCONTENT2" mutable="true">
+
+    <id name="key" type="com.enonic.cms.store.hibernate.type.SectionContentKeyUserType">
+      <column name="SCO_LKEY" not-null="true"/>
+      <generator class="com.enonic.cms.store.hibernate.id.IntegerBasedCustomIdentifierGenerator">
+        <param name="table">TSECTIONCONTENT2</param>
+        <param name="idClassName">com.enonic.cms.core.structure.menuitem.section.SectionContentKey</param>
+      </generator>
+    </id>
+    <property name="approved" type="int">
+      <column name="SCO_BAPPROVED" not-null="true"/>
+    </property>
+    <property name="timestamp" type="timestamp">
+      <column name="SCO_DTETIMESTAMP" not-null="true"/>
+    </property>
+    <many-to-one name="content" class="com.enonic.cms.core.content.ContentEntity" fetch="select">
+      <column name="SCO_CON_LKEY" not-null="true"/>
+    </many-to-one>
+    <property name="order" type="int">
+      <column name="SCO_LORDER" not-null="true"/>
+    </property>
+    <many-to-one name="menuItem" class="com.enonic.cms.core.structure.menuitem.MenuItemEntity" fetch="select">
+      <column name="SCO_MEI_LKEY" not-null="true"/>
+    </many-to-one>
+  </class>
+  <query name="SectionContentEntity.deleteByContentKey" cacheable="false">
+    delete from SectionContentEntity
+    where content.key = :contentKey
+  </query>
+  <query name="SectionContentEntity.findNamedContentInSection" cacheable="true">
+    select count(x) from SectionContentEntity x
+    left join x.content as y
+    where x.menuItem.key = :menuItemKey
+    and lower(y.name) = :contentName
+  </query>
+
+  <query name="SectionContentEntity.findPublishedContent" cacheable="true" read-only="true">
+    select count(c)
+    from SectionContentEntity c
+    where c.content.key = :categoryKey
+    and c.approved = 1
+  </query>
+
+  <query name="SectionContentEntity.findUnpublishedContent" cacheable="true" read-only="true">
+    select count(c)
+    from SectionContentEntity c
+    where c.content.key = :categoryKey
+    and c.approved = 0
+  </query>
+</hibernate-mapping>

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.enonic.cms.core.structure" default-access="field">
+  <class name="com.enonic.cms.core.structure.SiteEntity" table="TMENU" mutable="true">
+
+    <id name="key" type="com.enonic.cms.store.hibernate.type.SiteKeyUserType">
+      <column name="MEN_LKEY"/>
+      <generator class="assigned"/>
+    </id>
+    <property name="name" type="string">
+      <column name="MEN_SNAME" length="64" not-null="true"/>
+    </property>
+    <property name="timestamp" type="timestamp">
+      <column name="MEN_DTETIMESTAMP" not-null="true"/>
+    </property>
+    <property name="xmlData" type="com.enonic.cms.store.hibernate.type.LazyInitializedJDOMDocumentUserType">
+      <column name="MEN_XMLDATA" length="1024"/>
+    </property>
+    <many-to-one name="errorPage" class="com.enonic.cms.core.structure.menuitem.MenuItemEntity" fetch="select">
+      <column name="MEN_MEI_ERRORPAGE"/>
+    </many-to-one>
+    <many-to-one name="frontPage" class="com.enonic.cms.core.structure.menuitem.MenuItemEntity" fetch="select">
+      <column name="MEN_MEI_FIRSTPAGE"/>
+    </many-to-one>
+    <many-to-one name="language" class="com.enonic.cms.core.language.LanguageEntity" fetch="select">
+      <column name="MEN_LAN_LKEY" not-null="true"/>
+    </many-to-one>
+    <property name="statisticsUrl" type="string">
+      <column name="MEN_SSTATISTICSURL" length="256"/>
+    </property>
+    <many-to-one name="loginPage" class="com.enonic.cms.core.structure.menuitem.MenuItemEntity" fetch="select">
+      <column name="MEN_MEI_LOGINPAGE"/>
+    </many-to-one>
+    <many-to-one name="pageTemplate" class="com.enonic.cms.core.structure.page.template.PageTemplateEntity" fetch="select">
+      <column name="MEN_PAT_LKEY"/>
+    </many-to-one>
+    <set name="pageTemplates" inverse="true">
+
+      <key>
+        <column name="PAT_MEN_LKEY"/>
+      </key>
+      <one-to-many class="com.enonic.cms.core.structure.page.template.PageTemplateEntity"/>
+    </set>
+    <map name="defaultAccesses" fetch="select">
+
+      <key column="DMA_MEN_LKEY"/>
+      <map-key type="com.enonic.cms.store.hibernate.type.GroupKeyUserType" column="DMA_GRP_HKEY"/>
+      <one-to-many class="com.enonic.cms.core.structure.DefaultSiteAccessEntity"/>
+    </map>
+    <map name="topMenuItems" order-by="MEI_LORDER asc" where="MEI_LPARENT IS NULL" inverse="true">
+
+      <key column="MEI_MEN_LKEY"/>
+      <map-key type="com.enonic.cms.store.hibernate.type.CaseInsensitiveStringUserType" column="MEI_SNAME"/>
+      <one-to-many class="com.enonic.cms.core.structure.menuitem.MenuItemEntity"/>
+    </map>
+  </class>
+  <query name="SiteEntity.findAll" cacheable="true" read-only="false">
+    from SiteEntity order by key
+  </query>
+</hibernate-mapping>
