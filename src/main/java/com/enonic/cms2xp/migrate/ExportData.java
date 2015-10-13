@@ -4,20 +4,23 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.enonic.cms2xp.config.MainConfig;
-import com.enonic.cms2xp.converter.CategoryNodeConverter;
-import com.enonic.cms2xp.hibernate.CategoryExporter;
+import com.enonic.cms2xp.export.CategoryExporter;
+import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 
 public final class ExportData
 {
+    private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
+
     private final MainConfig config;
 
     public ExportData( final MainConfig config )
@@ -28,18 +31,20 @@ public final class ExportData
     public void execute()
         throws Exception
     {
+
         final Session session = new HibernateSessionProvider( config ).getSession();
 
-        System.out.println( "DB connected: " + session.isConnected() );
-        final List<CategoryEntity> categories = CategoryExporter.retrieveRootCategories( session );
-        System.out.println( "Exporting categories..." );
-
-        exportCategories( categories );
+        logger.info( "DB connected: " + session.isConnected() );
+        logger.info( "Retrieving categories..." );
+        final List<CategoryEntity> categories = CategoryRetriever.retrieveRootCategories( session );
+        logger.info( categories.size() + " root categories retrieved." );
+        logger.info( "Exporting categories..." );
+        export( categories );
 
         session.close();
     }
 
-    private void exportCategories( final List<CategoryEntity> categories )
+    private void export( final List<CategoryEntity> categories )
     {
         final Path targetDirectory = this.config.target.exportDir.toPath();
 
@@ -50,26 +55,9 @@ public final class ExportData
             exportNodeIds( true ).
             build();
 
-        exportCategories( nodeExporter, categories, ContentConstants.CONTENT_ROOT_PATH );
+        CategoryExporter.export( nodeExporter, categories, ContentConstants.CONTENT_ROOT_PATH );
 
         nodeExporter.writeExportProperties( "6.0.0" );
-    }
-
-    private void exportCategories( final NodeExporter nodeExporter, final List<CategoryEntity> categories, final NodePath parentNode )
-    {
-        final CategoryNodeConverter categoryConverter = new CategoryNodeConverter();
-        for ( CategoryEntity category : categories )
-        {
-            Node categoryNode = categoryConverter.toNode( category );
-            categoryNode = Node.create( categoryNode ).parentPath( parentNode ).build();
-            nodeExporter.exportNode( categoryNode );
-
-            final List<CategoryEntity> subCategories = category.getChildren();
-            if ( !subCategories.isEmpty() )
-            {
-                exportCategories( nodeExporter, subCategories, categoryNode.path() );
-            }
-        }
     }
 
 }

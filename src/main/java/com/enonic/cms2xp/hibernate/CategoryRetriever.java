@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 
-public class CategoryExporter
+public class CategoryRetriever
 {
-    private final static Logger logger = LoggerFactory.getLogger( CategoryExporter.class );
+    private final static Logger logger = LoggerFactory.getLogger( CategoryRetriever.class );
 
     public static List<CategoryEntity> retrieveRootCategories( final Session session )
     {
@@ -19,7 +19,7 @@ public class CategoryExporter
         List<CategoryEntity> rootCategoryEntities = session.getNamedQuery( "CategoryEntity.findAllRootCategories" ).list();
         for ( CategoryEntity rootCategoryEntity : rootCategoryEntities )
         {
-            logger.info( "Root CategoryEntity: " + rootCategoryEntity.toString() );
+            logger.info( "Retrieved category: " + rootCategoryEntity.toString() );
         }
         session.getTransaction().commit();
 
