@@ -42,13 +42,10 @@ public final class ExportData
     private void exportCategories( final List<CategoryEntity> categories )
     {
         final Path targetDirectory = this.config.target.exportDir.toPath();
-        final String repoName = "cms-repo";
-        final String branch = "draft";
-        final Path rootDirectory = targetDirectory.resolve( repoName ).resolve( branch );
 
         final NodeExporter nodeExporter = NodeExporter.create().
             sourceNodePath( NodePath.ROOT ).
-            rootDirectory( rootDirectory ).
+            rootDirectory( targetDirectory ).
             targetDirectory( targetDirectory ).
             exportNodeIds( true ).
             build();
@@ -61,6 +58,8 @@ public final class ExportData
 
             nodeExporter.exportNode( categoryNode );
         }
+
+        nodeExporter.writeExportProperties( "6.0.0" );
     }
 
 }
