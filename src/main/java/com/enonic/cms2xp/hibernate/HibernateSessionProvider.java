@@ -4,8 +4,6 @@ import java.util.Properties;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
 import com.enonic.cms2xp.config.MainConfig;
@@ -17,30 +15,26 @@ public final class HibernateSessionProvider
 
     public HibernateSessionProvider( final MainConfig config )
     {
-        final Configuration hibConfiguration = new Configuration().configure();
         final Properties connectionProperties = getConnectionProperties( config );
-
-        final StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().
-            applySettings( hibConfiguration.getProperties() ).
-            applySettings( connectionProperties ).
-            build();
-
-        this.sessionFactory = hibConfiguration.buildSessionFactory( serviceRegistry );
+        this.sessionFactory = new Configuration().
+            configure().
+            addProperties( connectionProperties ).
+            buildSessionFactory();
     }
 
     private Properties getConnectionProperties( final MainConfig config )
     {
         final SourceConfig cfgSource = config.source;
         final Properties properties = new Properties();
-        properties.setProperty( "connection.driver_class", cfgSource.jdbcDriver );
-        properties.setProperty( "connection.url", cfgSource.jdbcUrl );
-        properties.setProperty( "connection.username", cfgSource.jdbcUser );
-        properties.setProperty( "connection.password", cfgSource.jdbcPassword );
+        properties.setProperty( "hibernate.connection.driver_class", cfgSource.jdbcDriver );
+        properties.setProperty( "hibernate.connection.url", cfgSource.jdbcUrl );
+        properties.setProperty( "hibernate.connection.username", cfgSource.jdbcUser );
+        properties.setProperty( "hibernate.connection.password", cfgSource.jdbcPassword );
         return properties;
     }
 
     public Session getSession()
     {
-        return sessionFactory.withOptions().openSession();
+        return sessionFactory.openSession();
     }
 }
