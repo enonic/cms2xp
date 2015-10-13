@@ -32,7 +32,7 @@ public final class ExportData
 
         System.out.println( "DB connected: " + session.isConnected() );
         final List<CategoryEntity> categories = CategoryExporter.retrieveRootCategories( session );
-        System.out.println( "Exporting " + categories.size() + " categories..." );
+        System.out.println( "Exporting categories..." );
 
         exportCategories( categories );
 
@@ -50,16 +50,26 @@ public final class ExportData
             exportNodeIds( true ).
             build();
 
+        exportCategories( nodeExporter, categories, ContentConstants.CONTENT_ROOT_PATH );
+
+        nodeExporter.writeExportProperties( "6.0.0" );
+    }
+
+    private void exportCategories( final NodeExporter nodeExporter, final List<CategoryEntity> categories, final NodePath parentNode )
+    {
         final CategoryNodeConverter categoryConverter = new CategoryNodeConverter();
         for ( CategoryEntity category : categories )
         {
             Node categoryNode = categoryConverter.toNode( category );
-            categoryNode = Node.create( categoryNode ).parentPath( ContentConstants.CONTENT_ROOT_PATH ).build();
-
+            categoryNode = Node.create( categoryNode ).parentPath( parentNode ).build();
             nodeExporter.exportNode( categoryNode );
-        }
 
-        nodeExporter.writeExportProperties( "6.0.0" );
+            final List<CategoryEntity> subCategories = category.getChildren();
+            if ( !subCategories.isEmpty() )
+            {
+                exportCategories( nodeExporter, subCategories, categoryNode.path() );
+            }
+        }
     }
 
 }
