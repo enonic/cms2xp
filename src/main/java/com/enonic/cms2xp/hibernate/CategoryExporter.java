@@ -3,24 +3,26 @@ package com.enonic.cms2xp.hibernate;
 import java.util.List;
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 
-/**
- * Created by gri on 13/10/15.
- */
 public class CategoryExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( CategoryExporter.class );
+
     public static List<CategoryEntity> retrieveRootCategories( final Session session )
     {
+
         session.beginTransaction();
-        List<CategoryEntity> result = session.createQuery( "from com.enonic.cms.core.content.category.CategoryEntity" ).list();
-        for ( CategoryEntity categoryEntity : result )
+        List<CategoryEntity> rootCategoryEntities = session.getNamedQuery( "CategoryEntity.findAllRootCategories" ).list();
+        for ( CategoryEntity rootCategoryEntity : rootCategoryEntities )
         {
-            System.out.println( "CategoryEntity: " + categoryEntity.toString() );
+            logger.info( "Root CategoryEntity: " + rootCategoryEntity.toString() );
         }
         session.getTransaction().commit();
 
-        return result;
+        return rootCategoryEntities;
     }
 }
