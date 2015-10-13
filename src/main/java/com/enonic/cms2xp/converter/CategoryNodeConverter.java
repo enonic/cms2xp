@@ -14,10 +14,10 @@ public final class CategoryNodeConverter
 
     public static Node toNode( final CategoryEntity category )
     {
-        return NodeFactory.createNode( category.getName(), folderData( category ) );
+        return NodeFactory.createNode( category.getName(), toData( category ) );
     }
 
-    private static PropertyTree folderData( final CategoryEntity category )
+    private static PropertyTree toData( final CategoryEntity category )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );

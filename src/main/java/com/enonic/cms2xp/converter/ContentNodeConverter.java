@@ -16,10 +16,10 @@ public final class ContentNodeConverter
 
     public static Node toNode( final ContentEntity content )
     {
-        return NodeFactory.createNode( content.getName(), folderData( content ) );
+        return NodeFactory.createNode( content.getName(), toData( content ) );
     }
 
-    private static PropertyTree folderData( final ContentEntity content )
+    private static PropertyTree toData( final ContentEntity content )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
