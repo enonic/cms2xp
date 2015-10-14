@@ -42,5 +42,6 @@ public class MainConfigTest
 
         assertNotNull( config.exportDir );
         assertEquals( "export", config.exportDir.getName() );
+        assertEquals( "application", config.applicationDir.getName() );
     }
 }
