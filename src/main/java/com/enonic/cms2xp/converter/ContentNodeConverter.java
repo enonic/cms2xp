@@ -1,7 +1,5 @@
 package com.enonic.cms2xp.converter;
 
-import java.time.Instant;
-
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
@@ -25,14 +23,11 @@ public final class ContentNodeConverter
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, content.getName() );
         data.setString( ContentPropertyNames.TYPE, ContentTypeName.unstructured().toString() );
+        data.setString( ContentPropertyNames.LANGUAGE, content.getLanguage().getCode() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, content.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
-
-        //TODO
-        data.setInstant( ContentPropertyNames.CREATED_TIME, Instant.now() );
-        //data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreated().toInstant() );
-
+        data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreatedAt().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
