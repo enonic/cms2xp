@@ -25,6 +25,8 @@ public final class MediaTypes
         put( "html", MediaType.HTML_UTF_8 );
         put( "xml", MediaType.XML_UTF_8 );
         put( "svg", MediaType.SVG_UTF_8 );
+        put( "mp4", MediaType.MP4_VIDEO );
+        put( "swf", MediaType.SHOCKWAVE_FLASH );
     }
 
     public MediaType fromExt( final String ext )

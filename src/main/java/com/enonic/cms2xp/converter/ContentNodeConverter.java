@@ -14,13 +14,16 @@ import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
+import com.enonic.cms.core.content.contenttype.ContentHandlerName;
 
 public final class ContentNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
-    private static final Map<String, ContentTypeName> TYPES = ImmutableMap.<String, ContentTypeName>builder().
-        put( "image", ContentTypeName.imageMedia() ).
+    private static final Map<ContentHandlerName, ContentTypeName> TYPES = ImmutableMap.<ContentHandlerName, ContentTypeName>builder().
+        put( ContentHandlerName.CUSTOM, ContentTypeName.unstructured() ).
+        put( ContentHandlerName.IMAGE, ContentTypeName.imageMedia() ).
+        put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
         build();
 
     public static Node toNode( final ContentEntity content )
@@ -55,8 +58,8 @@ public final class ContentNodeConverter
         return data;
     }
 
-    private static ContentTypeName convertType( final ContentEntity content )
+    public static ContentTypeName convertType( final ContentEntity content )
     {
-        return TYPES.getOrDefault( content.getContentType().getName(), ContentTypeName.unstructured() );
+        return TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
     }
 }

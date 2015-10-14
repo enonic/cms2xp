@@ -12,11 +12,13 @@ import com.google.common.io.Files;
 import com.enonic.cms2xp.converter.ContentNodeConverter;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
+import com.enonic.xp.core.impl.content.ContentTypeFromMimeTypeResolver;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.BinaryReference;
 import com.enonic.xp.util.MediaTypes;
 
@@ -53,13 +55,18 @@ public class ContentExporter
                 build();
 
             //Exports attachments
-            if ( "image".equals( content.getContentType().getName() ) )
+            final ContentTypeName contentType = ContentNodeConverter.convertType( content );
+            if ( contentType.isImageMedia() )
             {
                 exportImageAttachments( content, contentNode );
             }
             else
             {
-                exportAttachments( content, contentNode );
+                final ContentTypeName mediaType = exportAttachments( content, contentNode );
+                if ( contentType.isUnknownMedia() && mediaType != null )
+                {
+                    contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
+                }
             }
 
             //Exports the node
@@ -67,11 +74,12 @@ public class ContentExporter
         }
     }
 
-    private void exportAttachments( final ContentEntity content, final Node contentNode )
+    private ContentTypeName exportAttachments( final ContentEntity content, final Node contentNode )
     {
         final ContentVersionEntity main = content.getMainVersion();
         final Set<BinaryDataKey> binaryKeys = main.getContentBinaryDataKeys();
 
+        ContentTypeName mediaType = null;
         for ( BinaryDataKey key : binaryKeys )
         {
             final BinaryDataEntity binaryData = main.getBinaryData( key );
@@ -85,8 +93,14 @@ public class ContentExporter
 
             nodeExporter.exportNodeBinary( contentNode, reference, byteSource );
 
-            addAttachmentData( contentNode.data(), "", binaryData, reference, getMimeType( binaryData.getName() ) );
+            final String mimeType = getMimeType( binaryData.getName() );
+            if ( mediaType == null )
+            {
+                mediaType = ContentTypeFromMimeTypeResolver.resolve( mimeType );
+            }
+            addAttachmentData( contentNode.data(), "", binaryData, reference, mimeType );
         }
+        return mediaType;
     }
 
     private void addAttachmentData( final PropertyTree nodeData, final String label, final BinaryDataEntity binaryData,
