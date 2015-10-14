@@ -7,6 +7,9 @@ import com.enonic.xp.node.Node;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.content.ContentEntity;
+import com.enonic.cms.core.content.ContentVersionEntity;
+import com.enonic.cms.core.content.contentdata.ContentData;
+import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 
 public final class ContentNodeConverter
 {
@@ -30,6 +33,17 @@ public final class ContentNodeConverter
         data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreatedAt().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+
+        final ContentVersionEntity mainVersion = content.getMainVersion();
+        if ( mainVersion != null )
+        {
+            final ContentData contentData = mainVersion.getContentData();
+            if ( contentData instanceof DataEntry )
+            {
+                DataEntry dataEntry = (DataEntry) contentData;
+                data.setProperty( "data", DataEntryValueConverter.toValue( dataEntry ) );
+            }
+        }
         return data;
     }
 }
