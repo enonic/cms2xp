@@ -13,7 +13,17 @@ import com.enonic.cms.core.content.category.CategoryEntity;
 
 public class CategoryExporter
 {
-    public static void export( final NodeExporter nodeExporter, final List<CategoryEntity> categories, final NodePath parentNode )
+    private final NodeExporter nodeExporter;
+
+    private final ContentExporter contentExporter;
+
+    public CategoryExporter( final NodeExporter nodeExporter, final ContentExporter contentExporter )
+    {
+        this.nodeExporter = nodeExporter;
+        this.contentExporter = contentExporter;
+    }
+
+    public void export( final List<CategoryEntity> categories, final NodePath parentNode )
     {
         for ( CategoryEntity category : categories )
         {
@@ -30,14 +40,14 @@ public class CategoryExporter
             final Set<ContentEntity> contents = category.getContents();
             if ( !contents.isEmpty() )
             {
-                ContentExporter.export( nodeExporter, contents, categoryNode.path() );
+                contentExporter.export( contents, categoryNode.path() );
             }
 
             //Calls the export on the children
             final List<CategoryEntity> subCategories = category.getChildren();
             if ( !subCategories.isEmpty() )
             {
-                export( nodeExporter, subCategories, categoryNode.path() );
+                export( subCategories, categoryNode.path() );
             }
         }
     }

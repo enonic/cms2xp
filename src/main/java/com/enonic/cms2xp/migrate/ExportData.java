@@ -9,11 +9,14 @@ import org.slf4j.LoggerFactory;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.export.CategoryExporter;
+import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.node.NodePath;
+
+import com.enonic.cms.framework.blob.file.FileBlobStore;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 
@@ -55,7 +58,12 @@ public final class ExportData
             exportNodeIds( true ).
             build();
 
-        CategoryExporter.export( nodeExporter, categories, ContentConstants.CONTENT_ROOT_PATH );
+        final FileBlobStore fileBlobStore = new FileBlobStore();
+        fileBlobStore.setDirectory( config.source.blobStoreDir );
+        ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore );
+
+        final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
+        exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
 
         nodeExporter.writeExportProperties( "6.0.0" );
     }

@@ -1,5 +1,9 @@
 package com.enonic.cms2xp.converter;
 
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
@@ -15,6 +19,10 @@ public final class ContentNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
+    private static final Map<String, ContentTypeName> TYPES = ImmutableMap.<String, ContentTypeName>builder().
+        put( "image", ContentTypeName.imageMedia() ).
+        build();
+
     public static Node toNode( final ContentEntity content )
     {
         return NodeFactory.createNode( content.getName(), toData( content ) );
@@ -25,7 +33,7 @@ public final class ContentNodeConverter
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, content.getName() );
-        data.setString( ContentPropertyNames.TYPE, ContentTypeName.unstructured().toString() );
+        data.setString( ContentPropertyNames.TYPE, convertType( content ).toString() );
         data.setString( ContentPropertyNames.LANGUAGE, content.getLanguage().getCode() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, content.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
@@ -45,5 +53,10 @@ public final class ContentNodeConverter
             }
         }
         return data;
+    }
+
+    private static ContentTypeName convertType( final ContentEntity content )
+    {
+        return TYPES.getOrDefault( content.getContentType().getName(), ContentTypeName.unstructured() );
     }
 }
