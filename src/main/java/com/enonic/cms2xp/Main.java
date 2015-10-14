@@ -2,6 +2,8 @@ package com.enonic.cms2xp;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
+
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.config.MainConfigLoader;
 import com.enonic.cms2xp.migrate.ExportData;
@@ -16,6 +18,10 @@ public final class Main
         final File configFile = new File( args[0] );
         final MainConfigLoader loader = new MainConfigLoader( configFile.toURI().toURL() );
         final MainConfig config = loader.load();
+
+        //TODO Remove
+        FileUtils.deleteDirectory( config.target.exportDir );
+        FileUtils.deleteDirectory( config.target.applicationDir );
 
         //Initiates the application structure
         initApp( config );
