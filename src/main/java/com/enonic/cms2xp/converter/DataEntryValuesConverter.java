@@ -1,7 +1,9 @@
 package com.enonic.cms2xp.converter;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.Value;
@@ -13,31 +15,36 @@ import com.enonic.cms.core.content.contentdata.custom.BooleanDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contentdata.custom.DataEntrySet;
 import com.enonic.cms.core.content.contentdata.custom.DateDataEntry;
+import com.enonic.cms.core.content.contentdata.custom.KeywordsDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.RelationDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.relationdataentrylistbased.AbstractRelationDataEntryListBasedInputDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.AbstractStringBasedInputDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.xmlbased.AbstractXmlBasedInputDataEntry;
 
-public class DataEntryValueConverter
+public class DataEntryValuesConverter
 {
 
-    public static Value toValue( DataEntry dataEntry )
+    public static Iterable<Value> toValue( DataEntry dataEntry )
     {
         if ( dataEntry instanceof DataEntrySet )
         {
-            return toValue( ( (DataEntrySet) dataEntry ).getEntries() );
+            final Value dataEntrySetAsValue = toValue( ( (DataEntrySet) dataEntry ).getEntries() );
+            return Collections.singleton( dataEntrySetAsValue );
         }
 
+        Value value = ValueFactory.newString( "" );
         switch ( dataEntry.getType() )
         {
             case BINARY: //TODO
                 break;
             case BOOLEAN:
-                final Boolean valueBoolean = ( (BooleanDataEntry) dataEntry ).getValueAsBoolean();
-                return ValueFactory.newBoolean( valueBoolean );
+                final Boolean booleanValue = ( (BooleanDataEntry) dataEntry ).getValueAsBoolean();
+                value = ValueFactory.newBoolean( booleanValue );
+                break;
             case DATE:
                 final Date valueDate = ( (DateDataEntry) dataEntry ).getValue();
-                return ValueFactory.newDateTime( valueDate.toInstant() );
+                value = ValueFactory.newDateTime( valueDate.toInstant() );
+                break;
             case GROUP: //TODO
                 break;
             case FILES:
@@ -45,9 +52,14 @@ public class DataEntryValueConverter
             case RELATED_CONTENTS:
                 final List<RelationDataEntry> relationDataEntries =
                     ( (AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry>) dataEntry ).getEntries();
-                return toValue( relationDataEntries );
-            case KEYWORDS://TODO
+                value = toValue( relationDataEntries );
                 break;
+            case KEYWORDS:
+                return ( (KeywordsDataEntry) dataEntry ).
+                    getKeywords().
+                    stream().
+                    map( ValueFactory::newString ).
+                    collect( Collectors.toList() );
             case MULTIPLE_CHOICE://TODO
                 break;
             case FILE:
@@ -56,7 +68,7 @@ public class DataEntryValueConverter
                 final ContentKey contentKey = ( (RelationDataEntry) dataEntry ).getContentKey();
                 if ( contentKey != null )
                 { //TODO Why could that be null
-                    return ValueFactory.newReference( Reference.from( contentKey.toString() ) );//TODO Create Map ContentKey -> NodeId
+                    value = ValueFactory.newReference( Reference.from( contentKey.toString() ) );//TODO Create Map ContentKey -> NodeId
                 }
                 break;
             case HTML_AREA:
@@ -65,13 +77,15 @@ public class DataEntryValueConverter
             case TEXT:
             case URL:
                 final String valueString = ( (AbstractStringBasedInputDataEntry) dataEntry ).getValue();
-                return ValueFactory.newString( valueString );
+                value = ValueFactory.newString( valueString );
+                break;
             case XML:
                 final String valueXml = ( (AbstractXmlBasedInputDataEntry) dataEntry ).getValueAsString();
-                return ValueFactory.newXml( valueXml );
+                value = ValueFactory.newXml( valueXml );
+                break;
         }
 
-        return ValueFactory.newString( "" );
+        return Collections.singleton( value );
     }
 
     public static Value toValue( Iterable<? extends DataEntry> dataEntries )
@@ -79,7 +93,7 @@ public class DataEntryValueConverter
         final PropertySet propertySet = new PropertySet();
         for ( DataEntry dataEntry : dataEntries )
         {
-            propertySet.setProperty( dataEntry.getName(), toValue( dataEntry ) );
+            propertySet.setValues( dataEntry.getName(), toValue( dataEntry ) );
         }
 
         return ValueFactory.newPropertySet( propertySet );
