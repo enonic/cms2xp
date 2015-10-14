@@ -23,6 +23,7 @@ public final class CategoryNodeConverter
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, category.getName() );
         data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
+        data.setString( ContentPropertyNames.LANGUAGE, category.getLanguage().getCode() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, category.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
