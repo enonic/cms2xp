@@ -6,12 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.form.FieldSet;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.form.FormItem;
 import com.enonic.xp.form.FormItemSet;
@@ -94,19 +96,46 @@ public final class ContentTypeExporter
 
         for ( CtySetConfig ctyConfig : setConfig )
         {
-            final FormItemSet.Builder formItemSet = FormItemSet.create().
-                name( ctyConfig.getName() );
-
-            for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
+            final FormItem formItem;
+            if ( ctyConfig.hasGroupXPath() )
             {
-                final FormItem formItem = convertConfigEntry( entry );
-                formItemSet.addFormItem( formItem );
+                formItem = addFormItemSet( ctyConfig );
             }
-
-            form.addFormItem( formItemSet.build() );
+            else
+            {
+                formItem = addFieldSet( ctyConfig );
+            }
+            form.addFormItem( formItem );
         }
 
         return form.build();
+    }
+
+    private FormItem addFieldSet( final CtySetConfig ctyConfig )
+    {
+        final FieldSet.Builder fieldSet = FieldSet.create();
+        fieldSet.name( ctyConfig.getName() );
+        fieldSet.label( ctyConfig.getName() );
+
+        for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
+        {
+            fieldSet.addFormItem( convertConfigEntry( entry ) );
+        }
+        return fieldSet.build();
+    }
+
+    private FormItem addFormItemSet( final CtySetConfig ctyConfig )
+    {
+        final String blockName = StringUtils.substringAfterLast( ctyConfig.getGroupXPath(), "/" );
+        final FormItemSet.Builder formItemSet = FormItemSet.create();
+        formItemSet.name( blockName );
+        formItemSet.label( ctyConfig.getName() );
+
+        for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
+        {
+            formItemSet.addFormItem( convertConfigEntry( entry ) );
+        }
+        return formItemSet.build();
     }
 
     private FormItem convertConfigEntry( final DataEntryConfig entry )
