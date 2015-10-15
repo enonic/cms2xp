@@ -8,7 +8,6 @@ import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.content.ContentEntity;
@@ -22,6 +21,10 @@ public final class ContentNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
+    private NodeIdRegistry nodeIdRegistry = new NodeIdRegistry();
+
+    private DataEntryValuesConverter dataEntryValuesConverter = new DataEntryValuesConverter( nodeIdRegistry );
+
     private static final Map<ContentHandlerName, ContentTypeName> TYPES = ImmutableMap.<ContentHandlerName, ContentTypeName>builder().
         put( ContentHandlerName.CUSTOM, ContentTypeName.unstructured() ).
         put( ContentHandlerName.IMAGE, ContentTypeName.imageMedia() ).
@@ -30,7 +33,7 @@ public final class ContentNodeConverter
 
     public Node toNode( final ContentEntity content )
     {
-        return createNode( new NodeId(), content.getName(), toData( content ) );
+        return createNode( nodeIdRegistry.getNodeId( content.getKey() ), content.getName(), toData( content ) );
     }
 
     private PropertyTree toData( final ContentEntity content )
@@ -54,7 +57,7 @@ public final class ContentNodeConverter
             if ( contentData instanceof DataEntry )
             {
                 DataEntry dataEntry = (DataEntry) contentData;
-                data.setValues( "data", DataEntryValuesConverter.toValue( dataEntry ) );
+                data.setValues( "data", dataEntryValuesConverter.toValue( dataEntry ) );
             }
         }
         return data;

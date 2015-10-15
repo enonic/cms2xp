@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.Value;
 import com.enonic.xp.data.ValueFactory;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.content.ContentKey;
@@ -23,8 +24,14 @@ import com.enonic.cms.core.content.contentdata.custom.xmlbased.AbstractXmlBasedI
 
 public class DataEntryValuesConverter
 {
+    private final NodeIdRegistry nodeIdRegistry;
 
-    public static Iterable<Value> toValue( DataEntry dataEntry )
+    public DataEntryValuesConverter( final NodeIdRegistry nodeIdRegistry )
+    {
+        this.nodeIdRegistry = nodeIdRegistry;
+    }
+
+    public Iterable<Value> toValue( DataEntry dataEntry )
     {
         if ( dataEntry instanceof DataEntrySet )
         {
@@ -68,7 +75,8 @@ public class DataEntryValuesConverter
                 final ContentKey contentKey = ( (RelationDataEntry) dataEntry ).getContentKey();
                 if ( contentKey != null )
                 { //TODO Why could that be null
-                    value = ValueFactory.newReference( Reference.from( contentKey.toString() ) );//TODO Create Map ContentKey -> NodeId
+                    final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
+                    value = ValueFactory.newReference( new Reference( nodeId ) );
                 }
                 break;
             case HTML_AREA:
@@ -88,7 +96,7 @@ public class DataEntryValuesConverter
         return Collections.singleton( value );
     }
 
-    public static Value toValue( Iterable<? extends DataEntry> dataEntries )
+    public Value toValue( Iterable<? extends DataEntry> dataEntries )
     {
         final PropertySet propertySet = new PropertySet();
         for ( DataEntry dataEntry : dataEntries )
