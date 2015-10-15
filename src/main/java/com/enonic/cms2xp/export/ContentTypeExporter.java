@@ -44,6 +44,7 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.UrlDataEntryConfi
 import com.enonic.cms.core.content.contenttype.dataentryconfig.XmlDataEntryConfig;
 
 public final class ContentTypeExporter
+    implements ContentTypeResolver
 {
     private final static Logger logger = LoggerFactory.getLogger( ContentTypeExporter.class );
 
@@ -67,6 +68,12 @@ public final class ContentTypeExporter
                 logger.info( "Converted content type: {}", contentType );
             } );
         return ImmutableList.copyOf( typeResolver.values() );
+    }
+
+    @Override
+    public ContentType getContentType( final ContentTypeKey contentTypeKey )
+    {
+        return typeResolver.get( contentTypeKey );
     }
 
     private ContentType convert( final ContentTypeEntity contentTypeEntity )

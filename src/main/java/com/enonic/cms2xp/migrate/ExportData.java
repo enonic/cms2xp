@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 import com.enonic.cms2xp.config.MainConfig;
+import com.enonic.cms2xp.converter.ContentNodeConverter;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentTypeExporter;
+import com.enonic.cms2xp.export.ContentTypeResolver;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
@@ -58,12 +60,12 @@ public final class ExportData
         final List<CategoryEntity> categories = CategoryRetriever.retrieveRootCategories( session );
         logger.info( categories.size() + " root categories retrieved." );
         logger.info( "Exporting categories..." );
-        export( categories );
+        export( categories, contentTypeExporter );
 
         session.close();
     }
 
-    private void export( final List<CategoryEntity> categories )
+    private void export( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
     {
         final Path targetDirectory = this.config.target.exportDir.toPath();
 
@@ -77,7 +79,8 @@ public final class ExportData
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
-        final ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore );
+        final ContentNodeConverter contentNodeConverter = new ContentNodeConverter( contentTypeResolver );
+        final ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );

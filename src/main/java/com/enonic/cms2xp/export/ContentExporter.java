@@ -38,12 +38,14 @@ public class ContentExporter
 
     private final FileBlobStore fileBlobStore;
 
-    private final ContentNodeConverter contentNodeConverter = new ContentNodeConverter();
+    private final ContentNodeConverter contentNodeConverter;
 
-    public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore )
+    public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore,
+                            final ContentNodeConverter contentNodeConverter )
     {
         this.nodeExporter = nodeExporter;
         this.fileBlobStore = fileBlobStore;
+        this.contentNodeConverter = contentNodeConverter;
     }
 
     public void export( final Iterable<ContentEntity> contents, final NodePath parentNode )

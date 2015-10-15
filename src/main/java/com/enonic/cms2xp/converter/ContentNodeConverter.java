@@ -4,10 +4,12 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import com.enonic.cms2xp.export.ContentTypeResolver;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.content.ContentEntity;
@@ -15,21 +17,31 @@ import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
+import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 
 public final class ContentNodeConverter
     extends AbstractNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
-    private NodeIdRegistry nodeIdRegistry = new NodeIdRegistry();
+    private final NodeIdRegistry nodeIdRegistry;
 
-    private DataEntryValuesConverter dataEntryValuesConverter = new DataEntryValuesConverter( nodeIdRegistry );
+    private final DataEntryValuesConverter dataEntryValuesConverter;
+
+    private final ContentTypeResolver contentTypeResolver;
 
     private static final Map<ContentHandlerName, ContentTypeName> TYPES = ImmutableMap.<ContentHandlerName, ContentTypeName>builder().
         put( ContentHandlerName.CUSTOM, ContentTypeName.unstructured() ).
         put( ContentHandlerName.IMAGE, ContentTypeName.imageMedia() ).
         put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
         build();
+
+    public ContentNodeConverter( final ContentTypeResolver contentTypeResolver )
+    {
+        this.contentTypeResolver = contentTypeResolver;
+        this.nodeIdRegistry = new NodeIdRegistry();
+        this.dataEntryValuesConverter = new DataEntryValuesConverter( this.nodeIdRegistry );
+    }
 
     public Node toNode( final ContentEntity content )
     {
@@ -65,6 +77,12 @@ public final class ContentNodeConverter
 
     public ContentTypeName convertType( final ContentEntity content )
     {
+        final ContentTypeKey key = content.getContentType().getContentTypeKey();
+        final ContentType contentType = this.contentTypeResolver.getContentType( key );
+        if ( contentType != null )
+        {
+            return contentType.getName();
+        }
         return TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
     }
 }
