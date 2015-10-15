@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.migrate;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -15,6 +17,7 @@ import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentTypeExporter;
 import com.enonic.cms2xp.export.ContentTypeResolver;
+import com.enonic.cms2xp.export.xml.XmlContentTypeSerializer;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
@@ -55,6 +58,7 @@ public final class ExportData
         final List<ContentTypeEntity> contentTypes = new ContentTypeRetriever().retrieveContentTypes( session );
         final ContentTypeExporter contentTypeExporter = new ContentTypeExporter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
         final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypes );
+        exportContentTypes( contentTypeList );
 
         logger.info( "Retrieving categories..." );
         final List<CategoryEntity> categories = CategoryRetriever.retrieveRootCategories( session );
@@ -88,4 +92,23 @@ public final class ExportData
         nodeExporter.writeExportProperties( "6.0.0" );
     }
 
+    private void exportContentTypes( final Iterable<ContentType> contentTypes )
+    {
+        final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
+        for ( ContentType contentType : contentTypes )
+        {
+            final String ct = new XmlContentTypeSerializer().contentType( contentType ).serialize();
+
+            final String ctName = contentType.getName().getLocalName();
+            try
+            {
+                final Path dir = Files.createDirectory( contentTypesPath.resolve( ctName ) );
+                Files.write( dir.resolve( ctName + ".xml" ), ct.getBytes( StandardCharsets.UTF_8 ) );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Cannot write content type XML '{}'", ctName );
+            }
+        }
+    }
 }
