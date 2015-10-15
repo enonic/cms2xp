@@ -17,6 +17,8 @@ import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contentdata.custom.DataEntrySet;
 import com.enonic.cms.core.content.contentdata.custom.DateDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.KeywordsDataEntry;
+import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceAlternative;
+import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.RelationDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.relationdataentrylistbased.AbstractRelationDataEntryListBasedInputDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.AbstractStringBasedInputDataEntry;
@@ -67,7 +69,28 @@ public class DataEntryValuesConverter
                     stream().
                     map( ValueFactory::newString ).
                     collect( Collectors.toList() );
-            case MULTIPLE_CHOICE://TODO
+            case MULTIPLE_CHOICE:
+                final MultipleChoiceDataEntry multipleChoiceDataEntry = (MultipleChoiceDataEntry) dataEntry;
+                final String multipleChoiceText = multipleChoiceDataEntry.getText();
+                final List<MultipleChoiceAlternative> alternatives = multipleChoiceDataEntry.getAlternatives();
+
+                final PropertySet multipleChoicePropertySet = new PropertySet();
+                multipleChoicePropertySet.setProperty( "text", ValueFactory.newString( multipleChoiceText ) );
+                alternatives.stream().
+                    map( multipleChoiceAlternative -> {
+                        PropertySet multipleChoiceAlternativePropertySet = new PropertySet();
+                        multipleChoiceAlternativePropertySet.setProperty( "alternativeText", ValueFactory.newString(
+                            multipleChoiceAlternative.getAlternativeText() ) );
+                        multipleChoiceAlternativePropertySet.setProperty( "correct", ValueFactory.newBoolean(
+                            multipleChoiceAlternative.isCorrect() ) );
+                        return multipleChoiceAlternativePropertySet;
+                    } ).
+                    forEach( multipleChoiceAlternativePropertySet -> {
+                        final Value multipleChoiceAlternativeValue = ValueFactory.newPropertySet( multipleChoiceAlternativePropertySet );
+                        multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
+                    } );
+
+                value = ValueFactory.newPropertySet( multipleChoicePropertySet );
                 break;
             case FILE:
             case IMAGE:
