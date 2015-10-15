@@ -17,6 +17,8 @@ public class CategoryExporter
 
     private final ContentExporter contentExporter;
 
+    private final CategoryNodeConverter categoryNodeConverter = new CategoryNodeConverter();
+
     public CategoryExporter( final NodeExporter nodeExporter, final ContentExporter contentExporter )
     {
         this.nodeExporter = nodeExporter;
@@ -28,7 +30,7 @@ public class CategoryExporter
         for ( CategoryEntity category : categories )
         {
             //Converts the category to a node
-            Node categoryNode = CategoryNodeConverter.toNode( category );
+            Node categoryNode = categoryNodeConverter.toNode( category );
             categoryNode = Node.create( categoryNode ).
                 parentPath( parentNode ).
                 build();

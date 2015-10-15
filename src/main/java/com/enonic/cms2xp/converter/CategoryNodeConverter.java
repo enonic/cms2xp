@@ -4,20 +4,22 @@ import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 
 public final class CategoryNodeConverter
+    extends AbstractNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
-    public static Node toNode( final CategoryEntity category )
+    public Node toNode( final CategoryEntity category )
     {
-        return NodeFactory.createNode( category.getName(), toData( category ) );
+        return createNode( new NodeId(), category.getName(), toData( category ) );
     }
 
-    private static PropertyTree toData( final CategoryEntity category )
+    private PropertyTree toData( final CategoryEntity category )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );

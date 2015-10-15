@@ -8,6 +8,7 @@ import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.content.ContentEntity;
@@ -17,6 +18,7 @@ import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
 
 public final class ContentNodeConverter
+    extends AbstractNodeConverter
 {
     private static final String SUPER_USER_KEY = "user:system:su";
 
@@ -26,12 +28,12 @@ public final class ContentNodeConverter
         put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
         build();
 
-    public static Node toNode( final ContentEntity content )
+    public Node toNode( final ContentEntity content )
     {
-        return NodeFactory.createNode( content.getName(), toData( content ) );
+        return createNode( new NodeId(), content.getName(), toData( content ) );
     }
 
-    private static PropertyTree toData( final ContentEntity content )
+    private PropertyTree toData( final ContentEntity content )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
@@ -58,7 +60,7 @@ public final class ContentNodeConverter
         return data;
     }
 
-    public static ContentTypeName convertType( final ContentEntity content )
+    public ContentTypeName convertType( final ContentEntity content )
     {
         return TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
     }

@@ -60,9 +60,10 @@ public final class ExportData
 
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
-        ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore );
 
+        final ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
+
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
 
         nodeExporter.writeExportProperties( "6.0.0" );

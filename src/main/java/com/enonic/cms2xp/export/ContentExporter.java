@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.export;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.jdom.Attribute;
@@ -17,6 +19,7 @@ import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.BinaryReference;
@@ -38,6 +41,10 @@ public class ContentExporter
 
     private final FileBlobStore fileBlobStore;
 
+    private final ContentNodeConverter contentNodeConverter = new ContentNodeConverter();
+
+    private final Map<String, NodeId> nodeIdByContentKeyMap = new HashMap<>();
+
     public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore )
     {
         this.nodeExporter = nodeExporter;
@@ -49,13 +56,13 @@ public class ContentExporter
         for ( ContentEntity content : contents )
         {
             //Converts the category to a node
-            Node contentNode = ContentNodeConverter.toNode( content );
+            Node contentNode = contentNodeConverter.toNode( content );
             contentNode = Node.create( contentNode ).
                 parentPath( parentNode ).
                 build();
 
             //Exports attachments
-            final ContentTypeName contentType = ContentNodeConverter.convertType( content );
+            final ContentTypeName contentType = contentNodeConverter.convertType( content );
             if ( contentType.isImageMedia() )
             {
                 exportImageAttachments( content, contentNode );

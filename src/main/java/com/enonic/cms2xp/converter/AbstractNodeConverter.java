@@ -10,14 +10,14 @@ import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeState;
 
-public class NodeFactory
+public abstract class AbstractNodeConverter
 {
-    public static Node createNode( String name, PropertyTree data )
+    public Node createNode( NodeId nodeId, String name, PropertyTree data )
     {
         return Node.create().
             nodeType( ContentConstants.CONTENT_NODE_COLLECTION ).
             nodeState( NodeState.DEFAULT ).
-            id( new NodeId() ).
+            id( nodeId ).
             timestamp( Instant.now() ).
             name( generatePathName( name ) ).
             data( data ).
@@ -25,7 +25,7 @@ public class NodeFactory
             build();
     }
 
-    private static String generatePathName( final String name )
+    private String generatePathName( final String name )
     {
         return new ContentPathNameGenerator().generatePathName( name );
     }
