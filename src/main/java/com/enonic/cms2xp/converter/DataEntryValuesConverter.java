@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.Value;
 import com.enonic.xp.data.ValueFactory;
@@ -124,7 +126,9 @@ public class DataEntryValuesConverter
         final PropertySet propertySet = new PropertySet();
         for ( DataEntry dataEntry : dataEntries )
         {
-            propertySet.setValues( dataEntry.getName(), toValue( dataEntry ) );
+            final String entryPathName = StringUtils.substringAfterLast( dataEntry.getXPath(), "/" );
+            final String name = StringUtils.isBlank( entryPathName ) ? dataEntry.getName() : entryPathName;
+            propertySet.setValues( name, toValue( dataEntry ) );
         }
 
         return ValueFactory.newPropertySet( propertySet );
