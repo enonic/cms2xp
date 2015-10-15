@@ -48,7 +48,7 @@ public class XmlContentTypeSerializer
     private void serializeMetadata()
     {
         final MixinNames metadata = contentType.getMetadata();
-        if ( metadata != null )
+        if ( metadata != null && metadata.isNotEmpty() )
         {
             this.builder.start( "x-data" );
             for ( final MixinName mixinName : metadata )
@@ -100,12 +100,14 @@ public class XmlContentTypeSerializer
         serializeValueAttribute( "name", formItemSet.getName() );
         serializeValueElement( "label", formItemSet.getLabel() );
         serialize( formItemSet.getFormItems() );
+        serialize( formItemSet.getOccurrences() );
     }
 
     private void serialize( Input input )
     {
         serializeValueAttribute( "type", input.getInputType() );
         serializeValueAttribute( "name", input.getName() );
+        serializeValueElement( "label", input.getLabel() );
         serializeValueElement( "custom-text", input.getCustomText() );
         serializeValueElement( "immutable", input.isImmutable() );
         serializeValueElement( "indexed", input.isIndexed() );

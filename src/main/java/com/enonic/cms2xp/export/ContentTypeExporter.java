@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import com.enonic.xp.app.ApplicationKey;
@@ -140,9 +141,10 @@ public final class ContentTypeExporter
 
     private FormItem convertConfigEntry( final DataEntryConfig entry )
     {
+        final String label = Strings.isNullOrEmpty( entry.getDisplayName() ) ? entry.getName() : entry.getDisplayName();
         final Input.Builder input = Input.create().
             name( entry.getName() ).
-            label( entry.getDisplayName() ).
+            label( label ).
             required( entry.isRequired() ).
             customText( entry.getXpath() ).
             inputType( InputTypeName.TEXT_LINE );
