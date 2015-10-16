@@ -12,7 +12,7 @@ public class CategoryRetriever
 {
     private final static Logger logger = LoggerFactory.getLogger( CategoryRetriever.class );
 
-    public static List<CategoryEntity> retrieveRootCategories( final Session session )
+    public List<CategoryEntity> retrieveRootCategories( final Session session )
     {
 
         session.beginTransaction();

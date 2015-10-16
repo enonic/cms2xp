@@ -12,10 +12,6 @@ public final class ContentTypeRetriever
 {
     private final static Logger logger = LoggerFactory.getLogger( ContentTypeRetriever.class );
 
-    public ContentTypeRetriever()
-    {
-    }
-
     public List<ContentTypeEntity> retrieveContentTypes( final Session session )
     {
         session.beginTransaction();

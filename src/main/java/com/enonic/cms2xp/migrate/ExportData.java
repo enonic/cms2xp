@@ -49,6 +49,7 @@ public final class ExportData
         throws Exception
     {
 
+        //Opens an Hibernate Session
         final Session session = new HibernateSessionProvider( config ).getSession();
         if ( !session.isConnected() )
         {
@@ -56,23 +57,48 @@ public final class ExportData
             return;
         }
 
+        try
+        {
+            //Retrieves, converts and exports the ContentTypes
+            final ContentTypeExporter contentTypeExporter = new ContentTypeExporter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
+            exportContentTypes( session, contentTypeExporter );
+
+            //Retrieves, converts and exports the Categories
+            exportCategories( session, contentTypeExporter );
+
+            //Retrieves, converts and exports the Sites
+            exportSites( session );
+        }
+        finally
+        {
+            session.close();
+        }
+    }
+
+    private void exportContentTypes( Session session, final ContentTypeExporter contentTypeExporter )
+    {
         logger.info( "Retrieving content types..." );
         final List<ContentTypeEntity> contentTypes = new ContentTypeRetriever().retrieveContentTypes( session );
-        final ContentTypeExporter contentTypeExporter = new ContentTypeExporter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
+        logger.info( contentTypes.size() + " content types retrieved." );
         final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypes );
+        logger.info( "Exporting content types..." );
         exportContentTypes( contentTypeList );
+    }
 
+    private void exportCategories( Session session, final ContentTypeExporter contentTypeExporter )
+    {
         logger.info( "Retrieving root categories..." );
-        final List<CategoryEntity> categories = CategoryRetriever.retrieveRootCategories( session );
+        final List<CategoryEntity> categories = new CategoryRetriever().retrieveRootCategories( session );
         logger.info( categories.size() + " root categories retrieved." );
         logger.info( "Exporting root categories and children..." );
         export( categories, contentTypeExporter );
+    }
 
+    private void exportSites( Session session )
+    {
         logger.info( "Retrieving sites..." );
-        final List<SiteEntity> siteEntities = SiteRetriever.retrieveSites( session );
+        final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
         logger.info( siteEntities.size() + " sites retrieved." );
-
-        session.close();
     }
 
     private void export( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )

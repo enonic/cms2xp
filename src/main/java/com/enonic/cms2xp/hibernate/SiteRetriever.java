@@ -12,7 +12,7 @@ public class SiteRetriever
 {
     private final static Logger logger = LoggerFactory.getLogger( SiteRetriever.class );
 
-    public static List<SiteEntity> retrieveSites( final Session session )
+    public List<SiteEntity> retrieveSites( final Session session )
     {
 
         session.beginTransaction();
