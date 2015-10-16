@@ -83,7 +83,8 @@ public final class ContentTypeExporter
     {
         final ContentType.Builder contentType = ContentType.create().
             name( ContentTypeName.from( appKey, contentTypeEntity.getName() ) ).
-            displayName( contentTypeEntity.getDescription() ).
+            displayName( contentTypeEntity.getName() ).
+            description( contentTypeEntity.getDescription() ).
             createdTime( contentTypeEntity.getTimestamp().toInstant() ).
             superType( ContentTypeName.unstructured() ).
             form( convertConfig( contentTypeEntity.getContentTypeConfig() ) );
