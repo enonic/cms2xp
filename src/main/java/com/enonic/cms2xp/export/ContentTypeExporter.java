@@ -265,8 +265,8 @@ public final class ContentTypeExporter
             field.setAccessible( true );
             LinkedHashMap<String, String> optionValuesWithDescriptions = (LinkedHashMap<String, String>) field.get( entry );
             optionValuesWithDescriptions.entrySet().stream().
-                forEach( e -> input.inputTypeProperty( InputTypeProperty.create( "option", e.getKey() ).
-                    attribute( "value", e.getValue() ).
+                forEach( e -> input.inputTypeProperty( InputTypeProperty.create( "option", e.getValue() ).
+                    attribute( "value", e.getKey() ).
                     build() ) );
         }
         catch ( IllegalAccessException | NoSuchFieldException e )
