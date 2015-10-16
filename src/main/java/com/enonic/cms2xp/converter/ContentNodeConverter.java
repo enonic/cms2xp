@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
-import com.enonic.cms2xp.export.ContentTypeResolver;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;

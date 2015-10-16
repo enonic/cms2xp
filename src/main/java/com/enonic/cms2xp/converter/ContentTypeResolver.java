@@ -1,4 +1,4 @@
-package com.enonic.cms2xp.export;
+package com.enonic.cms2xp.converter;
 
 import com.enonic.xp.schema.content.ContentType;
 

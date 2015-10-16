@@ -13,10 +13,10 @@ import com.google.common.collect.ImmutableList;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.ContentNodeConverter;
+import com.enonic.cms2xp.converter.ContentTypeConverter;
+import com.enonic.cms2xp.converter.ContentTypeResolver;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
-import com.enonic.cms2xp.export.ContentTypeExporter;
-import com.enonic.cms2xp.export.ContentTypeResolver;
 import com.enonic.cms2xp.export.xml.XmlContentTypeSerializer;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
@@ -60,11 +60,11 @@ public final class ExportData
         try
         {
             //Retrieves, converts and exports the ContentTypes
-            final ContentTypeExporter contentTypeExporter = new ContentTypeExporter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
-            exportContentTypes( session, contentTypeExporter );
+            final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
+            exportContentTypes( session, contentTypeConverter );
 
             //Retrieves, converts and exports the Categories
-            exportCategories( session, contentTypeExporter );
+            exportCategories( session, contentTypeConverter );
 
             //Retrieves, converts and exports the Sites
             exportSites( session );
@@ -75,30 +75,19 @@ public final class ExportData
         }
     }
 
-    private void exportContentTypes( Session session, final ContentTypeExporter contentTypeExporter )
+    private void exportContentTypes( Session session, final ContentTypeConverter contentTypeConverter )
     {
+        //Retrieves the ContentTypeEntities
         logger.info( "Retrieving content types..." );
         final List<ContentTypeEntity> contentTypeEntities = new ContentTypeRetriever().retrieveContentTypes( session );
         logger.info( contentTypeEntities.size() + " content types retrieved." );
-        final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypeEntities );
+
+        //Converts the ContentTypeEntities to ContentTypes
+        final ImmutableList<ContentType> contentTypeList = contentTypeConverter.export( contentTypeEntities );
+
+        //Exports the ContentTypes
         logger.info( "Exporting content types..." );
         exportContentTypes( contentTypeList );
-    }
-
-    private void exportCategories( Session session, final ContentTypeExporter contentTypeExporter )
-    {
-        logger.info( "Retrieving root categories..." );
-        final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
-        logger.info( categoryEntities.size() + " root categories retrieved." );
-        logger.info( "Exporting root categories and children..." );
-        export( categoryEntities, contentTypeExporter );
-    }
-
-    private void exportSites( Session session )
-    {
-        logger.info( "Retrieving sites..." );
-        final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
-        logger.info( siteEntities.size() + " sites retrieved." );
     }
 
     private void exportContentTypes( final Iterable<ContentType> contentTypes )
@@ -121,7 +110,19 @@ public final class ExportData
         }
     }
 
-    private void export( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
+    private void exportCategories( Session session, final ContentTypeConverter contentTypeConverter )
+    {
+        //Retrieves the CategoryEntities
+        logger.info( "Retrieving root categories..." );
+        final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
+        logger.info( categoryEntities.size() + " root categories retrieved." );
+
+        //Exports the CategoryEntities
+        logger.info( "Exporting root categories and children..." );
+        exportCategories( categoryEntities, contentTypeConverter );
+    }
+
+    private void exportCategories( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
     {
         final Path targetDirectory = this.config.target.exportDir.toPath();
 
@@ -142,5 +143,13 @@ public final class ExportData
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
 
         nodeExporter.writeExportProperties( "6.0.0" );
+    }
+
+    private void exportSites( Session session )
+    {
+        //Retrieves the SiteEntities
+        logger.info( "Retrieving sites..." );
+        final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
+        logger.info( siteEntities.size() + " sites retrieved." );
     }
 }

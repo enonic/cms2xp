@@ -1,4 +1,4 @@
-package com.enonic.cms2xp.export;
+package com.enonic.cms2xp.converter;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -46,16 +46,16 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.TextDataEntryConf
 import com.enonic.cms.core.content.contenttype.dataentryconfig.UrlDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.XmlDataEntryConfig;
 
-public final class ContentTypeExporter
+public final class ContentTypeConverter
     implements ContentTypeResolver
 {
-    private final static Logger logger = LoggerFactory.getLogger( ContentTypeExporter.class );
+    private final static Logger logger = LoggerFactory.getLogger( ContentTypeConverter.class );
 
     private final Map<ContentTypeKey, ContentType> typeResolver;
 
     private final ApplicationKey appKey;
 
-    public ContentTypeExporter( final ApplicationKey appKey )
+    public ContentTypeConverter( final ApplicationKey appKey )
     {
         this.appKey = appKey;
         this.typeResolver = new HashMap<>();
