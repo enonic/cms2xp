@@ -6,6 +6,7 @@ import java.time.Instant;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.index.ChildOrder;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeState;
@@ -24,6 +25,7 @@ public abstract class AbstractNodeConverter
             name( generatePathName( name ) ).
             data( data ).
             inheritPermissions( true ).
+            childOrder( ChildOrder.defaultOrder() ).
             build();
     }
 
