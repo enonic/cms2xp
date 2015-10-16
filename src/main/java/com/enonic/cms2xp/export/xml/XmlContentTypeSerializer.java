@@ -99,6 +99,10 @@ public class XmlContentTypeSerializer
     {
         serializeValueAttribute( "name", formItemSet.getName() );
         serializeValueElement( "label", formItemSet.getLabel() );
+        serializeValueElement( "custom-text", formItemSet.getCustomText() );
+        serializeValueElement( "help-text", formItemSet.getHelpText() );
+        serializeValueElement( "immutable", formItemSet.isImmutable() );
+        serialize( formItemSet.getOccurrences() );
         serialize( formItemSet.getFormItems() );
         serialize( formItemSet.getOccurrences() );
     }
@@ -114,6 +118,7 @@ public class XmlContentTypeSerializer
         serializeValueElement( "validation-regexp", input.getValidationRegexp() );
         serializeValueElement( "maximize", input.isMaximizeUIInputWidth() );
         serialize( input.getOccurrences() );
+        //TODO config serialize()
     }
 
     private void serialize( final Occurrences occurrences )
