@@ -12,6 +12,8 @@ import com.enonic.xp.node.NodeState;
 
 public abstract class AbstractNodeConverter
 {
+    protected static final String SUPER_USER_KEY = "user:system:su";
+
     public Node createNode( NodeId nodeId, String name, PropertyTree data )
     {
         return Node.create().

@@ -21,7 +21,6 @@ import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 public final class ContentNodeConverter
     extends AbstractNodeConverter
 {
-    private static final String SUPER_USER_KEY = "user:system:su";
 
     private final NodeIdRegistry nodeIdRegistry;
 

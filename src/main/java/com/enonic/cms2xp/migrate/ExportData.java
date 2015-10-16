@@ -116,6 +116,7 @@ public final class ExportData
 
     private void exportCategories( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
     {
+        //TODO Refactor this part.
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
@@ -132,5 +133,9 @@ public final class ExportData
         logger.info( "Retrieving sites..." );
         final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
         logger.info( siteEntities.size() + " sites retrieved." );
+
+        //Converts and exports the CategoryEntities
+        logger.info( "Exporting sites and children..." );
+        //new SiteExporter( nodeExporter ).export( siteEntities );
     }
 }

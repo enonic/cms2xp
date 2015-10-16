@@ -12,8 +12,6 @@ import com.enonic.cms.core.content.category.CategoryEntity;
 public final class CategoryNodeConverter
     extends AbstractNodeConverter
 {
-    private static final String SUPER_USER_KEY = "user:system:su";
-
     public Node toNode( final CategoryEntity category )
     {
         return createNode( new NodeId(), category.getName(), toData( category ) );
