@@ -104,7 +104,6 @@ public class XmlContentTypeSerializer
         serializeValueElement( "immutable", formItemSet.isImmutable() );
         serialize( formItemSet.getOccurrences() );
         serialize( formItemSet.getFormItems() );
-        serialize( formItemSet.getOccurrences() );
     }
 
     private void serialize( Input input )
