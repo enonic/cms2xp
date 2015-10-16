@@ -33,7 +33,7 @@ public class DataEntryValuesConverter
         this.nodeIdRegistry = nodeIdRegistry;
     }
 
-    public Value toValue( DataEntry dataEntry )
+    public Value toValue( final DataEntry dataEntry )
     {
         if ( dataEntry instanceof DataEntrySet )
         {
@@ -45,70 +45,38 @@ public class DataEntryValuesConverter
             case BINARY: //TODO
                 break;
             case BOOLEAN:
-                final Boolean booleanValue = ( (BooleanDataEntry) dataEntry ).getValueAsBoolean();
-                return ValueFactory.newBoolean( booleanValue );
+                return toValue( (BooleanDataEntry) dataEntry );
             case DATE:
-                final Date valueDate = ( (DateDataEntry) dataEntry ).getValue();
-                return ValueFactory.newLocalDate( valueDate.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
+                return toValue( (DateDataEntry) dataEntry );
             case GROUP: //TODO
                 break;
             case FILES:
             case IMAGES:
             case RELATED_CONTENTS:
-                final List<RelationDataEntry> relationDataEntries =
-                    ( (AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry>) dataEntry ).getEntries();
-                return toValue( relationDataEntries );
+                return toValue( (AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry>) dataEntry );
             case KEYWORDS:
                 //Obsolete
                 break;
             case MULTIPLE_CHOICE:
-                final MultipleChoiceDataEntry multipleChoiceDataEntry = (MultipleChoiceDataEntry) dataEntry;
-                final String multipleChoiceText = multipleChoiceDataEntry.getText();
-                final List<MultipleChoiceAlternative> alternatives = multipleChoiceDataEntry.getAlternatives();
-
-                final PropertySet multipleChoicePropertySet = new PropertySet();
-                multipleChoicePropertySet.setProperty( "text", ValueFactory.newString( multipleChoiceText ) );
-                alternatives.stream().
-                    map( multipleChoiceAlternative -> {
-                        PropertySet multipleChoiceAlternativePropertySet = new PropertySet();
-                        multipleChoiceAlternativePropertySet.setProperty( "alternativeText", ValueFactory.newString(
-                            multipleChoiceAlternative.getAlternativeText() ) );
-                        multipleChoiceAlternativePropertySet.setProperty( "correct", ValueFactory.newBoolean(
-                            multipleChoiceAlternative.isCorrect() ) );
-                        return multipleChoiceAlternativePropertySet;
-                    } ).
-                    forEach( multipleChoiceAlternativePropertySet -> {
-                        final Value multipleChoiceAlternativeValue = ValueFactory.newPropertySet( multipleChoiceAlternativePropertySet );
-                        multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
-                    } );
-
-                return ValueFactory.newPropertySet( multipleChoicePropertySet );
+                return toValue( (MultipleChoiceDataEntry) dataEntry );
             case FILE:
             case IMAGE:
             case RELATED_CONTENT:
-                final ContentKey contentKey = ( (RelationDataEntry) dataEntry ).getContentKey();
-                if ( contentKey != null )
-                { //TODO Why could that be null
-                    final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
-                    return ValueFactory.newReference( new Reference( nodeId ) );
-                }
-                break;
+                return toValue( (RelationDataEntry) dataEntry );
             case HTML_AREA:
             case TEXT_AREA:
             case SELECTOR:
             case TEXT:
             case URL:
-                final String valueString = ( (AbstractStringBasedInputDataEntry) dataEntry ).getValue();
-                return ValueFactory.newString( valueString );
+                return toValue( (AbstractStringBasedInputDataEntry) dataEntry );
             case XML:
-                final String valueXml = ( (AbstractXmlBasedInputDataEntry) dataEntry ).getValueAsString();
-                return ValueFactory.newXml( valueXml );
+                return toValue( (AbstractXmlBasedInputDataEntry) dataEntry );
         }
 
         return null;
     }
 
-    public Value toValue( Iterable<? extends DataEntry> dataEntries )
+    private Value toValue( final Iterable<? extends DataEntry> dataEntries )
     {
         final PropertySet propertySet = new PropertySet();
         for ( DataEntry dataEntry : dataEntries )
@@ -125,4 +93,65 @@ public class DataEntryValuesConverter
         return ValueFactory.newPropertySet( propertySet );
     }
 
+    private Value toValue( final BooleanDataEntry booleanDataEntry )
+    {
+        return ValueFactory.newBoolean( booleanDataEntry.getValueAsBoolean() );
+    }
+
+    private Value toValue( final DateDataEntry dateDataEntry )
+    {
+        final Date value = dateDataEntry.getValue();
+        return ValueFactory.newLocalDate( value.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
+    }
+
+    private Value toValue( final AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry> relationDataEntryListBasedDataEntry )
+    {
+        final List<RelationDataEntry> relationDataEntries = relationDataEntryListBasedDataEntry.getEntries();
+        return toValue( relationDataEntries );
+    }
+
+    private Value toValue( final MultipleChoiceDataEntry multipleChoiceDataEntry )
+    {
+        final String multipleChoiceText = multipleChoiceDataEntry.getText();
+        final List<MultipleChoiceAlternative> alternatives = multipleChoiceDataEntry.getAlternatives();
+
+        final PropertySet multipleChoicePropertySet = new PropertySet();
+        multipleChoicePropertySet.setProperty( "text", ValueFactory.newString( multipleChoiceText ) );
+        alternatives.stream().
+            map( multipleChoiceAlternative -> {
+                PropertySet multipleChoiceAlternativePropertySet = new PropertySet();
+                multipleChoiceAlternativePropertySet.setProperty( "alternativeText", ValueFactory.newString(
+                    multipleChoiceAlternative.getAlternativeText() ) );
+                multipleChoiceAlternativePropertySet.setProperty( "correct",
+                                                                  ValueFactory.newBoolean( multipleChoiceAlternative.isCorrect() ) );
+                return multipleChoiceAlternativePropertySet;
+            } ).
+            forEach( multipleChoiceAlternativePropertySet -> {
+                final Value multipleChoiceAlternativeValue = ValueFactory.newPropertySet( multipleChoiceAlternativePropertySet );
+                multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
+            } );
+
+        return ValueFactory.newPropertySet( multipleChoicePropertySet );
+    }
+
+    private Value toValue( final RelationDataEntry relationDataEntry )
+    {
+        final ContentKey contentKey = relationDataEntry.getContentKey();
+        if ( contentKey != null )
+        { //TODO Why could that be null
+            final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
+            return ValueFactory.newReference( new Reference( nodeId ) );
+        }
+        return null;
+    }
+
+    private Value toValue( final AbstractStringBasedInputDataEntry stringBasedInputDataEntry )
+    {
+        return ValueFactory.newString( stringBasedInputDataEntry.getValue() );
+    }
+
+    private Value toValue( final AbstractXmlBasedInputDataEntry xmlBasedInputDataEntry )
+    {
+        return ValueFactory.newXml( xmlBasedInputDataEntry.getValueAsString() );
+    }
 }
