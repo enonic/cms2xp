@@ -67,7 +67,7 @@ public final class ContentNodeConverter
             if ( contentData instanceof DataEntry )
             {
                 DataEntry dataEntry = (DataEntry) contentData;
-                data.setProperty( "data", dataEntryValuesConverter.toValue( dataEntry ) );
+                data.setProperty( ContentPropertyNames.DATA, dataEntryValuesConverter.toValue( dataEntry ) );
             }
         }
         return data;

@@ -16,6 +16,7 @@ import com.enonic.cms2xp.converter.ContentTypeResolver;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentTypeExporter;
+import com.enonic.cms2xp.export.SiteExporter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
@@ -35,6 +36,8 @@ import com.enonic.cms.core.structure.SiteEntity;
 public final class ExportData
 {
     private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
+
+    private final static ApplicationKey APPLICATION_KEY = ApplicationKey.from( "com.enonic.xp.app.myApp" );
 
     private final MainConfig config;
 
@@ -68,7 +71,7 @@ public final class ExportData
         try
         {
             //Retrieves, converts and exports the ContentTypes
-            final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( ApplicationKey.from( "com.enonic.xp.app.myApp" ) );
+            final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( APPLICATION_KEY );
             exportContentTypes( session, contentTypeConverter );
 
             //Retrieves, converts and exports the Categories
@@ -136,6 +139,6 @@ public final class ExportData
 
         //Converts and exports the CategoryEntities
         logger.info( "Exporting sites and children..." );
-        //new SiteExporter( nodeExporter ).export( siteEntities );
+        new SiteExporter( nodeExporter, APPLICATION_KEY ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 }

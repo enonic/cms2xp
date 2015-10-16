@@ -1,8 +1,10 @@
 package com.enonic.cms2xp.converter;
 
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -12,6 +14,13 @@ import com.enonic.cms.core.structure.SiteEntity;
 public class SiteNodeConverter
     extends AbstractNodeConverter
 {
+    private final ApplicationKey applicationKey;
+
+    public SiteNodeConverter( final ApplicationKey applicationKey )
+    {
+        this.applicationKey = applicationKey;
+    }
+
     public Node convertToNode( final SiteEntity siteEntity )
     {
         return createNode( new NodeId(), siteEntity.getName(), toData( siteEntity ) );
@@ -29,9 +38,17 @@ public class SiteNodeConverter
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
         //TODO No created time info?
         data.setInstant( ContentPropertyNames.CREATED_TIME, siteEntity.getTimestamp().toInstant() );
-        //data.setInstant( ContentPropertyNames.CREATED_TIME, siteEntity.getCreated().toInstant() );
-        data.setSet( ContentPropertyNames.DATA, new PropertySet() );
+
+        final PropertySet siteConfig = new PropertySet();
+        siteConfig.setProperty( "applicationKey", ValueFactory.newString( applicationKey.toString() ) );
+        siteConfig.setProperty( "config", ValueFactory.newPropertySet( new PropertySet() ) );
+        final PropertySet subData = new PropertySet();
+        subData.setProperty( "description", ValueFactory.newString( siteEntity.getName() ) ); //TODO No description?
+        subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
+        data.setSet( ContentPropertyNames.DATA, subData );
+
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
     }
+
 }

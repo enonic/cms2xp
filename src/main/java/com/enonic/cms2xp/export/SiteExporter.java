@@ -3,6 +3,7 @@ package com.enonic.cms2xp.export;
 import java.util.List;
 
 import com.enonic.cms2xp.converter.SiteNodeConverter;
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
@@ -13,11 +14,12 @@ public class SiteExporter
 {
     private final NodeExporter nodeExporter;
 
-    private final SiteNodeConverter siteNodeConverter = new SiteNodeConverter();
+    private final SiteNodeConverter siteNodeConverter;
 
-    public SiteExporter( final NodeExporter nodeExporter )
+    public SiteExporter( final NodeExporter nodeExporter, final ApplicationKey applicationKey )
     {
         this.nodeExporter = nodeExporter;
+        this.siteNodeConverter = new SiteNodeConverter( applicationKey );
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNode )
