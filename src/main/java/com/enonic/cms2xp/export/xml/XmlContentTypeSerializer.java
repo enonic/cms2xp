@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.export.xml;
 
+import java.util.Map;
+
 import com.enonic.xp.form.FieldSet;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.form.FormItem;
@@ -8,6 +10,8 @@ import com.enonic.xp.form.FormItems;
 import com.enonic.xp.form.InlineMixin;
 import com.enonic.xp.form.Input;
 import com.enonic.xp.form.Occurrences;
+import com.enonic.xp.inputtype.InputTypeConfig;
+import com.enonic.xp.inputtype.InputTypeProperty;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.mixin.MixinName;
 import com.enonic.xp.schema.mixin.MixinNames;
@@ -117,7 +121,20 @@ public class XmlContentTypeSerializer
         serializeValueElement( "validation-regexp", input.getValidationRegexp() );
         serializeValueElement( "maximize", input.isMaximizeUIInputWidth() );
         serialize( input.getOccurrences() );
-        //TODO config serialize()
+        serialize( input.getInputTypeConfig() );
+
+    }
+
+    private void serialize( FieldSet fieldSet )
+    {
+        serializeValueAttribute( "name", fieldSet.getName() );
+        serializeValueElement( "label", fieldSet.getLabel() );
+        serialize( fieldSet.getFormItems() );
+    }
+
+    private void serialize( InlineMixin inlineMixin )
+    {
+        serializeValueAttribute( "mixin", inlineMixin.getMixinName() );
     }
 
     private void serialize( final Occurrences occurrences )
@@ -131,16 +148,26 @@ public class XmlContentTypeSerializer
         }
     }
 
-    private void serialize( FieldSet fieldSet )
+    private void serialize( final InputTypeConfig inputTypeConfig )
     {
-        serializeValueAttribute( "name", fieldSet.getName() );
-        serializeValueElement( "label", fieldSet.getLabel() );
-        serialize( fieldSet.getFormItems() );
-    }
-
-    private void serialize( InlineMixin inlineMixin )
-    {
-        serializeValueAttribute( "mixin", inlineMixin.getMixinName() );
+        if ( inputTypeConfig != null )
+        {
+            this.builder.start( "config" );
+            for ( InputTypeProperty inputTypeProperty : inputTypeConfig )
+            {
+                this.builder.start( inputTypeProperty.getName() );
+                for ( Map.Entry<String, String> attribute : inputTypeProperty.getAttributes().entrySet() )
+                {
+                    serializeValueAttribute( attribute.getKey(), attribute.getValue() );
+                }
+                if ( inputTypeProperty.getValue() != null )
+                {
+                    this.builder.text( inputTypeProperty.getValue() );
+                }
+                this.builder.end();
+            }
+            this.builder.end();
+        }
     }
 
     private void serialize( final FormItems formItems )
