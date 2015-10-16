@@ -1,5 +1,6 @@
 package com.enonic.cms2xp.converter;
 
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -54,7 +55,7 @@ public class DataEntryValuesConverter
                 break;
             case DATE:
                 final Date valueDate = ( (DateDataEntry) dataEntry ).getValue();
-                value = ValueFactory.newDateTime( valueDate.toInstant() );
+                value = ValueFactory.newLocalDate( valueDate.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
                 break;
             case GROUP: //TODO
                 break;

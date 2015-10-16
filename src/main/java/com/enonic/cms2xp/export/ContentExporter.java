@@ -102,7 +102,13 @@ public class ContentExporter
             {
                 mediaType = ContentTypeFromMimeTypeResolver.resolve( mimeType );
             }
-            addAttachmentData( contentNode.data(), "", binaryData, reference, mimeType );
+
+            String label = main.getContentBinaryData( key ).getLabel();
+            if ( label == null )
+            {
+                label = binaryKeys.size() == 1 ? "source" : "";
+            }
+            addAttachmentData( contentNode.data(), label, binaryData, reference, mimeType );
         }
         return mediaType;
     }
