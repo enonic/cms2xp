@@ -21,6 +21,7 @@ import com.enonic.cms2xp.export.xml.XmlContentTypeSerializer;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
+import com.enonic.cms2xp.hibernate.SiteRetriever;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
@@ -31,6 +32,7 @@ import com.enonic.cms.framework.blob.file.FileBlobStore;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
+import com.enonic.cms.core.structure.SiteEntity;
 
 public final class ExportData
 {
@@ -60,11 +62,15 @@ public final class ExportData
         final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypes );
         exportContentTypes( contentTypeList );
 
-        logger.info( "Retrieving categories..." );
+        logger.info( "Retrieving root categories..." );
         final List<CategoryEntity> categories = CategoryRetriever.retrieveRootCategories( session );
         logger.info( categories.size() + " root categories retrieved." );
-        logger.info( "Exporting categories..." );
+        logger.info( "Exporting root categories and children..." );
         export( categories, contentTypeExporter );
+
+        logger.info( "Retrieving sites..." );
+        final List<SiteEntity> siteEntities = SiteRetriever.retrieveSites( session );
+        logger.info( siteEntities.size() + " sites retrieved." );
 
         session.close();
     }
