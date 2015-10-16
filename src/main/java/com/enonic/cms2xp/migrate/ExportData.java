@@ -38,9 +38,19 @@ public final class ExportData
 
     private final MainConfig config;
 
+    private final NodeExporter nodeExporter;
+
     public ExportData( final MainConfig config )
     {
         this.config = config;
+
+        final Path nodeTargetDirectory = this.config.target.exportDir.toPath();
+        nodeExporter = NodeExporter.create().
+            sourceNodePath( NodePath.ROOT ).
+            rootDirectory( nodeTargetDirectory ).
+            targetDirectory( nodeTargetDirectory ).
+            exportNodeIds( true ).
+            build();
     }
 
     public void execute()
@@ -66,6 +76,9 @@ public final class ExportData
 
             //Retrieves, converts and exports the Sites
             exportSites( session );
+
+            //Writes additional export information
+            nodeExporter.writeExportProperties( "6.0.0" );
         }
         finally
         {
@@ -89,29 +102,20 @@ public final class ExportData
         new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
     }
 
-    private void exportCategories( Session session, final ContentTypeConverter contentTypeConverter )
+    private void exportCategories( Session session, final ContentTypeResolver contentTypeResolver )
     {
         //Retrieves the CategoryEntities
         logger.info( "Retrieving root categories..." );
         final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
         logger.info( categoryEntities.size() + " root categories retrieved." );
 
-        //Exports the CategoryEntities
+        //Converts and exports the CategoryEntities
         logger.info( "Exporting root categories and children..." );
-        exportCategories( categoryEntities, contentTypeConverter );
+        exportCategories( categoryEntities, contentTypeResolver );
     }
 
     private void exportCategories( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
     {
-        final Path targetDirectory = this.config.target.exportDir.toPath();
-
-        final NodeExporter nodeExporter = NodeExporter.create().
-            sourceNodePath( NodePath.ROOT ).
-            rootDirectory( targetDirectory ).
-            targetDirectory( targetDirectory ).
-            exportNodeIds( true ).
-            build();
-
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
@@ -120,8 +124,6 @@ public final class ExportData
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
-
-        nodeExporter.writeExportProperties( "6.0.0" );
     }
 
     private void exportSites( Session session )
