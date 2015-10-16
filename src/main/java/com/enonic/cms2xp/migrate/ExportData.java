@@ -78,9 +78,9 @@ public final class ExportData
     private void exportContentTypes( Session session, final ContentTypeExporter contentTypeExporter )
     {
         logger.info( "Retrieving content types..." );
-        final List<ContentTypeEntity> contentTypes = new ContentTypeRetriever().retrieveContentTypes( session );
-        logger.info( contentTypes.size() + " content types retrieved." );
-        final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypes );
+        final List<ContentTypeEntity> contentTypeEntities = new ContentTypeRetriever().retrieveContentTypes( session );
+        logger.info( contentTypeEntities.size() + " content types retrieved." );
+        final ImmutableList<ContentType> contentTypeList = contentTypeExporter.export( contentTypeEntities );
         logger.info( "Exporting content types..." );
         exportContentTypes( contentTypeList );
     }
@@ -88,10 +88,10 @@ public final class ExportData
     private void exportCategories( Session session, final ContentTypeExporter contentTypeExporter )
     {
         logger.info( "Retrieving root categories..." );
-        final List<CategoryEntity> categories = new CategoryRetriever().retrieveRootCategories( session );
-        logger.info( categories.size() + " root categories retrieved." );
+        final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
+        logger.info( categoryEntities.size() + " root categories retrieved." );
         logger.info( "Exporting root categories and children..." );
-        export( categories, contentTypeExporter );
+        export( categoryEntities, contentTypeExporter );
     }
 
     private void exportSites( Session session )
@@ -99,6 +99,26 @@ public final class ExportData
         logger.info( "Retrieving sites..." );
         final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
         logger.info( siteEntities.size() + " sites retrieved." );
+    }
+
+    private void exportContentTypes( final Iterable<ContentType> contentTypes )
+    {
+        final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
+        for ( ContentType contentType : contentTypes )
+        {
+            final String ct = new XmlContentTypeSerializer().contentType( contentType ).serialize();
+
+            final String ctName = contentType.getName().getLocalName();
+            try
+            {
+                final Path dir = Files.createDirectory( contentTypesPath.resolve( ctName ) );
+                Files.write( dir.resolve( ctName + ".xml" ), ct.getBytes( StandardCharsets.UTF_8 ) );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Cannot write content type XML '{}'", ctName );
+            }
+        }
     }
 
     private void export( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
@@ -122,25 +142,5 @@ public final class ExportData
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
 
         nodeExporter.writeExportProperties( "6.0.0" );
-    }
-
-    private void exportContentTypes( final Iterable<ContentType> contentTypes )
-    {
-        final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
-        for ( ContentType contentType : contentTypes )
-        {
-            final String ct = new XmlContentTypeSerializer().contentType( contentType ).serialize();
-
-            final String ctName = contentType.getName().getLocalName();
-            try
-            {
-                final Path dir = Files.createDirectory( contentTypesPath.resolve( ctName ) );
-                Files.write( dir.resolve( ctName + ".xml" ), ct.getBytes( StandardCharsets.UTF_8 ) );
-            }
-            catch ( Exception e )
-            {
-                logger.error( "Cannot write content type XML '{}'", ctName );
-            }
-        }
     }
 }

@@ -1,10 +1,8 @@
 package com.enonic.cms2xp.converter;
 
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -19,7 +17,6 @@ import com.enonic.cms.core.content.contentdata.custom.BooleanDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contentdata.custom.DataEntrySet;
 import com.enonic.cms.core.content.contentdata.custom.DateDataEntry;
-import com.enonic.cms.core.content.contentdata.custom.KeywordsDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceAlternative;
 import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.RelationDataEntry;
@@ -36,27 +33,23 @@ public class DataEntryValuesConverter
         this.nodeIdRegistry = nodeIdRegistry;
     }
 
-    public Iterable<Value> toValue( DataEntry dataEntry )
+    public Value toValue( DataEntry dataEntry )
     {
         if ( dataEntry instanceof DataEntrySet )
         {
-            final Value dataEntrySetAsValue = toValue( ( (DataEntrySet) dataEntry ).getEntries() );
-            return Collections.singleton( dataEntrySetAsValue );
+            return toValue( ( (DataEntrySet) dataEntry ).getEntries() );
         }
 
-        Value value = ValueFactory.newString( "" );
         switch ( dataEntry.getType() )
         {
             case BINARY: //TODO
                 break;
             case BOOLEAN:
                 final Boolean booleanValue = ( (BooleanDataEntry) dataEntry ).getValueAsBoolean();
-                value = ValueFactory.newBoolean( booleanValue );
-                break;
+                return ValueFactory.newBoolean( booleanValue );
             case DATE:
                 final Date valueDate = ( (DateDataEntry) dataEntry ).getValue();
-                value = ValueFactory.newLocalDate( valueDate.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
-                break;
+                return ValueFactory.newLocalDate( valueDate.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
             case GROUP: //TODO
                 break;
             case FILES:
@@ -64,14 +57,10 @@ public class DataEntryValuesConverter
             case RELATED_CONTENTS:
                 final List<RelationDataEntry> relationDataEntries =
                     ( (AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry>) dataEntry ).getEntries();
-                value = toValue( relationDataEntries );
-                break;
+                return toValue( relationDataEntries );
             case KEYWORDS:
-                return ( (KeywordsDataEntry) dataEntry ).
-                    getKeywords().
-                    stream().
-                    map( ValueFactory::newString ).
-                    collect( Collectors.toList() );
+                //Obsolete
+                break;
             case MULTIPLE_CHOICE:
                 final MultipleChoiceDataEntry multipleChoiceDataEntry = (MultipleChoiceDataEntry) dataEntry;
                 final String multipleChoiceText = multipleChoiceDataEntry.getText();
@@ -93,8 +82,7 @@ public class DataEntryValuesConverter
                         multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
                     } );
 
-                value = ValueFactory.newPropertySet( multipleChoicePropertySet );
-                break;
+                return ValueFactory.newPropertySet( multipleChoicePropertySet );
             case FILE:
             case IMAGE:
             case RELATED_CONTENT:
@@ -102,7 +90,7 @@ public class DataEntryValuesConverter
                 if ( contentKey != null )
                 { //TODO Why could that be null
                     final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
-                    value = ValueFactory.newReference( new Reference( nodeId ) );
+                    return ValueFactory.newReference( new Reference( nodeId ) );
                 }
                 break;
             case HTML_AREA:
@@ -111,15 +99,13 @@ public class DataEntryValuesConverter
             case TEXT:
             case URL:
                 final String valueString = ( (AbstractStringBasedInputDataEntry) dataEntry ).getValue();
-                value = ValueFactory.newString( valueString );
-                break;
+                return ValueFactory.newString( valueString );
             case XML:
                 final String valueXml = ( (AbstractXmlBasedInputDataEntry) dataEntry ).getValueAsString();
-                value = ValueFactory.newXml( valueXml );
-                break;
+                return ValueFactory.newXml( valueXml );
         }
 
-        return Collections.singleton( value );
+        return null;
     }
 
     public Value toValue( Iterable<? extends DataEntry> dataEntries )
@@ -128,8 +114,12 @@ public class DataEntryValuesConverter
         for ( DataEntry dataEntry : dataEntries )
         {
             final String entryPathName = StringUtils.substringAfterLast( dataEntry.getXPath(), "/" );
-            final String name = StringUtils.isBlank( entryPathName ) ? dataEntry.getName() : entryPathName;
-            propertySet.setValues( name, toValue( dataEntry ) );
+            final String propertyName = StringUtils.isBlank( entryPathName ) ? dataEntry.getName() : entryPathName;
+            final Value propertyValue = toValue( dataEntry );
+            if ( propertyValue != null )
+            {
+                propertySet.setProperty( propertyName, propertyValue );
+            }
         }
 
         return ValueFactory.newPropertySet( propertySet );
