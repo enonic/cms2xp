@@ -22,7 +22,7 @@ public final class SiteTemplatesNodeConverter
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, "Templates" );
-        data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
+        data.setString( ContentPropertyNames.TYPE, ContentTypeName.templateFolder().toString() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, siteEntity.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );

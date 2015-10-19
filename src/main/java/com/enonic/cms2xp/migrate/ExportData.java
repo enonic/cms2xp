@@ -1,6 +1,7 @@
 package com.enonic.cms2xp.migrate;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -26,6 +27,7 @@ import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.schema.content.ContentType;
+import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.framework.blob.file.FileBlobStore;
 
@@ -97,7 +99,20 @@ public final class ExportData
         logger.info( contentTypeEntities.size() + " content types retrieved." );
 
         //Converts the ContentTypeEntities to ContentTypes
-        final ImmutableList<ContentType> contentTypeList = contentTypeConverter.export( contentTypeEntities );
+        ImmutableList<ContentType> contentTypeList = contentTypeConverter.export( contentTypeEntities );
+
+        //Adds the Content Type page
+        final ContentType pageContentType = ContentType.create().
+            name( ContentTypeName.from( APPLICATION_KEY, "page" ) ).
+            displayName( "page" ).
+            description( "" ).
+            createdTime( Instant.now() ).
+            superType( ContentTypeName.unstructured() ).
+            build();
+        ImmutableList.Builder<ContentType> contentTypeListBuilder = ImmutableList.builder();
+        contentTypeList = contentTypeListBuilder.addAll( contentTypeList ).
+            add( pageContentType ).
+            build();
 
         //Exports the ContentTypes
         logger.info( "Exporting content types..." );
