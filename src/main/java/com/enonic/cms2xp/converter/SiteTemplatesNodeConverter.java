@@ -23,7 +23,6 @@ public final class SiteTemplatesNodeConverter
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, "Templates" );
         data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
-        data.setString( ContentPropertyNames.LANGUAGE, siteEntity.getLanguage().getCode() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, siteEntity.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );

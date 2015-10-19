@@ -27,7 +27,7 @@ public class SiteExporter
     {
         this.nodeExporter = nodeExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
-        this.templateExporter = new TemplateExporter( nodeExporter );
+        this.templateExporter = new TemplateExporter( nodeExporter, applicationKey );
         this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey );
     }
 
