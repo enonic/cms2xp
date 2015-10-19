@@ -28,11 +28,12 @@ public final class ContentNodeConverter
 
     private final ContentTypeResolver contentTypeResolver;
 
-    private static final Map<ContentHandlerName, ContentTypeName> TYPES = ImmutableMap.<ContentHandlerName, ContentTypeName>builder().
-        put( ContentHandlerName.CUSTOM, ContentTypeName.unstructured() ).
-        put( ContentHandlerName.IMAGE, ContentTypeName.imageMedia() ).
-        put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
-        build();
+    private static final Map<ContentHandlerName, ContentTypeName> SYSTEM_TYPES =
+        ImmutableMap.<ContentHandlerName, ContentTypeName>builder().
+            put( ContentHandlerName.CUSTOM, ContentTypeName.unstructured() ).
+            put( ContentHandlerName.IMAGE, ContentTypeName.imageMedia() ).
+            put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
+            build();
 
     public ContentNodeConverter( final ContentTypeResolver contentTypeResolver )
     {
@@ -81,6 +82,6 @@ public final class ContentNodeConverter
         {
             return contentType.getName();
         }
-        return TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
+        return SYSTEM_TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
     }
 }
