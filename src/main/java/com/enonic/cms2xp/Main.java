@@ -3,6 +3,9 @@ package com.enonic.cms2xp;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+
+import com.google.common.base.Preconditions;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.config.MainConfigLoader;
@@ -11,6 +14,11 @@ import com.enonic.xp.toolbox.app.InitAppCommand;
 
 public final class Main
 {
+
+    private final static String DEFAULT_APPLICATION_NAME = "com.enonic.xp.app.myApp";
+
+    public static final String DEFAULT_APP_REPO = "starter-base";
+
     public static void main( final String... args )
         throws Exception
     {
@@ -18,6 +26,7 @@ public final class Main
         final File configFile = new File( args[0] );
         final MainConfigLoader loader = new MainConfigLoader( configFile.toURI().toURL() );
         final MainConfig config = loader.load();
+        validateConfig( config );
 
         //TODO Remove
         FileUtils.deleteDirectory( config.target.exportDir );
@@ -34,8 +43,29 @@ public final class Main
     {
         final InitAppCommand initAppCommand = new InitAppCommand();
         initAppCommand.destination = config.target.applicationDir.getAbsolutePath();
-        initAppCommand.name = "com.enonic.xp.app.myApp";
-        initAppCommand.repository = "starter-base";
+        initAppCommand.name = config.target.applicationName;
+        initAppCommand.repository = config.target.applicationRepo;
         initAppCommand.run();
+    }
+
+    private static void validateConfig( final MainConfig config )
+    {
+        Preconditions.checkArgument( StringUtils.isNotBlank( config.source.jdbcUrl ), "Missing parameter 'jdbcUrl' in config.xml" );
+        Preconditions.checkArgument( StringUtils.isNotBlank( config.source.jdbcDriver ), "Missing parameter 'jdbcDriver' in config.xml" );
+        Preconditions.checkArgument( config.source.blobStoreDir != null, "Missing parameter 'blobStoreDir' in config.xml" );
+        Preconditions.checkArgument( config.source.blobStoreDir.exists(), "Blob store directory '%s' not found",
+                                     config.source.blobStoreDir.getAbsolutePath() );
+
+        Preconditions.checkArgument( config.target.applicationDir != null, "Missing parameter 'applicationDir' in config.xml" );
+        Preconditions.checkArgument( config.target.exportDir != null, "Missing parameter 'exportDir' in config.xml" );
+
+        if ( config.target.applicationName == null )
+        {
+            config.target.applicationName = DEFAULT_APPLICATION_NAME;
+        }
+        if ( config.target.applicationRepo == null )
+        {
+            config.target.applicationRepo = DEFAULT_APP_REPO;
+        }
     }
 }

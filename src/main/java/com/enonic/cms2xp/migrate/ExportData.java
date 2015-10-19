@@ -39,15 +39,16 @@ public final class ExportData
 {
     private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
 
-    private final static ApplicationKey APPLICATION_KEY = ApplicationKey.from( "com.enonic.xp.app.myApp" );
-
     private final MainConfig config;
 
     private final NodeExporter nodeExporter;
 
+    private final ApplicationKey applicationKey;
+
     public ExportData( final MainConfig config )
     {
         this.config = config;
+        this.applicationKey = ApplicationKey.from( config.target.applicationName );
 
         final Path nodeTargetDirectory = this.config.target.exportDir.toPath();
         nodeExporter = NodeExporter.create().
@@ -73,7 +74,7 @@ public final class ExportData
         try
         {
             //Retrieves, converts and exports the ContentTypes
-            final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( APPLICATION_KEY );
+            final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( this.applicationKey );
             exportContentTypes( session, contentTypeConverter );
 
             //Retrieves, converts and exports the Categories
@@ -103,7 +104,7 @@ public final class ExportData
 
         //Adds the Content Type page
         final ContentType pageContentType = ContentType.create().
-            name( ContentTypeName.from( APPLICATION_KEY, "page" ) ).
+            name( ContentTypeName.from( this.applicationKey, "page" ) ).
             displayName( "page" ).
             description( "" ).
             createdTime( Instant.now() ).
@@ -154,6 +155,6 @@ public final class ExportData
 
         //Converts and exports the CategoryEntities
         logger.info( "Exporting sites and children..." );
-        new SiteExporter( nodeExporter, APPLICATION_KEY ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
+        new SiteExporter( nodeExporter, this.applicationKey ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 }
