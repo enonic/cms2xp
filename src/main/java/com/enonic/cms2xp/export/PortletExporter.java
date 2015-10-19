@@ -25,6 +25,18 @@ public class PortletExporter
 
     public void export( Iterable<PortletEntity> portletEntities )
     {
+        //TODO Remove
+        try
+        {
+            copy( "/templates/pages/default/default.js", "../pages/default/default.js" );
+            copy( "/templates/pages/default/default.html", "../pages/default/default.html" );
+            copy( "/templates/pages/default/default.xml", "../pages/default/default.xml" );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Error while exporting default page", e );
+        }
+
         for ( PortletEntity portletEntity : portletEntities )
         {
             String portletEntityName = portletEntity.getName();
@@ -32,22 +44,22 @@ public class PortletExporter
 
             try
             {
-                final URL partControllerUrl = getClass().getResource( "/templates/parts/xsl-part.js" );
-                final File partControllerTarget = new File( target, portletEntityName + "/" + portletEntityName + ".js" );
-                FileUtils.copyURLToFile( partControllerUrl, partControllerTarget );
-
-                final URL partDescriptorUrl = getClass().getResource( "/templates/parts/xsl-part.xml" );
-                final File partDescriptorTarget = new File( target, portletEntityName + "/" + portletEntityName + ".xml" );
-                FileUtils.copyURLToFile( partDescriptorUrl, partDescriptorTarget );
-
-                final URL partXslUrl = getClass().getResource( "/templates/parts/xsl-part.xsl" );
-                final File partXslTarget = new File( target, portletEntityName + "/xsl-part.xsl" );
-                FileUtils.copyURLToFile( partXslUrl, partXslTarget );
+                copy( "/templates/parts/xsl-part/xsl-part.js", portletEntityName + "/" + portletEntityName + ".js" );
+                copy( "/templates/parts/xsl-part/xsl-part.xml", portletEntityName + "/" + portletEntityName + ".xml" );
+                copy( "/templates/parts/xsl-part/xsl-part.xsl", portletEntityName + "/xsl-part.xsl" );
             }
-            catch ( IOException e )
+            catch ( Exception e )
             {
                 logger.error( "Error while exporting PortletEntity \"" + portletEntityName + "\"", e );
             }
         }
+    }
+
+    private void copy( String sourcePath, String targetPath )
+        throws IOException
+    {
+        final URL partControllerUrl = getClass().getResource( sourcePath );
+        final File partControllerTarget = new File( target, targetPath );
+        FileUtils.copyURLToFile( partControllerUrl, partControllerTarget );
     }
 }
