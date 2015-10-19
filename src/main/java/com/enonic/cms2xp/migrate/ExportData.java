@@ -1,9 +1,12 @@
 package com.enonic.cms2xp.migrate;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +86,9 @@ public final class ExportData
             //Retrieves, converts and exports the Sites
             exportSites( session );
 
+            //Exports the resources
+            exportResources();
+
             //Writes additional export information
             nodeExporter.writeExportProperties( "6.0.0" );
         }
@@ -156,5 +162,22 @@ public final class ExportData
         //Converts and exports the CategoryEntities
         logger.info( "Exporting sites and children..." );
         new SiteExporter( nodeExporter, this.applicationKey ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
+    }
+
+    private void exportResources()
+    {
+        File source = config.source.resourcesDir;
+        File target = new File( config.target.applicationDir, "src/main/resources/site/assets" );
+        if ( source.isDirectory() )
+        {
+            try
+            {
+                FileUtils.copyDirectory( source, target );
+            }
+            catch ( IOException e )
+            {
+                logger.error( "Error while exporting resource.", e );
+            }
+        }
     }
 }
