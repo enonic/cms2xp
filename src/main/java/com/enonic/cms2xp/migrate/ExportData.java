@@ -179,9 +179,10 @@ public final class ExportData
         final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
         logger.info( siteEntities.size() + " sites retrieved." );
 
-        //Converts and exports the CategoryEntities
+        //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
-        new SiteExporter( nodeExporter, this.applicationKey ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
+        final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
+        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 
     private void exportResources()

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <page>
-  <display-name>default</display-name>
+  <display-name>{{displayName}}</display-name>
   <config>
   </config>
   <regions>
-    <region name="main"/>
+    {{#regions}}
+    <region name="{{.}}"/>
+    {{/regions}}
   </regions>
 </page>
