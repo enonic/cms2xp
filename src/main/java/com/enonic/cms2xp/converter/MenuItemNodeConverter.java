@@ -31,7 +31,7 @@ public class MenuItemNodeConverter
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, menuItem.getName() );
-        data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
+        data.setString( ContentPropertyNames.TYPE, ContentTypeName.from( this.applicationKey, "page" ).toString() );
         if ( menuItem.getLanguage() != null )
         {
             data.setString( ContentPropertyNames.LANGUAGE, menuItem.getLanguage().getCode() );
