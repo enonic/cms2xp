@@ -101,6 +101,10 @@ public class DataEntryValuesConverter
     private Value toValue( final DateDataEntry dateDataEntry )
     {
         final Date value = dateDataEntry.getValue();
+        if ( value == null )
+        {
+            return null;
+        }
         return ValueFactory.newLocalDate( value.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate() );
     }
 

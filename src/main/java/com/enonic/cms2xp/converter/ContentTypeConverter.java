@@ -29,6 +29,7 @@ import com.enonic.cms.core.content.contenttype.ContentTypeConfig;
 import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.content.contenttype.CtySetConfig;
+import com.enonic.cms.core.content.contenttype.InvalidContentTypeConfigException;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.CheckboxDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType;
@@ -81,21 +82,36 @@ public final class ContentTypeConverter
 
     private ContentType convert( final ContentTypeEntity contentTypeEntity )
     {
+        Form form;
+        try
+        {
+            form = convertConfig( contentTypeEntity.getContentTypeConfig() );
+        }
+        catch ( InvalidContentTypeConfigException e )
+        {
+            logger.warn( "Cannot get config for content type " + contentTypeEntity.getName() );
+            form = Form.create().build();
+        }
+
         final ContentType.Builder contentType = ContentType.create().
             name( ContentTypeName.from( appKey, contentTypeEntity.getName() ) ).
             displayName( contentTypeEntity.getName() ).
             description( contentTypeEntity.getDescription() ).
             createdTime( contentTypeEntity.getTimestamp().toInstant() ).
             superType( ContentTypeName.unstructured() ).
-            form( convertConfig( contentTypeEntity.getContentTypeConfig() ) );
+            form( form );
         return contentType.build();
     }
 
     private Form convertConfig( final ContentTypeConfig contentTypeConfig )
     {
+        if ( contentTypeConfig == null )
+        {
+            return Form.create().build();
+        }
+
         final Form.Builder form = Form.create();
         final List<CtySetConfig> setConfig = contentTypeConfig.getSetConfig();
-
         for ( CtySetConfig ctyConfig : setConfig )
         {
             final FormItem formItem;

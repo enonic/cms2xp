@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import com.google.common.io.ByteSource;
 
@@ -48,7 +49,7 @@ public class FileExportWriter
 
         try
         {
-            Files.copy( source.openStream(), itemPath );
+            Files.copy( source.openStream(), itemPath, StandardCopyOption.REPLACE_EXISTING );
         }
         catch ( IOException e )
         {

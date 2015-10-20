@@ -5,6 +5,8 @@ import java.util.Set;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
@@ -34,6 +36,8 @@ import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
 
 public class ContentExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( ContentExporter.class );
+
     private final NodeExporter nodeExporter;
 
     private final FileBlobStore fileBlobStore;
@@ -74,7 +78,14 @@ public class ContentExporter
             }
 
             //Exports the node
-            nodeExporter.exportNode( contentNode );
+            try
+            {
+                nodeExporter.exportNode( contentNode );
+            }
+            catch ( Exception e )
+            {
+                logger.warn( "Could not export node '" + contentNode.path() + "'", e );
+            }
         }
     }
 
@@ -90,6 +101,12 @@ public class ContentExporter
 
             final BlobKey blobKey = new BlobKey( binaryData.getBlobKey() );
             final BlobRecord blob = fileBlobStore.getRecord( blobKey );
+            if ( blob == null )
+            {
+                logger.warn(
+                    "Could not find Blob with key [" + binaryData.getBlobKey() + "] in content '" + content.getPathAsString() + "'" );
+                continue;
+            }
 
             final ByteSource byteSource = Files.asByteSource( blob.getAsFile() );
             final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
@@ -149,6 +166,11 @@ public class ContentExporter
 
         final BlobKey blobKey = new BlobKey( binaryData.getBlobKey() );
         final BlobRecord blob = fileBlobStore.getRecord( blobKey );
+        if ( blob == null )
+        {
+            logger.warn( "Could not find Blob with key [" + binaryData.getBlobKey() + "] in content '" + content.getPathAsString() + "'" );
+            return;
+        }
 
         final ByteSource byteSource = Files.asByteSource( blob.getAsFile() );
         final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );

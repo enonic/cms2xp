@@ -2,6 +2,9 @@ package com.enonic.cms2xp.converter;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.ImmutableMap;
 
 import com.enonic.xp.content.ContentPropertyNames;
@@ -21,6 +24,7 @@ import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 public final class ContentNodeConverter
     extends AbstractNodeConverter
 {
+    private final static Logger logger = LoggerFactory.getLogger( ContentNodeConverter.class );
 
     private final NodeIdRegistry nodeIdRegistry;
 
@@ -64,11 +68,18 @@ public final class ContentNodeConverter
         final ContentVersionEntity mainVersion = content.getMainVersion();
         if ( mainVersion != null )
         {
-            final ContentData contentData = mainVersion.getContentData();
-            if ( contentData instanceof DataEntry )
+            try
             {
-                DataEntry dataEntry = (DataEntry) contentData;
-                data.setProperty( ContentPropertyNames.DATA, dataEntryValuesConverter.toValue( dataEntry ) );
+                final ContentData contentData = mainVersion.getContentData();
+                if ( contentData instanceof DataEntry )
+                {
+                    DataEntry dataEntry = (DataEntry) contentData;
+                    data.setProperty( ContentPropertyNames.DATA, dataEntryValuesConverter.toValue( dataEntry ) );
+                }
+            }
+            catch ( Exception e )
+            {
+                logger.warn( "Cannot get ContentData from '" + content.getPathAsString() + "'", e );
             }
         }
         return data;
