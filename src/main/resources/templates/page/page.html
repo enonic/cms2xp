@@ -10,15 +10,16 @@
 
 <body data-portal-component-type="page" data-th-class="${editable}? 'edit'">
 
+{{#regions}}
+<div id="{{.}}Region" data-portal-region="{{.}}">
 
-<div id="mainRegion" data-portal-region="main">
-
-    Components in main:
-    <div data-th-if="${reqContent.page.regions['main']}" data-th-remove="tag">
-        <div data-th-each="component : ${reqContent.page.regions['main'].components}" data-th-remove="tag">
+    Components in {{.}}:
+    <div data-th-if="${reqContent.page.regions['{{.}}']}" data-th-remove="tag">
+        <div data-th-each="component : ${reqContent.page.regions['{{.}}'].components}" data-th-remove="tag">
             <div data-portal-component="${component.path}" data-th-remove="tag"></div>
         </div>
     </div>
 </div>
+{{/regions}}
 </body>
 </html>

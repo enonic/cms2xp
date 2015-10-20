@@ -1,7 +1,7 @@
 var portal = require('/lib/xp/portal');
 var thymeleaf = require('/lib/xp/thymeleaf');
 var parentPath = './';
-var view = resolve(parentPath + 'default.html');
+var view = resolve(parentPath + '{{name}}.html');
 
 function handleGet(req) {
 
@@ -13,7 +13,9 @@ function handleGet(req) {
         context: req,
         site: site,
         reqContent: reqContent,
-        mainRegion: reqContent.page.regions["main"],
+        {{#regions}}
+        {{.}}Region: reqContent.page.regions["{{.}}"],
+        {{/regions}}
         editable: editMode
     };
     var body = thymeleaf.render(view, params);
