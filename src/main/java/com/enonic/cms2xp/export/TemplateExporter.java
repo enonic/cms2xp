@@ -57,38 +57,43 @@ public class TemplateExporter
         {
             for ( PageTemplateEntity pageTemplateEntity : pageTemplateEntities )
             {
+
                 Node pageTemplateNode = pageTemplateNodeConverter.toNode( pageTemplateEntity );
                 pageTemplateNode = Node.create( pageTemplateNode ).
                     parentPath( templateFolderNode.path() ).
                     build();
                 nodeExporter.exportNode( pageTemplateNode );
 
-                final String pageTemplateDisplayName = pageTemplateEntity.getName();
-                final String pageTemplateName = new ContentPathNameGenerator().generatePathName( pageTemplateDisplayName );
-
-                final List<String> pageTemplateRegions =
-                    pageTemplateEntity.getPageTemplateRegions().stream().map( PageTemplateRegionEntity::getName ).sorted().collect(
-                        Collectors.toList() );
-                Map<String, Object> mapping = new HashMap<>();
-                mapping.put( "name", pageTemplateName );
-                mapping.put( "displayName", pageTemplateDisplayName );
-                mapping.put( "regions", pageTemplateRegions );
-
-                try
-                {
-                    copy( "/templates/page/page.html", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".html" ),
-                          mapping );
-                    copy( "/templates/page/page.js", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".js" ),
-                          mapping );
-                    copy( "/templates/page/page.xml", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".xml" ),
-                          mapping );
-                }
-                catch ( IOException e )
-                {
-                    logger.error( "Cannot write page \"" + pageTemplateName + "\"", e );
-                }
-
+                exportAsPage( pageTemplateEntity );
             }
+        }
+    }
+
+    private void exportAsPage( final PageTemplateEntity pageTemplateEntity )
+    {
+        final String pageTemplateDisplayName = pageTemplateEntity.getName();
+        final String pageTemplateName = new ContentPathNameGenerator().generatePathName( pageTemplateDisplayName );
+
+        final List<String> pageTemplateRegions = pageTemplateEntity.getPageTemplateRegions().
+            stream().
+            map( PageTemplateRegionEntity::getName ).
+            sorted().
+            collect( Collectors.toList() );
+
+        Map<String, Object> mapping = new HashMap<>();
+        mapping.put( "name", pageTemplateName );
+        mapping.put( "displayName", pageTemplateDisplayName );
+        mapping.put( "regions", pageTemplateRegions );
+
+        try
+        {
+            copy( "/templates/page/page.html", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".html" ), mapping );
+            copy( "/templates/page/page.js", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".js" ), mapping );
+            copy( "/templates/page/page.xml", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".xml" ), mapping );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Cannot write page \"" + pageTemplateName + "\"", e );
         }
     }
 }
