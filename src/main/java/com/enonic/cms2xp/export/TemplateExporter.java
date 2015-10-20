@@ -58,12 +58,14 @@ public class TemplateExporter
             for ( PageTemplateEntity pageTemplateEntity : pageTemplateEntities )
             {
 
+                //Exports the PageTemplateEntity as a template node
                 Node pageTemplateNode = pageTemplateNodeConverter.toNode( pageTemplateEntity );
                 pageTemplateNode = Node.create( pageTemplateNode ).
                     parentPath( templateFolderNode.path() ).
                     build();
                 nodeExporter.exportNode( pageTemplateNode );
 
+                //Exports the PageTemplateEntity as a page
                 exportAsPage( pageTemplateEntity );
             }
         }
@@ -71,9 +73,9 @@ public class TemplateExporter
 
     private void exportAsPage( final PageTemplateEntity pageTemplateEntity )
     {
+        //Prepares the mappings
         final String pageTemplateDisplayName = pageTemplateEntity.getName();
         final String pageTemplateName = new ContentPathNameGenerator().generatePathName( pageTemplateDisplayName );
-
         final List<String> pageTemplateRegions = pageTemplateEntity.getPageTemplateRegions().
             stream().
             map( PageTemplateRegionEntity::getName ).
@@ -85,6 +87,7 @@ public class TemplateExporter
         mapping.put( "displayName", pageTemplateDisplayName );
         mapping.put( "regions", pageTemplateRegions );
 
+        //Copies page templates and applies the mapping on these file
         try
         {
             copy( "/templates/page/page.html", new File( pageDirectory, pageTemplateName + "/" + pageTemplateName + ".html" ), mapping );
