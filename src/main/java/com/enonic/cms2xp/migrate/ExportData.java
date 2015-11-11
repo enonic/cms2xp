@@ -22,6 +22,7 @@ import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentTypeExporter;
 import com.enonic.cms2xp.export.PortletExporter;
 import com.enonic.cms2xp.export.SiteExporter;
+import com.enonic.cms2xp.export.UserStoreExporter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
@@ -49,6 +50,8 @@ public final class ExportData
 
     private final NodeExporter nodeExporter;
 
+    private final NodeExporter userNodeExporter;
+
     private final ApplicationKey applicationKey;
 
     public ExportData( final MainConfig config )
@@ -61,6 +64,14 @@ public final class ExportData
             sourceNodePath( NodePath.ROOT ).
             rootDirectory( nodeTargetDirectory ).
             targetDirectory( nodeTargetDirectory ).
+            exportNodeIds( true ).
+            build();
+
+        final Path userNodeTargetDirectory = this.config.target.userExportDir.toPath();
+        userNodeExporter = NodeExporter.create().
+            sourceNodePath( NodePath.ROOT ).
+            rootDirectory( userNodeTargetDirectory ).
+            targetDirectory( userNodeTargetDirectory ).
             exportNodeIds( true ).
             build();
     }
@@ -79,6 +90,9 @@ public final class ExportData
 
         try
         {
+            //Retrieves, converts and exports user stores
+            exportUserStores( session );
+
             //Retrieves, converts and exports the ContentTypes
             final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( this.applicationKey );
             exportContentTypes( session, contentTypeConverter );
@@ -200,5 +214,11 @@ public final class ExportData
                 logger.error( "Error while exporting resource.", e );
             }
         }
+    }
+
+    private void exportUserStores( final Session session )
+    {
+        final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter );
+        exporter.export();
     }
 }

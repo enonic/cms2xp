@@ -6,6 +6,8 @@ public final class TargetConfig
 {
     public File exportDir;
 
+    public File userExportDir;
+
     public File applicationDir;
 
     public String applicationName;
