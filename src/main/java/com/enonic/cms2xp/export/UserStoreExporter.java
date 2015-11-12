@@ -44,14 +44,11 @@ public class UserStoreExporter
 
     private final Multimap<PrincipalKey, PrincipalKey> members;
 
-    private final Map<GroupKey, PrincipalKey> groupTable;
-
-    private final Map<UserKey, PrincipalKey> usersTable;
-
-
     private final Session session;
 
-    public UserStoreExporter( final Session session, final NodeExporter nodeExporter )
+    private final PrincipalKeyResolver principalKeyResolver;
+
+    public UserStoreExporter( final Session session, final NodeExporter nodeExporter, final PrincipalKeyResolver principalKeyResolver )
     {
         this.session = session;
         this.nodeExporter = nodeExporter;
@@ -59,8 +56,7 @@ public class UserStoreExporter
         this.userStores = new HashMap<>();
         this.userStoreMembers = new HashMap<>();
         this.members = ArrayListMultimap.create();
-        this.groupTable = new HashMap<>();
-        this.usersTable = new HashMap<>();
+        this.principalKeyResolver = principalKeyResolver;
     }
 
     public void export()
@@ -84,7 +80,7 @@ public class UserStoreExporter
             for ( UserEntity userEntity : userEntities )
             {
                 final User user = converter.convert( userEntity );
-                usersTable.put( userEntity.getKey(), user.getKey() );
+                principalKeyResolver.add( userEntity.getKey(), user.getKey() );
                 principals.add( user );
             }
 
@@ -111,7 +107,7 @@ public class UserStoreExporter
                 {
                     final Group group = converter.convert( groupEntity );
                     principals.add( group );
-                    groupTable.put( groupEntity.getGroupKey(), group.getKey() );
+                    principalKeyResolver.add( groupEntity.getGroupKey(), group.getKey() );
                 }
             }
 
@@ -121,8 +117,8 @@ public class UserStoreExporter
                 final Collection<UserKey> memberKeys = groupUserMembers.get( groupKey );
                 for ( UserKey memberKey : memberKeys )
                 {
-                    final PrincipalKey member = usersTable.get( memberKey );
-                    final PrincipalKey group = groupTable.get( groupKey );
+                    final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
+                    final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
                     if ( group != null && member != null )
                     {
                         this.members.put( group, member );
@@ -135,8 +131,8 @@ public class UserStoreExporter
                 final Collection<GroupKey> memberKeys = groupMembers.get( groupKey );
                 for ( GroupKey memberKey : memberKeys )
                 {
-                    final PrincipalKey member = groupTable.get( memberKey );
-                    final PrincipalKey group = groupTable.get( groupKey );
+                    final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
+                    final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
                     if ( group != null && member != null )
                     {
                         this.members.put( group, member );
@@ -170,13 +166,4 @@ public class UserStoreExporter
         }
     }
 
-    public PrincipalKey getPrincipal( final UserKey userKey )
-    {
-        return this.usersTable.get( userKey );
-    }
-
-    public PrincipalKey getPrincipal( final GroupKey groupKey )
-    {
-        return this.groupTable.get( groupKey );
-    }
 }

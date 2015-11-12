@@ -22,6 +22,7 @@ import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.ContentTypeExporter;
 import com.enonic.cms2xp.export.PortletExporter;
+import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.cms2xp.export.SiteExporter;
 import com.enonic.cms2xp.export.UserStoreExporter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
@@ -72,11 +73,14 @@ public final class ExportData
 
     private final ContentKeyResolver contentKeyResolver;
 
+    private final PrincipalKeyResolver principalKeyResolver;
+
     public ExportData( final MainConfig config )
     {
         this.config = config;
         this.applicationKey = ApplicationKey.from( config.target.applicationName );
         this.contentKeyResolver = new ContentKeyResolver();
+        this.principalKeyResolver = new PrincipalKeyResolver();
 
         final Path nodeTargetDirectory = this.config.target.exportDir.toPath();
         nodeExporter = NodeExporter.create().
@@ -256,7 +260,7 @@ public final class ExportData
 
     private void exportUserStores( final Session session )
     {
-        final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter );
+        final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter, this.principalKeyResolver );
         exporter.export();
     }
 }
