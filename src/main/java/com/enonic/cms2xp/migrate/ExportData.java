@@ -19,6 +19,7 @@ import com.enonic.cms2xp.converter.ContentTypeConverter;
 import com.enonic.cms2xp.converter.ContentTypeResolver;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
+import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.ContentTypeExporter;
 import com.enonic.cms2xp.export.PortletExporter;
 import com.enonic.cms2xp.export.SiteExporter;
@@ -31,6 +32,10 @@ import com.enonic.cms2xp.hibernate.SiteRetriever;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.form.Form;
+import com.enonic.xp.form.Input;
+import com.enonic.xp.icon.Icon;
+import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -46,6 +51,17 @@ public final class ExportData
 {
     private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
 
+    private static final Form SECTION_FORM = Form.create().
+        addFormItem( Input.create().
+            name( "sectionContents" ).
+            label( "Contents" ).
+            helpText( "Add contents to section" ).
+            inputType( InputTypeName.CONTENT_SELECTOR ).
+            required( false ).
+            multiple( true ).
+            build() ).
+        build();
+
     private final MainConfig config;
 
     private final NodeExporter nodeExporter;
@@ -54,10 +70,13 @@ public final class ExportData
 
     private final ApplicationKey applicationKey;
 
+    private final ContentKeyResolver contentKeyResolver;
+
     public ExportData( final MainConfig config )
     {
         this.config = config;
         this.applicationKey = ApplicationKey.from( config.target.applicationName );
+        this.contentKeyResolver = new ContentKeyResolver();
 
         final Path nodeTargetDirectory = this.config.target.exportDir.toPath();
         nodeExporter = NodeExporter.create().
@@ -131,20 +150,37 @@ public final class ExportData
         //Adds the Content Type page
         final ContentType pageContentType = ContentType.create().
             name( ContentTypeName.from( this.applicationKey, "page" ) ).
-            displayName( "page" ).
+            displayName( "Page" ).
             description( "" ).
             createdTime( Instant.now() ).
-            superType( ContentTypeName.unstructured() ).
+            superType( ContentTypeName.structured() ).
+            icon( loadIcon( "page" ) ).
             build();
+        //Adds the Content Type section
+        final ContentType sectionContentType = ContentType.create().
+            name( ContentTypeName.from( this.applicationKey, "section" ) ).
+            displayName( "Section" ).
+            description( "" ).
+            createdTime( Instant.now() ).
+            superType( ContentTypeName.structured() ).
+            form( SECTION_FORM ).
+            icon( loadIcon( "section" ) ).
+            build();
+
         ImmutableList.Builder<ContentType> contentTypeListBuilder = ImmutableList.builder();
         contentTypeList = contentTypeListBuilder.addAll( contentTypeList ).
-            add( pageContentType ).
+            add( pageContentType ).add( sectionContentType ).
             build();
 
         //Exports the ContentTypes
         logger.info( "Exporting content types..." );
         final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
         new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
+    }
+
+    private Icon loadIcon( final String name )
+    {
+        return Icon.from( getClass().getResourceAsStream( "/icons/" + name + ".png" ), "image/png", Instant.now() );
     }
 
     private void exportPortlets( final Session session )
@@ -180,7 +216,8 @@ public final class ExportData
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
         final ContentNodeConverter contentNodeConverter = new ContentNodeConverter( contentTypeResolver );
-        final ContentExporter contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter );
+        final ContentExporter contentExporter =
+            new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
@@ -196,7 +233,8 @@ public final class ExportData
         //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
-        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey ).export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
+        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey, this.contentKeyResolver ).export( siteEntities,
+                                                                                                               ContentConstants.CONTENT_ROOT_PATH );
     }
 
     private void exportResources()

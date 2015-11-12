@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.enonic.cms2xp.export.xml.XmlContentTypeSerializer;
+import com.enonic.xp.icon.Icon;
 import com.enonic.xp.schema.content.ContentType;
 
 public class ContentTypeExporter
@@ -32,6 +33,12 @@ public class ContentTypeExporter
             {
                 final Path dir = Files.createDirectory( target.resolve( ctName ) );
                 Files.write( dir.resolve( ctName + ".xml" ), ct.getBytes( StandardCharsets.UTF_8 ) );
+
+                final Icon icon = contentType.getIcon();
+                if ( icon != null )
+                {
+                    Files.write( dir.resolve( ctName + ".png" ), icon.toByteArray() );
+                }
             }
             catch ( Exception e )
             {

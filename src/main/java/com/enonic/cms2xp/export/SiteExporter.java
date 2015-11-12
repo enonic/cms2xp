@@ -24,12 +24,13 @@ public class SiteExporter
 
     private final MenuItemNodeConverter menuItemNodeConverter;
 
-    public SiteExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey )
+    public SiteExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
+                         final ContentKeyResolver contentKeyResolver )
     {
         this.nodeExporter = nodeExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.templateExporter = new TemplateExporter( nodeExporter, pageDirectory, applicationKey );
-        this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey );
+        this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey, contentKeyResolver );
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )

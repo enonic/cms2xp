@@ -44,6 +44,11 @@ public class UserStoreExporter
 
     private final Multimap<PrincipalKey, PrincipalKey> members;
 
+    private final Map<GroupKey, PrincipalKey> groupTable;
+
+    private final Map<UserKey, PrincipalKey> usersTable;
+
+
     private final Session session;
 
     public UserStoreExporter( final Session session, final NodeExporter nodeExporter )
@@ -54,6 +59,8 @@ public class UserStoreExporter
         this.userStores = new HashMap<>();
         this.userStoreMembers = new HashMap<>();
         this.members = ArrayListMultimap.create();
+        this.groupTable = new HashMap<>();
+        this.usersTable = new HashMap<>();
     }
 
     public void export()
@@ -63,8 +70,6 @@ public class UserStoreExporter
 
         final Multimap<GroupKey, UserKey> groupUserMembers = ArrayListMultimap.create();
         final Multimap<GroupKey, GroupKey> groupMembers = ArrayListMultimap.create();
-        final Map<GroupKey, PrincipalKey> groupTable = new HashMap<>();
-        final Map<UserKey, PrincipalKey> usersTable = new HashMap<>();
 
         for ( UserStoreEntity us : userStoreEntities )
         {
@@ -163,5 +168,15 @@ public class UserStoreExporter
                 nodeExporter.exportNode( converter.convertToNode( principal, memberKeys ) );
             }
         }
+    }
+
+    public PrincipalKey getPrincipal( final UserKey userKey )
+    {
+        return this.usersTable.get( userKey );
+    }
+
+    public PrincipalKey getPrincipal( final GroupKey groupKey )
+    {
+        return this.groupTable.get( groupKey );
     }
 }

@@ -44,19 +44,22 @@ public class ContentExporter
 
     private final ContentNodeConverter contentNodeConverter;
 
+    private final ContentKeyResolver contentKeyResolver;
+
     public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore,
-                            final ContentNodeConverter contentNodeConverter )
+                            final ContentNodeConverter contentNodeConverter, final ContentKeyResolver contentKeyResolver )
     {
         this.nodeExporter = nodeExporter;
         this.fileBlobStore = fileBlobStore;
         this.contentNodeConverter = contentNodeConverter;
+        this.contentKeyResolver = contentKeyResolver;
     }
 
     public void export( final Iterable<ContentEntity> contents, final NodePath parentNode )
     {
         for ( ContentEntity content : contents )
         {
-            //Converts the category to a node
+            //Converts the content to a node
             Node contentNode = contentNodeConverter.toNode( content );
             contentNode = Node.create( contentNode ).
                 parentPath( parentNode ).
@@ -86,6 +89,7 @@ public class ContentExporter
             {
                 logger.warn( "Could not export node '" + contentNode.path() + "'", e );
             }
+            contentKeyResolver.add( content.getKey(), contentNode.id() );
         }
     }
 
