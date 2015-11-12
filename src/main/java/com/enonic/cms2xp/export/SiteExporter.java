@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.enonic.cms2xp.converter.MenuItemNodeConverter;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
+import com.enonic.cms2xp.hibernate.PortletRetriever;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.node.Node;
@@ -13,6 +14,7 @@ import com.enonic.xp.node.NodePath;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
+import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public class SiteExporter
 {
@@ -24,13 +26,19 @@ public class SiteExporter
 
     private final MenuItemNodeConverter menuItemNodeConverter;
 
+    private final ApplicationKey applicationKey;
+
+    private final PortletRetriever portletRetriever;
+
     public SiteExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
-                         final ContentKeyResolver contentKeyResolver )
+                         final ContentKeyResolver contentKeyResolver, final PortletRetriever portletRetriever )
     {
         this.nodeExporter = nodeExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.templateExporter = new TemplateExporter( nodeExporter, pageDirectory, applicationKey );
         this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey, contentKeyResolver );
+        this.portletRetriever = portletRetriever;
+        this.applicationKey = applicationKey;
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )
@@ -38,19 +46,22 @@ public class SiteExporter
         for ( SiteEntity siteEntity : siteEntities )
         {
             //Converts the site to a node
-            Node node = siteNodeConverter.convertToNode( siteEntity );
-            node = Node.create( node ).
+            Node siteNode = siteNodeConverter.convertToNode( siteEntity );
+            siteNode = Node.create( siteNode ).
                 parentPath( parentNodePath ).
                 build();
 
             //Exports the node
-            nodeExporter.exportNode( node );
+            nodeExporter.exportNode( siteNode );
 
             //Calls the export on the page templates
-            templateExporter.export( siteEntity, node.path() );
+            templateExporter.export( siteEntity, siteNode.path() );
 
             //Export site menu items
-            exportMenuItems( node, siteEntity.getTopMenuItems() );
+            exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
+
+            //Export portlets as fragments
+            exportFragments( siteEntity, siteNode );
         }
     }
 
@@ -69,5 +80,13 @@ public class SiteExporter
 
             exportMenuItems( node, menuItemEntity.getChildren() );
         }
+    }
+
+    private void exportFragments( final SiteEntity siteEntity, final Node siteNode )
+    {
+        final FragmentExporter fragmentExporter = new FragmentExporter( nodeExporter, applicationKey );
+        final List<PortletEntity> portletEntities = portletRetriever.retrievePortlets( siteEntity.getKey() );
+
+        fragmentExporter.export( portletEntities, siteNode.path() );
     }
 }

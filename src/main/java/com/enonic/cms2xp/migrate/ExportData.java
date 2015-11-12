@@ -2,6 +2,7 @@ package com.enonic.cms2xp.migrate;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -170,10 +171,18 @@ public final class ExportData
             form( SECTION_FORM ).
             icon( loadIcon( "section" ) ).
             build();
+        final ContentType fragmentContentType = ContentType.create().
+            name( ContentTypeName.from( this.applicationKey, "fragment" ) ).
+            displayName( "Fragment" ).
+            description( "" ).
+            createdTime( Instant.now() ).
+            superType( ContentTypeName.structured() ).
+            icon( loadIcon( "fragment" ) ).
+            build();
 
         ImmutableList.Builder<ContentType> contentTypeListBuilder = ImmutableList.builder();
         contentTypeList = contentTypeListBuilder.addAll( contentTypeList ).
-            add( pageContentType ).add( sectionContentType ).
+            add( pageContentType ).add( sectionContentType ).add( fragmentContentType ).
             build();
 
         //Exports the ContentTypes
@@ -184,14 +193,19 @@ public final class ExportData
 
     private Icon loadIcon( final String name )
     {
-        return Icon.from( getClass().getResourceAsStream( "/icons/" + name + ".png" ), "image/png", Instant.now() );
+        final InputStream resource = getClass().getResourceAsStream( "/icons/" + name + ".png" );
+        if ( resource == null )
+        {
+            return null;
+        }
+        return Icon.from( resource, "image/png", Instant.now() );
     }
 
     private void exportPortlets( final Session session )
     {
         //Retrieves the PortletEntity
         logger.info( "Retrieving portlets..." );
-        final List<PortletEntity> portletEntities = new PortletRetriever().retrievePortlets( session );
+        final List<PortletEntity> portletEntities = new PortletRetriever( session ).retrievePortlets();
         logger.info( portletEntities.size() + " portlets retrieved." );
 
         //Exports the PortletEntity as parts
@@ -237,8 +251,9 @@ public final class ExportData
         //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
-        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey, this.contentKeyResolver ).export( siteEntities,
-                                                                                                               ContentConstants.CONTENT_ROOT_PATH );
+        final PortletRetriever portletRetriever = new PortletRetriever( session );
+        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey, this.contentKeyResolver, portletRetriever ).
+            export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 
     private void exportResources()

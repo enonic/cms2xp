@@ -5,6 +5,7 @@ import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
+import com.enonic.xp.node.NodeName;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.structure.SiteEntity;
@@ -14,7 +15,8 @@ public final class SiteTemplatesNodeConverter
 {
     public Node toNode( final SiteEntity siteEntity )
     {
-        return createNode( new NodeId(), "Templates", toData( siteEntity ) );
+        final Node node = createNode( new NodeId(), "_templates", toData( siteEntity ) );
+        return Node.create( node ).name( NodeName.from( "_templates" ) ).build();
     }
 
     private PropertyTree toData( final SiteEntity siteEntity )
