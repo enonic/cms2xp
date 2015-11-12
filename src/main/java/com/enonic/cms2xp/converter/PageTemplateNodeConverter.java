@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.converter;
 
+import java.util.Set;
+
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
@@ -11,7 +13,9 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
+import com.enonic.cms.core.structure.page.template.PageTemplatePortletEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
+import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public final class PageTemplateNodeConverter
     extends AbstractNodeConverter
@@ -44,19 +48,38 @@ public final class PageTemplateNodeConverter
         data.setSet( ContentPropertyNames.DATA, subData );
 
         final PropertySet pageData = new PropertySet();
-        final String name = new ContentPathNameGenerator().generatePathName( pageTemplateEntity.getName() );
+        final String name = nameOf( pageTemplateEntity.getName() );
         pageData.setProperty( "controller", ValueFactory.newString( applicationKey.toString() + ":" + name ) );
         pageData.setProperty( "template", ValueFactory.newReference( null ) );
-        final PropertySet regionsData = new PropertySet();
         for ( PageTemplateRegionEntity region : pageTemplateEntity.getPageTemplateRegions() )
         {
+            final PropertySet regionsData = new PropertySet();
             regionsData.setString( "name", region.getName() );
+
+            final Set<PageTemplatePortletEntity> regionPortlets = region.getPortlets();
+            for ( PageTemplatePortletEntity portletTemplate : regionPortlets )
+            {
+                final PortletEntity portlet = portletTemplate.getPortlet();
+                final PropertySet componentData = new PropertySet();
+                componentData.setString( "type", "PartComponent" );
+                final PropertySet partComponentData = new PropertySet();
+                partComponentData.setString( "name", portlet.getName() );
+                partComponentData.setString( "template", applicationKey.toString() + ":" + nameOf( portlet.getName() ) );
+                partComponentData.setSet( "config", new PropertySet() );
+                componentData.setSet( "PartComponent", partComponentData );
+                regionsData.addSet( "component", componentData );
+            }
+            pageData.addProperty( "region", ValueFactory.newPropertySet( regionsData ) );
         }
-        pageData.setProperty( "region", ValueFactory.newPropertySet( regionsData ) );
         pageData.setSet( "config", new PropertySet() );
         data.setSet( ContentPropertyNames.PAGE, pageData );
 
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
+    }
+
+    private String nameOf( final String value )
+    {
+        return new ContentPathNameGenerator().generatePathName( value );
     }
 }
