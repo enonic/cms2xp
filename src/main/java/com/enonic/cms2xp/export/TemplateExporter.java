@@ -2,6 +2,8 @@ package com.enonic.cms2xp.export;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,10 @@ import com.enonic.cms2xp.converter.SiteTemplatesNodeConverter;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.index.ChildOrder;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.node.Nodes;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
@@ -36,11 +40,15 @@ public class TemplateExporter
 
     private final PageTemplateNodeConverter pageTemplateNodeConverter;
 
-    public TemplateExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey )
+    private final PageTemplateResolver pageTemplateResolver;
+
+    public TemplateExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
+                             final PageTemplateResolver pageTemplateResolver )
     {
         this.nodeExporter = nodeExporter;
         this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey );
         this.pageDirectory = pageDirectory;
+        this.pageTemplateResolver = pageTemplateResolver;
     }
 
     public void export( final SiteEntity siteEntity, final NodePath parentNodePath )
@@ -49,13 +57,20 @@ public class TemplateExporter
         Node templateFolderNode = siteTemplatesNodeConverter.toNode( siteEntity );
         templateFolderNode = Node.create( templateFolderNode ).
             parentPath( parentNodePath ).
+            childOrder( ChildOrder.manualOrder() ).
             build();
         nodeExporter.exportNode( templateFolderNode );
 
         final Set<PageTemplateEntity> pageTemplateEntities = siteEntity.getPageTemplates();
         if ( pageTemplateEntities != null )
         {
-            for ( PageTemplateEntity pageTemplateEntity : pageTemplateEntities )
+            // sort page templates to make sure the first one (default) has regions
+            Comparator<PageTemplateEntity> byOrder = Comparator.comparing( p -> p.getPageTemplateRegions().isEmpty() );
+            byOrder = byOrder.thenComparing( PageTemplateEntity::getName );
+            final List<PageTemplateEntity> pageTemplates = pageTemplateEntities.stream().sorted( byOrder ).collect( Collectors.toList() );
+
+            final List<Node> children = new ArrayList<>();
+            for ( PageTemplateEntity pageTemplateEntity : pageTemplates )
             {
 
                 //Exports the PageTemplateEntity as a template node
@@ -64,10 +79,14 @@ public class TemplateExporter
                     parentPath( templateFolderNode.path() ).
                     build();
                 nodeExporter.exportNode( pageTemplateNode );
+                children.add( pageTemplateNode );
+                pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
 
                 //Exports the PageTemplateEntity as a page
                 exportAsPage( pageTemplateEntity );
             }
+
+            nodeExporter.writeNodeOrderList( templateFolderNode, Nodes.from( children ) );
         }
     }
 

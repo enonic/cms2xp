@@ -15,6 +15,7 @@ import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplatePortletEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
+import com.enonic.cms.core.structure.page.template.PageTemplateType;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public final class PageTemplateNodeConverter
@@ -45,6 +46,11 @@ public final class PageTemplateNodeConverter
 
         final PropertySet subData = new PropertySet();
         subData.setProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":page" ) );
+        if ( pageTemplateEntity.getType() == PageTemplateType.SECTIONPAGE )
+        {
+            subData.addProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":section" ) );
+        }
+
         data.setSet( ContentPropertyNames.DATA, subData );
 
         final PropertySet pageData = new PropertySet();

@@ -99,7 +99,7 @@ public class NodeExporter
         return newParentPath;
     }
 
-    private void writeNodeOrderList( final Node parent, final Nodes children )
+    public void writeNodeOrderList( final Node parent, final Nodes children )
     {
         if ( parent == null || parent.getChildOrder() == null || !parent.getChildOrder().isManualOrder() )
         {

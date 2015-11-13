@@ -30,13 +30,16 @@ public class SiteExporter
 
     private final PortletRetriever portletRetriever;
 
+    private final PageTemplateResolver pageTemplateResolver;
+
     public SiteExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
                          final ContentKeyResolver contentKeyResolver, final PortletRetriever portletRetriever )
     {
+        this.pageTemplateResolver = new PageTemplateResolver();
         this.nodeExporter = nodeExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
-        this.templateExporter = new TemplateExporter( nodeExporter, pageDirectory, applicationKey );
-        this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey, contentKeyResolver );
+        this.templateExporter = new TemplateExporter( nodeExporter, pageDirectory, applicationKey, this.pageTemplateResolver );
+        this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey, contentKeyResolver, this.pageTemplateResolver );
         this.portletRetriever = portletRetriever;
         this.applicationKey = applicationKey;
     }

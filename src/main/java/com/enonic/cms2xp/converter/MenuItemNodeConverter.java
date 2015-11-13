@@ -8,9 +8,14 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import com.enonic.cms2xp.export.ContentKeyResolver;
+import com.enonic.cms2xp.export.PageTemplateResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
+import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.data.ValueFactory;
@@ -21,6 +26,11 @@ import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
 import com.enonic.cms.core.structure.menuitem.section.SectionContentEntity;
+import com.enonic.cms.core.structure.page.PageEntity;
+import com.enonic.cms.core.structure.page.PageWindowEntity;
+import com.enonic.cms.core.structure.page.template.PageTemplateKey;
+import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
+import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public class MenuItemNodeConverter
     extends AbstractNodeConverter
@@ -31,10 +41,14 @@ public class MenuItemNodeConverter
 
     private final ContentKeyResolver contentKeyResolver;
 
-    public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver )
+    private final PageTemplateResolver pageTemplateResolver;
+
+    public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
+                                  final PageTemplateResolver pageTemplateResolver )
     {
         this.applicationKey = applicationKey;
         this.contentKeyResolver = contentKeyResolver;
+        this.pageTemplateResolver = pageTemplateResolver;
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
@@ -90,10 +104,52 @@ public class MenuItemNodeConverter
             }
         }
 
+        final PageEntity page = menuItem.getPage();
+        if ( page != null )
+        {
+            final PropertySet pageData = new PropertySet();
+            final PageTemplateKey pageTemplate = page.getTemplate().getPageTemplateKey();
+            pageData.setProperty( "controller", ValueFactory.newString( null ) );
+            final NodeId templateNodeId = this.pageTemplateResolver.resolve( pageTemplate );
+            pageData.setProperty( "template", ValueFactory.newReference( Reference.from( templateNodeId.toString() ) ) );
+
+            final Multimap<String, PortletEntity> regionPortlets = ArrayListMultimap.create();
+            for ( PageWindowEntity pageWindow : menuItem.getPage().getPageWindows() )
+            {
+                final PageTemplateRegionEntity region = pageWindow.getPageTemplateRegion();
+                final PortletEntity portlet = pageWindow.getPortlet();
+                regionPortlets.put( region.getName(), portlet );
+            }
+
+            for ( String regionName : regionPortlets.keySet() )
+            {
+                final PropertySet regionsData = new PropertySet();
+                regionsData.setString( "name", regionName );
+
+                for ( final PortletEntity portlet : regionPortlets.get( regionName ) )
+                {
+                    final PropertySet componentData = new PropertySet();
+                    componentData.setString( "type", "PartComponent" );
+                    final PropertySet partComponentData = new PropertySet();
+                    partComponentData.setString( "name", portlet.getName() );
+                    partComponentData.setString( "template", applicationKey.toString() + ":" + nameOf( portlet.getName() ) );
+                    partComponentData.setSet( "config", new PropertySet() );
+                    componentData.setSet( "PartComponent", partComponentData );
+                    regionsData.addSet( "component", componentData );
+                }
+                pageData.addProperty( "region", ValueFactory.newPropertySet( regionsData ) );
+            }
+
+            data.setSet( ContentPropertyNames.PAGE, pageData );
+        }
         data.setSet( ContentPropertyNames.DATA, subData );
 
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
     }
 
+    private String nameOf( final String value )
+    {
+        return new ContentPathNameGenerator().generatePathName( value );
+    }
 }
