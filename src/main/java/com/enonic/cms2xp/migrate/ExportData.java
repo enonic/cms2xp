@@ -258,7 +258,7 @@ public final class ExportData
 
     private void exportResources()
     {
-        File source = config.source.resourcesDir;
+        File source = config.source.resourcesDir.toPath().resolve( "_public" ).toFile();
         File target = new File( config.target.applicationDir, "src/main/resources/site/assets" );
         if ( source.isDirectory() )
         {
