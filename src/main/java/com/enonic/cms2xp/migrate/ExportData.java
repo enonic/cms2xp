@@ -233,7 +233,7 @@ public final class ExportData
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
-        final ContentNodeConverter contentNodeConverter = new ContentNodeConverter( contentTypeResolver );
+        final ContentNodeConverter contentNodeConverter = new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver );
         final ContentExporter contentExporter =
             new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );

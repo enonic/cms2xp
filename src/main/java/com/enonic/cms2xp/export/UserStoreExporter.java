@@ -34,6 +34,9 @@ import com.enonic.cms.core.security.userstore.UserStoreKey;
 
 public class UserStoreExporter
 {
+
+    public static final com.enonic.xp.security.UserStoreKey GLOBAL_USER_STORE = com.enonic.xp.security.UserStoreKey.from( "global" );
+
     private final NodeExporter nodeExporter;
 
     private final UserStoreConverter converter;
@@ -67,6 +70,8 @@ public class UserStoreExporter
         final Multimap<GroupKey, UserKey> groupUserMembers = ArrayListMultimap.create();
         final Multimap<GroupKey, GroupKey> groupMembers = ArrayListMultimap.create();
 
+        exportGlobalGroups( groupUserMembers, groupMembers );
+
         for ( UserStoreEntity us : userStoreEntities )
         {
             final UserStore userStore = converter.convert( us );
@@ -81,6 +86,7 @@ public class UserStoreExporter
             {
                 final User user = converter.convert( userEntity );
                 principalKeyResolver.add( userEntity.getKey(), user.getKey() );
+                principalKeyResolver.add( userEntity.getUserGroupKey(), user.getKey() );
                 principals.add( user );
             }
 
@@ -89,6 +95,11 @@ public class UserStoreExporter
 
             for ( GroupEntity groupEntity : groupEntities )
             {
+                if ( groupEntity.getType() == GroupType.AUTHENTICATED_USERS )
+                {
+                    continue;
+                }
+
                 // group members
                 final Set<GroupEntity> members = groupEntity.getMembers( false );
                 for ( GroupEntity member : members )
@@ -110,41 +121,79 @@ public class UserStoreExporter
                     principalKeyResolver.add( groupEntity.getGroupKey(), group.getKey() );
                 }
             }
-
-            // user memberships
-            for ( GroupKey groupKey : groupUserMembers.keys() )
-            {
-                final Collection<UserKey> memberKeys = groupUserMembers.get( groupKey );
-                for ( UserKey memberKey : memberKeys )
-                {
-                    final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
-                    final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
-                    if ( group != null && member != null )
-                    {
-                        this.members.put( group, member );
-                    }
-                }
-            }
-            // group memberships
-            for ( GroupKey groupKey : groupMembers.keys() )
-            {
-                final Collection<GroupKey> memberKeys = groupMembers.get( groupKey );
-                for ( GroupKey memberKey : memberKeys )
-                {
-                    final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
-                    final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
-                    if ( group != null && member != null )
-                    {
-                        this.members.put( group, member );
-                    }
-                }
-            }
+            addMemberships( groupUserMembers, groupMembers );
 
             final Principals members = Principals.from( principals );
             userStoreMembers.put( userStore, members );
         }
 
         exportNodes();
+    }
+
+    private void exportGlobalGroups( final Multimap<GroupKey, UserKey> groupUserMembers, final Multimap<GroupKey, GroupKey> groupMembers )
+    {
+        final UserStore userStore = UserStore.create().
+            key( GLOBAL_USER_STORE ).
+            displayName( "Global groups User Store" ).build();
+        final UserStoreKey key = new UserStoreKey( Integer.MAX_VALUE );
+        this.userStores.put( key, userStore );
+
+        final UserStoreRetriever usr = new UserStoreRetriever();
+        final List<Principal> principals = new ArrayList<>();
+
+        // groups
+        final List<GroupEntity> groupEntities = usr.retrieveGlobalGroups( session );
+
+        for ( GroupEntity groupEntity : groupEntities )
+        {
+            // group members
+            final Set<GroupEntity> members = groupEntity.getMembers( false );
+            for ( GroupEntity member : members )
+            {
+                groupMembers.put( groupEntity.getGroupKey(), member.getGroupKey() );
+            }
+            final Group group = converter.convert( groupEntity );
+            principals.add( group );
+            principalKeyResolver.add( groupEntity.getGroupKey(), group.getKey() );
+        }
+
+        // user memberships
+        addMemberships( groupUserMembers, groupMembers );
+
+        final Principals members = Principals.from( principals );
+        userStoreMembers.put( userStore, members );
+    }
+
+    private void addMemberships( final Multimap<GroupKey, UserKey> groupUserMembers, final Multimap<GroupKey, GroupKey> groupMembers )
+    {
+        // user memberships
+        for ( GroupKey groupKey : groupUserMembers.keys() )
+        {
+            final Collection<UserKey> memberKeys = groupUserMembers.get( groupKey );
+            for ( UserKey memberKey : memberKeys )
+            {
+                final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
+                final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
+                if ( group != null && member != null )
+                {
+                    this.members.put( group, member );
+                }
+            }
+        }
+        // group memberships
+        for ( GroupKey groupKey : groupMembers.keys() )
+        {
+            final Collection<GroupKey> memberKeys = groupMembers.get( groupKey );
+            for ( GroupKey memberKey : memberKeys )
+            {
+                final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
+                final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
+                if ( group != null && member != null )
+                {
+                    this.members.put( group, member );
+                }
+            }
+        }
     }
 
     private void exportNodes()

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.enonic.cms.core.security.group.GroupEntity;
+import com.enonic.cms.core.security.group.GroupType;
 import com.enonic.cms.core.security.user.UserEntity;
 import com.enonic.cms.core.security.userstore.UserStoreEntity;
 import com.enonic.cms.core.security.userstore.UserStoreKey;
@@ -57,6 +58,24 @@ public class UserStoreRetriever
             groups = session.getNamedQuery( "GroupEntity.findByUserStore" ).
                 setParameter( "userStoreKey", userStoreKey.toInt() ).
                 setParameter( "deleted", 0 ).
+                list();
+        }
+        finally
+        {
+            session.getTransaction().commit();
+        }
+
+        return groups;
+    }
+
+    public List<GroupEntity> retrieveGlobalGroups( final Session session)
+    {
+        final List<GroupEntity> groups;
+        session.beginTransaction();
+        try
+        {
+            groups = session.getNamedQuery( "GroupEntity.findByGroupType" ).
+                setParameter( "groupType", GroupType.GLOBAL_GROUP.toInteger() ).
                 list();
         }
         finally

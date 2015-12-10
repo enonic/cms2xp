@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
 
+import com.enonic.cms2xp.export.UserStoreExporter;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.security.PrincipalNodeTranslator;
 import com.enonic.xp.core.impl.security.UserStoreNodeTranslator;
@@ -45,8 +46,15 @@ public final class UserStoreConverter
 
     public Group convert( final GroupEntity groupEntity )
     {
-        final com.enonic.xp.security.UserStoreKey key =
-            com.enonic.xp.security.UserStoreKey.from( generateName( groupEntity.getUserStore().getName() ) );
+        final com.enonic.xp.security.UserStoreKey key;
+        if ( groupEntity.getUserStore() != null )
+        {
+            key = com.enonic.xp.security.UserStoreKey.from( generateName( groupEntity.getUserStore().getName() ) );
+        }
+        else
+        {
+            key = UserStoreExporter.GLOBAL_USER_STORE;
+        }
 
         final String groupId = generateName( groupEntity.getName() );
         final PrincipalKey groupKey = PrincipalKey.ofGroup( key, groupId );
