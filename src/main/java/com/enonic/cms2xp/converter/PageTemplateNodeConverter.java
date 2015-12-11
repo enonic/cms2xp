@@ -28,12 +28,12 @@ public final class PageTemplateNodeConverter
         this.applicationKey = applicationKey;
     }
 
-    public Node toNode( final PageTemplateEntity pageTemplateEntity )
+    public Node toNode( final PageTemplateEntity pageTemplateEntity, final String pageName )
     {
-        return createNode( new NodeId(), pageTemplateEntity.getName(), toData( pageTemplateEntity ) );
+        return createNode( new NodeId(), pageTemplateEntity.getName(), toData( pageTemplateEntity, pageName ) );
     }
 
-    private PropertyTree toData( final PageTemplateEntity pageTemplateEntity )
+    private PropertyTree toData( final PageTemplateEntity pageTemplateEntity, final String pageName )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
@@ -54,8 +54,7 @@ public final class PageTemplateNodeConverter
         data.setSet( ContentPropertyNames.DATA, subData );
 
         final PropertySet pageData = new PropertySet();
-        final String name = nameOf( pageTemplateEntity.getName() );
-        pageData.setProperty( "controller", ValueFactory.newString( applicationKey.toString() + ":" + name ) );
+        pageData.setProperty( "controller", ValueFactory.newString( applicationKey.toString() + ":" + pageName ) );
         pageData.setProperty( "template", ValueFactory.newReference( null ) );
         for ( PageTemplateRegionEntity region : pageTemplateEntity.getPageTemplateRegions() )
         {
