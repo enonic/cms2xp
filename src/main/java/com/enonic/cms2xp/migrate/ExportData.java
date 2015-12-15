@@ -22,14 +22,12 @@ import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.ContentTypeExporter;
-import com.enonic.cms2xp.export.PortletExporter;
 import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.cms2xp.export.SiteExporter;
 import com.enonic.cms2xp.export.UserStoreExporter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
-import com.enonic.cms2xp.hibernate.PortletRetriever;
 import com.enonic.cms2xp.hibernate.SiteRetriever;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
@@ -47,7 +45,6 @@ import com.enonic.cms.framework.blob.file.FileBlobStore;
 import com.enonic.cms.core.content.category.CategoryEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.structure.SiteEntity;
-import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public final class ExportData
 {
@@ -120,9 +117,6 @@ public final class ExportData
             //Retrieves, converts and exports the ContentTypes
             final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( this.applicationKey );
             exportContentTypes( session, contentTypeConverter );
-
-            //Retrieves, converts and exports the Portlets
-            exportPortlets( session );
 
             //Retrieves, converts and exports the Categories
             exportCategories( session, contentTypeConverter );
@@ -201,20 +195,6 @@ public final class ExportData
         return Icon.from( resource, "image/png", Instant.now() );
     }
 
-    private void exportPortlets( final Session session )
-    {
-        //Retrieves the PortletEntity
-        logger.info( "Retrieving portlets..." );
-        final List<PortletEntity> portletEntities = new PortletRetriever( session ).retrievePortlets();
-        logger.info( portletEntities.size() + " portlets retrieved." );
-
-        //Exports the PortletEntity as parts
-        logger.info( "Exporting portlets..." );
-        new PortletExporter( new File( config.target.applicationDir, "src/main/resources/site/parts" ) ).
-            export( portletEntities );
-
-    }
-
     private void exportCategories( Session session, final ContentTypeResolver contentTypeResolver )
     {
         //Retrieves the CategoryEntities
@@ -251,8 +231,8 @@ public final class ExportData
         //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
-        final PortletRetriever portletRetriever = new PortletRetriever( session );
-        new SiteExporter( nodeExporter, pagesDirectory, this.applicationKey, this.contentKeyResolver, portletRetriever ).
+        final File partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
+        new SiteExporter( session, nodeExporter, pagesDirectory, partsDirectory, this.applicationKey, this.contentKeyResolver ).
             export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 

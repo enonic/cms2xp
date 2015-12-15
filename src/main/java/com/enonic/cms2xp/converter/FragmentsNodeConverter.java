@@ -45,15 +45,15 @@ public final class FragmentsNodeConverter
 
     public Node getFragmentsNode()
     {
-        final Node node = createNode( new NodeId(), "_fragments", fragmentsData() );
-        return Node.create( node ).name( NodeName.from( "_fragments" ) ).build();
+        final Node node = createNode( new NodeId(), "_portlets", fragmentsData() );
+        return Node.create( node ).name( NodeName.from( "_portlets" ) ).build();
     }
 
     private PropertyTree fragmentsData()
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
-        data.setString( ContentPropertyNames.DISPLAY_NAME, "Fragments" );
+        data.setString( ContentPropertyNames.DISPLAY_NAME, "Portlets" );
         data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, Instant.now() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );

@@ -13,6 +13,7 @@ import com.google.common.collect.Multimap;
 
 import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.PageTemplateResolver;
+import com.enonic.cms2xp.export.PortletToPartResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
@@ -43,12 +44,15 @@ public class MenuItemNodeConverter
 
     private final PageTemplateResolver pageTemplateResolver;
 
+    private final PortletToPartResolver portletToPartResolver;
+
     public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
-                                  final PageTemplateResolver pageTemplateResolver )
+                                  final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver )
     {
         this.applicationKey = applicationKey;
         this.contentKeyResolver = contentKeyResolver;
         this.pageTemplateResolver = pageTemplateResolver;
+        this.portletToPartResolver = portletToPartResolver;
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
@@ -132,7 +136,9 @@ public class MenuItemNodeConverter
                     componentData.setString( "type", "PartComponent" );
                     final PropertySet partComponentData = new PropertySet();
                     partComponentData.setString( "name", portlet.getName() );
-                    partComponentData.setString( "template", applicationKey.toString() + ":" + nameOf( portlet.getName() ) );
+
+                    final String partName = portletToPartResolver.partNameFromPortlet( portlet );
+                    partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
                     partComponentData.setSet( "config", new PropertySet() );
                     componentData.setSet( "PartComponent", partComponentData );
                     regionsData.addSet( "component", componentData );

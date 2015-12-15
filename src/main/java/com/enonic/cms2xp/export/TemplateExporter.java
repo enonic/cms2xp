@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import com.enonic.cms2xp.converter.PageTemplateNodeConverter;
 import com.enonic.cms2xp.converter.SiteTemplatesNodeConverter;
+import com.enonic.cms2xp.converter.TemplateParameterConverter;
+import com.enonic.cms2xp.export.xml.XmlFormSerializer;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.form.Form;
 import com.enonic.xp.index.ChildOrder;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
@@ -45,11 +48,14 @@ public class TemplateExporter
 
     private final Map<String, String> xsltExported;
 
+    private final ApplicationKey applicationKey;
+
     public TemplateExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
-                             final PageTemplateResolver pageTemplateResolver )
+                             final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver )
     {
         this.nodeExporter = nodeExporter;
-        this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey );
+        this.applicationKey = applicationKey;
+        this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey, portletToPartResolver );
         this.pageDirectory = pageDirectory;
         this.pageTemplateResolver = pageTemplateResolver;
         this.xsltExported = new HashMap<>();
@@ -119,7 +125,7 @@ public class TemplateExporter
     private void exportAsPage( final PageTemplateEntity pageTemplateEntity, final String pageName )
     {
         //Prepares the mappings
-        final String pageTemplateDisplayName = pageTemplateEntity.getName();
+        final String pageTemplateDisplayName = pageName;// pageTemplateEntity.getName();
 
         final List<String> pageTemplateRegions = pageTemplateEntity.getPageTemplateRegions().
             stream().
@@ -131,6 +137,9 @@ public class TemplateExporter
         mapping.put( "name", pageName );
         mapping.put( "displayName", pageTemplateDisplayName );
         mapping.put( "regions", pageTemplateRegions );
+        final Form form = new TemplateParameterConverter( applicationKey ).toFormXml( pageTemplateEntity.getTemplateParameters().values() );
+        final String config = new XmlFormSerializer( "config" ).form( form ).serialize().trim();
+        mapping.put( "pageConfig", config );
 
         //Copies page templates and applies the mapping on these file
         try

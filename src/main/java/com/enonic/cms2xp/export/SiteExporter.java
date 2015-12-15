@@ -4,9 +4,10 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.Session;
+
 import com.enonic.cms2xp.converter.MenuItemNodeConverter;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
-import com.enonic.cms2xp.hibernate.PortletRetriever;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.node.Node;
@@ -14,7 +15,6 @@ import com.enonic.xp.node.NodePath;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
-import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public class SiteExporter
 {
@@ -26,22 +26,19 @@ public class SiteExporter
 
     private final MenuItemNodeConverter menuItemNodeConverter;
 
-    private final ApplicationKey applicationKey;
+    private final PortletExporter portletExporter;
 
-    private final PortletRetriever portletRetriever;
-
-    private final PageTemplateResolver pageTemplateResolver;
-
-    public SiteExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
-                         final ContentKeyResolver contentKeyResolver, final PortletRetriever portletRetriever )
+    public SiteExporter( final Session session, final NodeExporter nodeExporter, final File pageDirectory, final File partDirectory,
+                         final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver )
     {
-        this.pageTemplateResolver = new PageTemplateResolver();
+        final PageTemplateResolver pageTemplateResolver = new PageTemplateResolver();
         this.nodeExporter = nodeExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
-        this.templateExporter = new TemplateExporter( nodeExporter, pageDirectory, applicationKey, this.pageTemplateResolver );
-        this.menuItemNodeConverter = new MenuItemNodeConverter( applicationKey, contentKeyResolver, this.pageTemplateResolver );
-        this.portletRetriever = portletRetriever;
-        this.applicationKey = applicationKey;
+        this.portletExporter = new PortletExporter( session, partDirectory, nodeExporter, applicationKey );
+        this.templateExporter =
+            new TemplateExporter( nodeExporter, pageDirectory, applicationKey, pageTemplateResolver, this.portletExporter );
+        this.menuItemNodeConverter =
+            new MenuItemNodeConverter( applicationKey, contentKeyResolver, pageTemplateResolver, this.portletExporter );
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )
@@ -57,14 +54,12 @@ public class SiteExporter
             //Exports the node
             nodeExporter.exportNode( siteNode );
 
-            //Calls the export on the page templates
+            portletExporter.export( siteEntity, siteNode.path() );
+
             templateExporter.export( siteEntity, siteNode.path() );
 
             //Export site menu items
             exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
-
-            //Export portlets as fragments
-            exportFragments( siteEntity, siteNode );
         }
     }
 
@@ -85,11 +80,4 @@ public class SiteExporter
         }
     }
 
-    private void exportFragments( final SiteEntity siteEntity, final Node siteNode )
-    {
-        final FragmentExporter fragmentExporter = new FragmentExporter( nodeExporter, applicationKey );
-        final List<PortletEntity> portletEntities = portletRetriever.retrievePortlets( siteEntity.getKey() );
-
-        fragmentExporter.export( portletEntities, siteNode.path() );
-    }
 }

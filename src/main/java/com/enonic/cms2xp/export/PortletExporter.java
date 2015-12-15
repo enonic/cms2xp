@@ -2,50 +2,147 @@ package com.enonic.cms2xp.export;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.enonic.cms2xp.converter.FragmentsNodeConverter;
+import com.enonic.cms2xp.converter.TemplateParameterConverter;
+import com.enonic.cms2xp.export.xml.XmlFormSerializer;
+import com.enonic.cms2xp.hibernate.PortletRetriever;
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
+import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.form.Form;
+import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodePath;
 
+import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
 
 public class PortletExporter
     extends AbstractAppComponentExporter
+    implements PortletToPartResolver
 {
     private final static Logger logger = LoggerFactory.getLogger( PortletExporter.class );
 
+    private final Session session;
+
+    private final ApplicationKey applicationKey;
+
+    private final NodeExporter nodeExporter;
+
+    private final FragmentsNodeConverter fragmentsNodeConverter;
+
     private final File target;
 
-    public PortletExporter( final File target )
+    private final Map<String, String> xsltPathToPartNameMapping;
+
+    public PortletExporter( final Session session, final File target, final NodeExporter nodeExporter, final ApplicationKey applicationKey )
     {
+        this.session = session;
         this.target = target;
+        this.xsltPathToPartNameMapping = new HashMap<>();
+        this.applicationKey = applicationKey;
+        this.fragmentsNodeConverter = new FragmentsNodeConverter( applicationKey );
+        this.nodeExporter = nodeExporter;
     }
 
-    public void export( Iterable<PortletEntity> portletEntities )
+    @Override
+    public String partNameFromPortlet( final PortletEntity portlet )
+    {
+        final String xsltPath = portlet.getStyleKey().toString();
+        return this.xsltPathToPartNameMapping.get( xsltPath );
+    }
+
+    public void export( final SiteEntity siteEntity, final NodePath parentNode )
+    {
+        final List<PortletEntity> portletEntities = new PortletRetriever( session ).retrievePortlets( siteEntity.getKey() );
+        exportParts( portletEntities );
+        exportFragments( portletEntities, parentNode );
+    }
+
+    private void exportParts( Iterable<PortletEntity> portletEntities )
     {
         for ( PortletEntity portletEntity : portletEntities )
         {
-            final String portletDisplayName = portletEntity.getName();
-            final String portletName = new ContentPathNameGenerator().generatePathName( portletDisplayName );
+            final String xsltPath = portletEntity.getStyleKey().toString();
+            if ( xsltPathToPartNameMapping.containsKey( xsltPath ) )
+            {
+                continue;
+            }
 
-            Map<String, Object> mapping = new HashMap<>();
-            mapping.put( "portletName", portletName );
-            mapping.put( "portletDisplayName", portletDisplayName );
+            String partName = partNameFromXslt( portletEntity );
+            int i = 1;
+            while ( xsltPathToPartNameMapping.values().contains( partName ) )
+            {
+                partName = partNameFromXslt( portletEntity ) + "-" + ( ++i );
+            }
+
+            exportAsPart( portletEntity, partName );
+            xsltPathToPartNameMapping.put( xsltPath, partName );
+        }
+    }
+
+    private void exportFragments( final Iterable<PortletEntity> portletEntities, final NodePath parentNode )
+    {
+
+        Node templateFolderNode = fragmentsNodeConverter.getFragmentsNode();
+        templateFolderNode = Node.create( templateFolderNode ).
+            parentPath( parentNode ).
+            build();
+        nodeExporter.exportNode( templateFolderNode );
+
+        for ( PortletEntity portlet : portletEntities )
+        {
+
+            Node contentNode = fragmentsNodeConverter.toNode( portlet );
+            contentNode = Node.create( contentNode ).
+                parentPath( templateFolderNode.path() ).
+                build();
 
             try
             {
-                copy( "/templates/parts/part/part.html", new File( target, portletName + "/" + portletName + ".html" ), mapping );
-                copy( "/templates/parts/part/part.js", new File( target, portletName + "/" + portletName + ".js" ), mapping );
-                copy( "/templates/parts/part/part.xml", new File( target, portletName + "/" + portletName + ".xml" ), mapping );
+                nodeExporter.exportNode( contentNode );
             }
             catch ( Exception e )
             {
-                logger.error( "Error while exporting PortletEntity \"" + portletDisplayName + "\"", e );
+                logger.warn( "Could not export node '" + contentNode.path() + "'", e );
             }
         }
     }
 
+    private void exportAsPart( final PortletEntity portletEntity, final String partName )
+    {
+        final String portletDisplayName = partName; // portletEntity.getName();
+
+        final Map<String, Object> mapping = new HashMap<>();
+        mapping.put( "portletName", partName );
+        mapping.put( "portletDisplayName", portletDisplayName );
+        final Form form = new TemplateParameterConverter( applicationKey ).toFormXml( portletEntity.getTemplateParameters().values() );
+        final String config = new XmlFormSerializer( "config" ).form( form ).serialize().trim();
+        mapping.put( "portletConfig", config );
+
+        try
+        {
+            copy( "/templates/parts/part/part.html", new File( target, partName + "/" + partName + ".html" ), mapping );
+            copy( "/templates/parts/part/part.js", new File( target, partName + "/" + partName + ".js" ), mapping );
+            copy( "/templates/parts/part/part.xml", new File( target, partName + "/" + partName + ".xml" ), mapping );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Error while exporting PortletEntity \"" + portletDisplayName + "\"", e );
+        }
+    }
+
+    private String partNameFromXslt( final PortletEntity portletEntity )
+    {
+        final String xsltName = FilenameUtils.removeExtension( portletEntity.getStyleKey().getName() );
+        return new ContentPathNameGenerator().generatePathName( xsltName );
+    }
 
 }

@@ -2,9 +2,9 @@ package com.enonic.cms2xp.converter;
 
 import java.util.Set;
 
+import com.enonic.cms2xp.export.PortletToPartResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.data.ValueFactory;
@@ -23,9 +23,12 @@ public final class PageTemplateNodeConverter
 {
     private final ApplicationKey applicationKey;
 
-    public PageTemplateNodeConverter( final ApplicationKey applicationKey )
+    private final PortletToPartResolver portletToPartResolver;
+
+    public PageTemplateNodeConverter( final ApplicationKey applicationKey, final PortletToPartResolver portletToPartResolver )
     {
         this.applicationKey = applicationKey;
+        this.portletToPartResolver = portletToPartResolver;
     }
 
     public Node toNode( final PageTemplateEntity pageTemplateEntity, final String pageName )
@@ -69,7 +72,9 @@ public final class PageTemplateNodeConverter
                 componentData.setString( "type", "PartComponent" );
                 final PropertySet partComponentData = new PropertySet();
                 partComponentData.setString( "name", portlet.getName() );
-                partComponentData.setString( "template", applicationKey.toString() + ":" + nameOf( portlet.getName() ) );
+
+                final String partName = portletToPartResolver.partNameFromPortlet( portlet );
+                partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
                 partComponentData.setSet( "config", new PropertySet() );
                 componentData.setSet( "PartComponent", partComponentData );
                 regionsData.addSet( "component", componentData );
@@ -83,8 +88,4 @@ public final class PageTemplateNodeConverter
         return data;
     }
 
-    private String nameOf( final String value )
-    {
-        return new ContentPathNameGenerator().generatePathName( value );
-    }
 }
