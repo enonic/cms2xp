@@ -148,6 +148,7 @@ public final class ContentTypeConverter
         final FormItemSet.Builder formItemSet = FormItemSet.create();
         formItemSet.name( blockName );
         formItemSet.label( ctyConfig.getName() );
+        formItemSet.occurrences( 0, 0 );
 
         for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
         {
