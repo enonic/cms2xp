@@ -35,8 +35,6 @@ import com.enonic.cms.core.security.userstore.UserStoreKey;
 public class UserStoreExporter
 {
 
-    public static final com.enonic.xp.security.UserStoreKey GLOBAL_USER_STORE = com.enonic.xp.security.UserStoreKey.from( "global" );
-
     private final NodeExporter nodeExporter;
 
     private final UserStoreConverter converter;
@@ -133,8 +131,8 @@ public class UserStoreExporter
     private void exportGlobalGroups( final Multimap<GroupKey, UserKey> groupUserMembers, final Multimap<GroupKey, GroupKey> groupMembers )
     {
         final UserStore userStore = UserStore.create().
-            key( GLOBAL_USER_STORE ).
-            displayName( "Global groups User Store" ).build();
+            key( com.enonic.xp.security.UserStoreKey.system() ).
+            displayName( "System" ).build();
         final UserStoreKey key = new UserStoreKey( Integer.MAX_VALUE );
         this.userStores.put( key, userStore );
 
@@ -152,9 +150,19 @@ public class UserStoreExporter
             {
                 groupMembers.put( groupEntity.getGroupKey(), member.getGroupKey() );
             }
-            final Group group = converter.convert( groupEntity );
-            principals.add( group );
-            principalKeyResolver.add( groupEntity.getGroupKey(), group.getKey() );
+
+            final Principal groupOrRole;
+            if ( groupEntity.getUserStore() == null )
+            {
+                groupOrRole = converter.convertToRole( groupEntity );
+            }
+            else
+            {
+                groupOrRole = converter.convert( groupEntity );
+            }
+            principals.add( groupOrRole );
+            principalKeyResolver.add( groupEntity.getGroupKey(), groupOrRole.getKey() );
+
         }
 
         // user memberships
@@ -200,10 +208,17 @@ public class UserStoreExporter
     {
         for ( UserStore userStore : userStores.values() )
         {
-            final List<Node> userStoreNodes = converter.convertToNode( userStore );
-            for ( Node userStoreNode : userStoreNodes )
+            if ( userStore.getKey().equals( com.enonic.xp.security.UserStoreKey.system() ) )
             {
-                nodeExporter.exportNode( userStoreNode );
+                nodeExporter.exportNode( converter.rolesNode() );
+            }
+            else
+            {
+                final List<Node> userStoreNodes = converter.convertToNode( userStore );
+                for ( Node userStoreNode : userStoreNodes )
+                {
+                    nodeExporter.exportNode( userStoreNode );
+                }
             }
 
             for ( Principal principal : userStoreMembers.get( userStore ) )

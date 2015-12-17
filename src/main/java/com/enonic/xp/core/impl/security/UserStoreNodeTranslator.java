@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.acl.AccessControlEntry;
 import com.enonic.xp.security.acl.AccessControlList;
 import com.enonic.xp.security.acl.UserStoreAccessControlEntry;
@@ -23,6 +24,11 @@ public abstract class UserStoreNodeTranslator
     public final static String USER_FOLDER_NODE_NAME = "users";
 
     public final static String GROUP_FOLDER_NODE_NAME = "groups";
+
+    public static NodePath getRolesNodePath()
+    {
+        return NodePath.create( NodePath.ROOT, PrincipalKey.ROLES_NODE_NAME ).build();
+    }
 
     public static NodePath getUserStoresParentPath()
     {

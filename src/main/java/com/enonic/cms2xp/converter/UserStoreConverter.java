@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
 
-import com.enonic.cms2xp.export.UserStoreExporter;
 import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.security.PrincipalNodeTranslator;
 import com.enonic.xp.core.impl.security.UserStoreNodeTranslator;
@@ -14,12 +13,15 @@ import com.enonic.xp.core.impl.security.UserStorePropertyNames;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
+import com.enonic.xp.node.NodePath;
 import com.enonic.xp.security.Group;
 import com.enonic.xp.security.Principal;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.PrincipalKeys;
+import com.enonic.xp.security.Role;
 import com.enonic.xp.security.User;
 import com.enonic.xp.security.UserStore;
+import com.enonic.xp.security.UserStoreKey;
 import com.enonic.xp.security.acl.AccessControlList;
 import com.enonic.xp.security.acl.UserStoreAccessControlList;
 
@@ -53,7 +55,7 @@ public final class UserStoreConverter
         }
         else
         {
-            key = UserStoreExporter.GLOBAL_USER_STORE;
+            key = UserStoreKey.system();
         }
 
         final String groupId = generateName( groupEntity.getName() );
@@ -64,6 +66,19 @@ public final class UserStoreConverter
         return Group.create().
             displayName( displayName ).
             key( groupKey ).
+            build();
+    }
+
+    public Role convertToRole( final GroupEntity groupEntity )
+    {
+        final String groupId = generateName( groupEntity.getName() );
+        final PrincipalKey roleKey = PrincipalKey.ofRole( groupId );
+
+        String displayName = groupEntity.getDescription();
+        displayName = StringUtils.isBlank( displayName ) ? groupEntity.getName() : displayName;
+        return Role.create().
+            displayName( displayName ).
+            key( roleKey ).
             build();
     }
 
@@ -114,6 +129,16 @@ public final class UserStoreConverter
             build();
 
         return Lists.newArrayList( userStoreNode, usersNode, groupsNode );
+    }
+
+    public Node rolesNode()
+    {
+        final NodePath rolesNodePath = UserStoreNodeTranslator.getRolesNodePath();
+        return Node.create().
+            parentPath( rolesNodePath.getParentPath() ).
+            name( rolesNodePath.getLastElement().toString() ).
+            inheritPermissions( true ).
+            build();
     }
 
     public Node convertToNode( final Principal principal, final PrincipalKeys members )
