@@ -1,7 +1,9 @@
 package com.enonic.cms2xp.export;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -32,6 +34,7 @@ import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.binary.BinaryDataEntity;
 import com.enonic.cms.core.content.binary.BinaryDataKey;
+import com.enonic.cms.core.content.contentdata.legacy.LegacyFileContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
 
 public class ContentExporter
@@ -70,6 +73,7 @@ public class ContentExporter
             if ( contentType.isImageMedia() )
             {
                 exportImageAttachments( content, contentNode );
+                contentNode = updateImageMetadata( contentNode, content );
             }
             else
             {
@@ -77,6 +81,7 @@ public class ContentExporter
                 if ( contentType.isUnknownMedia() && mediaType != null )
                 {
                     contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
+                    contentNode = updateMediaMetadata( contentNode, content );
                 }
             }
 
@@ -91,6 +96,63 @@ public class ContentExporter
             }
             contentKeyResolver.add( content.getKey(), contentNode.id() );
         }
+    }
+
+    private Node updateImageMetadata( final Node contentNode, final ContentEntity content )
+    {
+        final Node.Builder imageNode = Node.create( contentNode );
+
+        final LegacyImageContentData data = (LegacyImageContentData) content.getMainVersion().getContentData();
+
+        Element contentDataEl = data.getContentDataXml().getRootElement();
+        String description = contentDataEl.getChildText( "description" );
+        String caption = contentDataEl.getChildText( "name" );
+        String artist = null;
+        String copyright = contentDataEl.getChildText( "copyright" );
+        String tags = contentDataEl.getChildText( "keywords" );
+
+        Element photographerEl = contentDataEl.getChild( "photographer" );
+        if ( photographerEl != null )
+        {
+            artist = photographerEl.getAttribute( "name" ).getValue();
+        }
+
+        // /node/data/data/
+        final PropertySet contentData = contentNode.data().getSet( ContentPropertyNames.DATA, 0 );
+        contentData.setString( "caption", caption );
+        contentData.setString( "artist", artist );
+        contentData.setString( "copyright", copyright );
+        if ( StringUtils.isNotBlank( tags ) )
+        {
+            Stream.of( tags.split( "\\s+" ) ).forEach( ( tag ) -> contentData.addString( "tags", tag ) );
+        }
+        contentData.setString( "description", description );
+
+        return imageNode.build();
+    }
+
+    private Node updateMediaMetadata( final Node contentNode, final ContentEntity content )
+    {
+        final Node.Builder imageNode = Node.create( contentNode );
+
+        if ( !( content.getMainVersion().getContentData() instanceof LegacyFileContentData ) )
+        {
+            return contentNode;
+        }
+        final LegacyFileContentData data = (LegacyFileContentData) content.getMainVersion().getContentData();
+
+        Element contentDataEl = data.getContentDataXml().getRootElement();
+        String description = contentDataEl.getChildText( "description" );
+        String tags = contentDataEl.getChildText( "keywords" );
+        // /node/data/data/
+        final PropertySet contentData = contentNode.data().getSet( ContentPropertyNames.DATA, 0 );
+        if ( StringUtils.isNotBlank( tags ) )
+        {
+            Stream.of( tags.split( "\\s+" ) ).forEach( ( tag ) -> contentData.addString( "tags", tag ) );
+        }
+        contentData.setString( "description", description );
+
+        return imageNode.build();
     }
 
     private ContentTypeName exportAttachments( final ContentEntity content, final Node contentNode )
