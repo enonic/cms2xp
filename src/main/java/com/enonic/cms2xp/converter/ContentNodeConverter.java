@@ -131,7 +131,7 @@ public final class ContentNodeConverter
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
-        data.setString( ContentPropertyNames.DISPLAY_NAME, content.getName() );
+        data.setString( ContentPropertyNames.DISPLAY_NAME, getDisplayName( content ) );
         data.setString( ContentPropertyNames.TYPE, convertType( content ).toString() );
         data.setString( ContentPropertyNames.LANGUAGE, content.getLanguage().getCode() );
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, content.getTimestamp().toInstant() );
@@ -159,6 +159,11 @@ public final class ContentNodeConverter
             }
         }
         return data;
+    }
+
+    private String getDisplayName( final ContentEntity content )
+    {
+        return content.getMainVersion().getTitle();
     }
 
     public ContentTypeName convertType( final ContentEntity content )
