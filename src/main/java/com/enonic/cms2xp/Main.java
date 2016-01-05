@@ -22,6 +22,11 @@ public final class Main
     public static void main( final String... args )
         throws Exception
     {
+        if ( args.length == 0 )
+        {
+            System.out.println( "usage: cms2xp <config_path>\n" );
+            System.exit( 1 );
+        }
         //Retrieves the config
         final File configFile = new File( args[0] );
         final MainConfigLoader loader = new MainConfigLoader( configFile.toURI().toURL() );
