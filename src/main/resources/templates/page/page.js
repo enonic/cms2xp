@@ -13,9 +13,6 @@ function handleGet(req) {
         context: req,
         site: site,
         reqContent: reqContent,
-        {{#regions}}
-        {{.}}Region: reqContent.page.regions["{{.}}"],
-        {{/regions}}
         editable: editMode
     };
     var body = thymeleaf.render(view, params);
