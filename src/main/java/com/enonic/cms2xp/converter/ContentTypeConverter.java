@@ -160,8 +160,11 @@ public final class ContentTypeConverter
     private FormItem convertConfigEntry( final DataEntryConfig entry )
     {
         final String label = Strings.isNullOrEmpty( entry.getDisplayName() ) ? entry.getName() : entry.getDisplayName();
+        final String entryPathName = StringUtils.substringAfterLast( entry.getXpath(), "/" );
+        final String inputName = StringUtils.isBlank( entryPathName ) ? entry.getName() : entryPathName;
+
         final Input.Builder input = Input.create().
-            name( entry.getName() ).
+            name( inputName ).
             label( label ).
             required( entry.isRequired() ).
             customText( entry.getXpath() ).
