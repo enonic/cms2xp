@@ -89,7 +89,7 @@ public final class ContentTypeConverter
         }
         catch ( InvalidContentTypeConfigException e )
         {
-            logger.warn( "Cannot get config for content type " + contentTypeEntity.getName() );
+            logger.warn( "Cannot get config for content type " + contentTypeEntity.getName(), e );
             form = Form.create().build();
         }
 

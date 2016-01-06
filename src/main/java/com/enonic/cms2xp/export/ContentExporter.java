@@ -244,12 +244,13 @@ public class ContentExporter
 
         nodeExporter.exportNodeBinary( contentNode, reference, byteSource );
 
-        addAttachmentData( contentNode.data(), "source", binaryData, reference, getMimeType( binaryData.getName() ) );
+        final String mimeType = getMimeType( binaryData.getName() );
+        addAttachmentData( contentNode.data(), "source", binaryData, reference, mimeType );
     }
 
     private String getMimeType( final String fileName )
     {
-        return MediaTypes.instance().fromFile( fileName ).toString();
+        return MediaTypes.instance().fromFile( fileName.toLowerCase() ).toString();
     }
 
     private BinaryDataKey getSourceImageKey( final Document contentDataXml )
