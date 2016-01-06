@@ -78,7 +78,12 @@ public class ContentExporter
             else
             {
                 final ContentTypeName mediaType = exportAttachments( content, contentNode );
-                if ( contentType.isUnknownMedia() && mediaType != null )
+                if ( mediaType != null && mediaType.isDocumentMedia() )
+                {
+                    contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
+                    contentNode = updateDocumentMetadata( contentNode, content );
+                }
+                else if ( contentType.isUnknownMedia() && mediaType != null )
                 {
                     contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
                     contentNode = updateMediaMetadata( contentNode, content );
@@ -106,7 +111,6 @@ public class ContentExporter
 
         Element contentDataEl = data.getContentDataXml().getRootElement();
         String description = contentDataEl.getChildText( "description" );
-        String caption = contentDataEl.getChildText( "name" );
         String artist = null;
         String copyright = contentDataEl.getChildText( "copyright" );
         String tags = contentDataEl.getChildText( "keywords" );
@@ -119,16 +123,34 @@ public class ContentExporter
 
         // /node/data/data/
         final PropertySet contentData = contentNode.data().getSet( ContentPropertyNames.DATA, 0 );
-        contentData.setString( "caption", caption );
+        contentData.setString( "caption", description );
         contentData.setString( "artist", artist );
         contentData.setString( "copyright", copyright );
         if ( StringUtils.isNotBlank( tags ) )
         {
             Stream.of( tags.split( "\\s+" ) ).forEach( ( tag ) -> contentData.addString( "tags", tag ) );
         }
-        contentData.setString( "description", description );
 
         return imageNode.build();
+    }
+
+    private Node updateDocumentMetadata( final Node contentNode, final ContentEntity content )
+    {
+        final Node.Builder documentNode = Node.create( contentNode );
+
+        final LegacyFileContentData data = (LegacyFileContentData) content.getMainVersion().getContentData();
+
+        Element contentDataEl = data.getContentDataXml().getRootElement();
+        String description = contentDataEl.getChildText( "description" );
+        String tags = contentDataEl.getChildText( "keywords" );
+        final PropertySet contentData = contentNode.data().getSet( ContentPropertyNames.DATA, 0 );
+        if ( StringUtils.isNotBlank( tags ) )
+        {
+            Stream.of( tags.split( "\\s+" ) ).forEach( ( tag ) -> contentData.addString( "tags", tag ) );
+        }
+        contentData.setString( "abstract", description );
+
+        return documentNode.build();
     }
 
     private Node updateMediaMetadata( final Node contentNode, final ContentEntity content )
