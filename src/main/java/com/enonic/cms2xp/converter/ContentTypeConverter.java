@@ -65,7 +65,8 @@ public final class ContentTypeConverter
     public ImmutableList<ContentType> export( final List<ContentTypeEntity> contentTypeEntities )
     {
         contentTypeEntities.stream().
-            filter( ( ct ) -> ct.getContentHandlerName() == ContentHandlerName.CUSTOM ).
+            filter( ( ct ) -> ct.getContentHandlerName() == ContentHandlerName.CUSTOM ||
+                ct.getContentHandlerName() == ContentHandlerName.FORM ).
             forEach( ( ct ) -> {
                 final ContentType contentType = convert( ct );
                 this.typeResolver.put( ct.getContentTypeKey(), contentType );
@@ -80,24 +81,30 @@ public final class ContentTypeConverter
         return typeResolver.get( contentTypeKey );
     }
 
-    private ContentType convert( final ContentTypeEntity contentTypeEntity )
+    private ContentType convert( final ContentTypeEntity ct )
     {
         Form form;
-        try
+        if ( ct.getContentHandlerName() == ContentHandlerName.FORM )
         {
-            form = convertConfig( contentTypeEntity.getContentTypeConfig() );
-        }
-        catch ( InvalidContentTypeConfigException e )
-        {
-            logger.warn( "Cannot get config for content type " + contentTypeEntity.getName(), e );
             form = Form.create().build();
         }
-
+        else
+        {
+            try
+            {
+                form = convertConfig( ct.getContentTypeConfig() );
+            }
+            catch ( InvalidContentTypeConfigException e )
+            {
+                logger.warn( "Cannot get config for content type " + ct.getName(), e );
+                form = Form.create().build();
+            }
+        }
         final ContentType.Builder contentType = ContentType.create().
-            name( ContentTypeName.from( appKey, contentTypeEntity.getName() ) ).
-            displayName( contentTypeEntity.getName() ).
-            description( contentTypeEntity.getDescription() ).
-            createdTime( contentTypeEntity.getTimestamp().toInstant() ).
+            name( ContentTypeName.from( appKey, ct.getName() ) ).
+            displayName( ct.getName() ).
+            description( ct.getDescription() ).
+            createdTime( ct.getTimestamp().toInstant() ).
             superType( ContentTypeName.unstructured() ).
             form( form );
         return contentType.build();

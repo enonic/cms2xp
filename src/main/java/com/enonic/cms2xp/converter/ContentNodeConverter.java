@@ -28,6 +28,7 @@ import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.access.ContentAccessEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
+import com.enonic.cms.core.content.contentdata.legacy.LegacyFormContentData;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.security.group.GroupEntity;
@@ -49,6 +50,8 @@ public final class ContentNodeConverter
 
     private final DataEntryValuesConverter dataEntryValuesConverter;
 
+    private final FormValuesConverter formValuesConverter;
+
     private final ContentTypeResolver contentTypeResolver;
 
     private final PrincipalKeyResolver principalKeyResolver;
@@ -58,6 +61,7 @@ public final class ContentNodeConverter
         this.contentTypeResolver = contentTypeResolver;
         this.nodeIdRegistry = new NodeIdRegistry();
         this.dataEntryValuesConverter = new DataEntryValuesConverter( this.nodeIdRegistry );
+        this.formValuesConverter = new FormValuesConverter();
         this.principalKeyResolver = principalKeyResolver;
     }
 
@@ -149,8 +153,13 @@ public final class ContentNodeConverter
                 final ContentData contentData = mainVersion.getContentData();
                 if ( contentData instanceof DataEntry )
                 {
-                    DataEntry dataEntry = (DataEntry) contentData;
+                    final DataEntry dataEntry = (DataEntry) contentData;
                     data.setProperty( ContentPropertyNames.DATA, dataEntryValuesConverter.toValue( dataEntry ) );
+                }
+                else if ( contentData instanceof LegacyFormContentData )
+                {
+                    final LegacyFormContentData formData = (LegacyFormContentData) contentData;
+                    data.setProperty( ContentPropertyNames.DATA, formValuesConverter.toValue( formData ) );
                 }
             }
             catch ( Exception e )
