@@ -46,18 +46,22 @@ public class MenuItemNodeConverter
 
     private final PortletToPartResolver portletToPartResolver;
 
+    private final NodeIdRegistry nodeIdRegistry;
+
     public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
-                                  final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver )
+                                  final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver,
+                                  final NodeIdRegistry nodeIdRegistry )
     {
         this.applicationKey = applicationKey;
         this.contentKeyResolver = contentKeyResolver;
         this.pageTemplateResolver = pageTemplateResolver;
         this.portletToPartResolver = portletToPartResolver;
+        this.nodeIdRegistry = nodeIdRegistry;
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
     {
-        return createNode( new NodeId(), menuItemEntity.getName(), toData( menuItemEntity ) );
+        return createNode( nodeIdRegistry.getNodeId( menuItemEntity.getKey() ), menuItemEntity.getName(), toData( menuItemEntity ) );
     }
 
     private PropertyTree toData( final MenuItemEntity menuItem )

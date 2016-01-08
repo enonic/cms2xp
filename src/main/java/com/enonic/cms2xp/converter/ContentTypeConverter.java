@@ -19,6 +19,7 @@ import com.enonic.xp.form.Form;
 import com.enonic.xp.form.FormItem;
 import com.enonic.xp.form.FormItemSet;
 import com.enonic.xp.form.Input;
+import com.enonic.xp.inputtype.InputTypeConfig;
 import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.inputtype.InputTypeProperty;
 import com.enonic.xp.schema.content.ContentType;
@@ -65,8 +66,7 @@ public final class ContentTypeConverter
     public ImmutableList<ContentType> export( final List<ContentTypeEntity> contentTypeEntities )
     {
         contentTypeEntities.stream().
-            filter( ( ct ) -> ct.getContentHandlerName() == ContentHandlerName.CUSTOM ||
-                ct.getContentHandlerName() == ContentHandlerName.FORM ).
+            filter( this::isConvertible ).
             forEach( ( ct ) -> {
                 final ContentType contentType = convert( ct );
                 this.typeResolver.put( ct.getContentTypeKey(), contentType );
@@ -81,12 +81,23 @@ public final class ContentTypeConverter
         return typeResolver.get( contentTypeKey );
     }
 
+    private boolean isConvertible( final ContentTypeEntity ct )
+    {
+        final ContentHandlerName name = ct.getContentHandlerName();
+        return name == ContentHandlerName.CUSTOM || name == ContentHandlerName.FORM || name == ContentHandlerName.NEWSLETTER;
+    }
+
     private ContentType convert( final ContentTypeEntity ct )
     {
         Form form;
+
         if ( ct.getContentHandlerName() == ContentHandlerName.FORM )
         {
             form = Form.create().build();
+        }
+        else if ( ct.getContentHandlerName() == ContentHandlerName.NEWSLETTER )
+        {
+            form = newsletterForm();
         }
         else
         {
@@ -108,6 +119,47 @@ public final class ContentTypeConverter
             superType( ContentTypeName.unstructured() ).
             form( form );
         return contentType.build();
+    }
+
+    private Form newsletterForm()
+    {
+        final Form.Builder form = Form.create();
+        form.addFormItem( Input.create().
+            name( "subject" ).
+            label( "Subject" ).
+            inputType( InputTypeName.TEXT_LINE ).
+            required( true ).
+            multiple( false ).
+            build() );
+        form.addFormItem( Input.create().
+            name( "summary" ).
+            label( "Summary" ).
+            inputType( InputTypeName.TEXT_AREA ).
+            required( false ).
+            multiple( false ).
+            build() );
+        form.addFormItem( Input.create().
+            name( "newsletter" ).
+            label( "Newsletter" ).
+            inputType( InputTypeName.HTML_AREA ).
+            required( true ).
+            multiple( false ).
+            build() );
+        final ContentTypeName pageContentType = ContentTypeName.from( this.appKey, "page" );
+        final ContentTypeName sectionContentType = ContentTypeName.from( this.appKey, "section" );
+        form.addFormItem( Input.create().
+            name( "page" ).
+            label( "Newsletter page" ).
+            inputType( InputTypeName.CONTENT_SELECTOR ).
+            inputTypeConfig( InputTypeConfig.create().
+                property( InputTypeProperty.create( "allowContentType", pageContentType.toString() ).build() ).
+                property( InputTypeProperty.create( "allowContentType", sectionContentType.toString() ).build() ).
+                build() ).
+            required( false ).
+            multiple( false ).
+            build() );
+
+        return form.build();
     }
 
     private Form convertConfig( final ContentTypeConfig contentTypeConfig )

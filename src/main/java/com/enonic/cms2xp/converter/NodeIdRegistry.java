@@ -6,10 +6,13 @@ import java.util.Map;
 import com.enonic.xp.node.NodeId;
 
 import com.enonic.cms.core.content.ContentKey;
+import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 
 public class NodeIdRegistry
 {
     private final Map<ContentKey, NodeId> nodeIdByContentKeyMap = new HashMap<>();
+
+    private final Map<MenuItemKey, NodeId> nodeIdByMenuKeyMap = new HashMap<>();
 
     public NodeId getNodeId( ContentKey contentKey )
     {
@@ -18,6 +21,17 @@ public class NodeIdRegistry
         {
             nodeId = new NodeId();
             nodeIdByContentKeyMap.put( contentKey, nodeId );
+        }
+        return nodeId;
+    }
+
+    public NodeId getNodeId( MenuItemKey menuItemKey )
+    {
+        NodeId nodeId = nodeIdByMenuKeyMap.get( menuItemKey );
+        if ( nodeId == null )
+        {
+            nodeId = new NodeId();
+            nodeIdByMenuKeyMap.put( menuItemKey, nodeId );
         }
         return nodeId;
     }

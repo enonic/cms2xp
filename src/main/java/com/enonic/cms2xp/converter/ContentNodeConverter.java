@@ -28,7 +28,10 @@ import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.access.ContentAccessEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
+import com.enonic.cms.core.content.contentdata.legacy.LegacyFileContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyFormContentData;
+import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
+import com.enonic.cms.core.content.contentdata.legacy.LegacyNewsletterContentData;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.security.group.GroupEntity;
@@ -52,16 +55,20 @@ public final class ContentNodeConverter
 
     private final FormValuesConverter formValuesConverter;
 
+    private final NewsletterValuesConverter newsletterValuesConverter;
+
     private final ContentTypeResolver contentTypeResolver;
 
     private final PrincipalKeyResolver principalKeyResolver;
 
-    public ContentNodeConverter( final ContentTypeResolver contentTypeResolver, final PrincipalKeyResolver principalKeyResolver )
+    public ContentNodeConverter( final ContentTypeResolver contentTypeResolver, final PrincipalKeyResolver principalKeyResolver,
+                                 final NodeIdRegistry nodeIdRegistry )
     {
         this.contentTypeResolver = contentTypeResolver;
-        this.nodeIdRegistry = new NodeIdRegistry();
+        this.nodeIdRegistry = nodeIdRegistry;
         this.dataEntryValuesConverter = new DataEntryValuesConverter( this.nodeIdRegistry );
         this.formValuesConverter = new FormValuesConverter();
+        this.newsletterValuesConverter = new NewsletterValuesConverter( this.nodeIdRegistry );
         this.principalKeyResolver = principalKeyResolver;
     }
 
@@ -160,6 +167,23 @@ public final class ContentNodeConverter
                 {
                     final LegacyFormContentData formData = (LegacyFormContentData) contentData;
                     data.setProperty( ContentPropertyNames.DATA, formValuesConverter.toValue( formData ) );
+                }
+                else if ( contentData instanceof LegacyImageContentData )
+                {
+
+                }
+                else if ( contentData instanceof LegacyFileContentData )
+                {
+
+                }
+                else if ( contentData instanceof LegacyNewsletterContentData )
+                {
+                    final LegacyNewsletterContentData newsletterData = (LegacyNewsletterContentData) contentData;
+                    data.setProperty( ContentPropertyNames.DATA, newsletterValuesConverter.toValue( newsletterData ) );
+                }
+                else
+                {
+                    logger.info( "Unsupported ContentData: " + content.getClass().getSimpleName() );
                 }
             }
             catch ( Exception e )
