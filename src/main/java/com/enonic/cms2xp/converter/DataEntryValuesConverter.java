@@ -23,15 +23,19 @@ import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.RelationDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.relationdataentrylistbased.AbstractRelationDataEntryListBasedInputDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.AbstractStringBasedInputDataEntry;
+import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.xmlbased.AbstractXmlBasedInputDataEntry;
 
 public class DataEntryValuesConverter
 {
     private final NodeIdRegistry nodeIdRegistry;
 
+    private final HtmlAreaConverter htmlAreaConverter;
+
     public DataEntryValuesConverter( final NodeIdRegistry nodeIdRegistry )
     {
         this.nodeIdRegistry = nodeIdRegistry;
+        this.htmlAreaConverter = new HtmlAreaConverter( nodeIdRegistry );
     }
 
     public Value toValue( final DataEntry dataEntry )
@@ -79,6 +83,7 @@ public class DataEntryValuesConverter
             case RELATED_CONTENT:
                 return single( toValue( (RelationDataEntry) dataEntry ) );
             case HTML_AREA:
+                return single( toValue( (HtmlAreaDataEntry) dataEntry ) );
             case TEXT_AREA:
             case SELECTOR:
             case TEXT:
@@ -189,6 +194,11 @@ public class DataEntryValuesConverter
     private Value toValue( final AbstractStringBasedInputDataEntry stringBasedInputDataEntry )
     {
         return ValueFactory.newString( stringBasedInputDataEntry.getValue() );
+    }
+
+    private Value toValue( final HtmlAreaDataEntry htmlEntry )
+    {
+        return this.htmlAreaConverter.toHtmlValue( htmlEntry );
     }
 
     private Value toValue( final AbstractXmlBasedInputDataEntry xmlBasedInputDataEntry )
