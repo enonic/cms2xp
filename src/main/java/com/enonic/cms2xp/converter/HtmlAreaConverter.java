@@ -12,6 +12,7 @@ import com.enonic.xp.data.ValueFactory;
 
 import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
+import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
@@ -23,9 +24,11 @@ public class HtmlAreaConverter
 
     private static final String ATTACHMENT_TYPE = "attachment";
 
-    private final static Pattern CONTENT_PATTERN =
-        Pattern.compile( "(?:href|src)=(\"((" + CONTENT_TYPE + "|" + IMAGE_TYPE + "|" + ATTACHMENT_TYPE + ")://([0-9]+)(\\?[^\"]+)?)\")",
-                         Pattern.MULTILINE | Pattern.UNIX_LINES );
+    private static final String PAGE_TYPE = "page";
+
+    private final static Pattern CONTENT_PATTERN = Pattern.compile(
+        "(?:href|src)=(\"((" + CONTENT_TYPE + "|" + IMAGE_TYPE + "|" + ATTACHMENT_TYPE + "|" + PAGE_TYPE + ")://([0-9]+)(\\?[^\"]+)?)\")",
+        Pattern.MULTILINE | Pattern.UNIX_LINES );
 
     private static final int MATCH_INDEX = 1;
 
@@ -78,6 +81,11 @@ public class HtmlAreaConverter
                 if ( CONTENT_TYPE.equals( type ) )
                 {
                     final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
+                    processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + pageUrl + "\"" );
+                }
+                if ( PAGE_TYPE.equals( type ) )
+                {
+                    final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new MenuItemKey( id ) );
                     processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + pageUrl + "\"" );
                 }
                 else if ( IMAGE_TYPE.equals( type ) )
