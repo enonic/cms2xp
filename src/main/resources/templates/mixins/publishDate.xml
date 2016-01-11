@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mixin>
+  <display-name>Publish date</display-name>
+  <items>
+    <input type="DateTime" name="publishFrom">
+      <label>Publish from</label>
+      <occurrences minimum="0" maximum="1"/>
+      <config>
+        <timezone>true</timezone>
+      </config>
+    </input>
+    <input type="DateTime" name="publishTo">
+      <label>Publish to</label>
+      <occurrences minimum="0" maximum="1"/>
+      <config>
+        <timezone>true</timezone>
+      </config>
+    </input>
+  </items>
+</mixin>

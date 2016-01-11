@@ -1,8 +1,11 @@
 package com.enonic.cms2xp.migrate;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -13,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.CharStreams;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.ContentNodeConverter;
@@ -122,6 +126,9 @@ public final class ExportData
             final ContentTypeConverter contentTypeConverter = new ContentTypeConverter( this.applicationKey );
             exportContentTypes( session, contentTypeConverter );
 
+            // export Mixins
+            exportMixins();
+
             //Retrieves, converts and exports the Categories
             exportCategories( session, contentTypeConverter );
 
@@ -189,6 +196,38 @@ public final class ExportData
         new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
     }
 
+    private void exportMixins()
+        throws IOException
+    {
+        logger.info( "Exporting mixins..." );
+        exportMixin( "publishDate" );
+    }
+
+    private void exportMixin( final String name )
+        throws IOException
+    {
+        final Path mixinsPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/mixins/" + name );
+        mixinsPath.toFile().mkdirs();
+        final Path mixinsFile = mixinsPath.resolve( name + ".xml" );
+
+        final InputStream resource = getClass().getResourceAsStream( "/templates/mixins/" + name + ".xml" );
+        Files.copy( resource, mixinsFile );
+
+        // add line to site.xml <x-data mixin="_name_"/>
+        final Path siteXml = config.target.applicationDir.toPath().resolve( "src/main/resources/site/site.xml" );
+        final List<String> siteXmlLines = CharStreams.readLines( new FileReader( siteXml.toFile() ) );
+        for ( int i = siteXmlLines.size() - 1; i > 0; i++ )
+        {
+            final String line = siteXmlLines.get( i );
+            if ( line.trim().equals( "</site>" ) )
+            {
+                siteXmlLines.add( i, "  <x-data mixin=\"" + name + "\"/>" );
+                break;
+            }
+        }
+        Files.write( siteXml, siteXmlLines, StandardCharsets.UTF_8 );
+    }
+
     private Icon loadIcon( final String name )
     {
         final InputStream resource = getClass().getResourceAsStream( "/icons/" + name + ".png" );
@@ -218,7 +257,7 @@ public final class ExportData
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
         final ContentNodeConverter contentNodeConverter =
-            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry );
+            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey );
         final ContentExporter contentExporter =
             new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );

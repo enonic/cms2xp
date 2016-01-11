@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 
 import com.enonic.cms2xp.export.PrincipalKeyResolver;
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
@@ -61,8 +62,10 @@ public final class ContentNodeConverter
 
     private final PrincipalKeyResolver principalKeyResolver;
 
+    private final ApplicationKey applicationKey;
+
     public ContentNodeConverter( final ContentTypeResolver contentTypeResolver, final PrincipalKeyResolver principalKeyResolver,
-                                 final NodeIdRegistry nodeIdRegistry )
+                                 final NodeIdRegistry nodeIdRegistry, final ApplicationKey applicationKey )
     {
         this.contentTypeResolver = contentTypeResolver;
         this.nodeIdRegistry = nodeIdRegistry;
@@ -70,6 +73,7 @@ public final class ContentNodeConverter
         this.formValuesConverter = new FormValuesConverter();
         this.newsletterValuesConverter = new NewsletterValuesConverter( this.nodeIdRegistry );
         this.principalKeyResolver = principalKeyResolver;
+        this.applicationKey = applicationKey;
     }
 
     public Node toNode( final ContentEntity content )
@@ -150,7 +154,9 @@ public final class ContentNodeConverter
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
         data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreatedAt().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
-        data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+        final PropertySet extraData = new PropertySet();
+        toPublishExtraData( content, extraData );
+        data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         final ContentVersionEntity mainVersion = content.getMainVersion();
         if ( mainVersion != null )
@@ -192,6 +198,24 @@ public final class ContentNodeConverter
             }
         }
         return data;
+    }
+
+    private void toPublishExtraData( final ContentEntity content, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+        final PropertySet publishData = new PropertySet();
+        if ( content.getAvailableFrom() != null )
+        {
+            publishData.setInstant( "publishFrom", content.getAvailableFrom().toInstant() );
+        }
+        if ( content.getAvailableTo() != null )
+        {
+            publishData.setInstant( "publishTo", content.getAvailableTo().toInstant() );
+        }
+        final PropertySet appData = new PropertySet();
+        appData.setSet( "publishDate", publishData );
+
+        extraData.addSet( appId, appData );
     }
 
     private String getDisplayName( final ContentEntity content )
