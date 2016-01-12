@@ -200,7 +200,10 @@ public final class ExportData
         throws IOException
     {
         logger.info( "Exporting mixins..." );
-        exportMixin( "publishDate" );
+        if ( config.target.exportPublishDateMixin )
+        {
+            exportMixin( "publishDate" );
+        }
     }
 
     private void exportMixin( final String name )
@@ -257,7 +260,8 @@ public final class ExportData
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
         final ContentNodeConverter contentNodeConverter =
-            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey );
+            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey,
+                                      this.config );
         final ContentExporter contentExporter =
             new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
         final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
+import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
@@ -64,8 +65,10 @@ public final class ContentNodeConverter
 
     private final ApplicationKey applicationKey;
 
+    private final MainConfig config;
+
     public ContentNodeConverter( final ContentTypeResolver contentTypeResolver, final PrincipalKeyResolver principalKeyResolver,
-                                 final NodeIdRegistry nodeIdRegistry, final ApplicationKey applicationKey )
+                                 final NodeIdRegistry nodeIdRegistry, final ApplicationKey applicationKey, final MainConfig config )
     {
         this.contentTypeResolver = contentTypeResolver;
         this.nodeIdRegistry = nodeIdRegistry;
@@ -74,6 +77,7 @@ public final class ContentNodeConverter
         this.newsletterValuesConverter = new NewsletterValuesConverter( this.nodeIdRegistry );
         this.principalKeyResolver = principalKeyResolver;
         this.applicationKey = applicationKey;
+        this.config = config;
     }
 
     public Node toNode( final ContentEntity content )
@@ -155,7 +159,10 @@ public final class ContentNodeConverter
         data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreatedAt().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
         final PropertySet extraData = new PropertySet();
-        toPublishExtraData( content, extraData );
+        if ( config.target.exportPublishDateMixin )
+        {
+            toPublishExtraData( content, extraData );
+        }
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         final ContentVersionEntity mainVersion = content.getMainVersion();

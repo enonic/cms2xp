@@ -13,4 +13,7 @@ public final class TargetConfig
     public String applicationName;
 
     public String applicationRepo;
+
+    // experimental switch
+    public boolean exportPublishDateMixin;
 }

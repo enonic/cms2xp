@@ -17,5 +17,6 @@
     <applicationDir>./application</applicationDir>
     <applicationName>com.enonic.xp.app.myApp</applicationName>
     <applicationRepo>starter-base</applicationRepo>
+    <exportPublishDateMixin>false</exportPublishDateMixin>
   </target>
 </config>
