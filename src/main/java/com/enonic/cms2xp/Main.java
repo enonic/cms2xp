@@ -1,11 +1,15 @@
 package com.enonic.cms2xp;
 
 import java.io.File;
+import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.io.Resources;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.config.MainConfigLoader;
@@ -25,6 +29,11 @@ public final class Main
         if ( args.length == 0 )
         {
             System.out.println( "usage: cms2xp <config_path>\n" );
+            System.out.println( "       Example of config.xml:\r\n" );
+            final URL configUrl = Main.class.getResource( "/templates/config_example.xml" );
+            final List<String> configLines = Resources.asCharSource( configUrl, Charsets.UTF_8 ).readLines();
+            configLines.stream().map( ( l ) -> "       " + l ).forEach( System.out::println );
+            System.out.println();
             System.exit( 1 );
         }
         //Retrieves the config

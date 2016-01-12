@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config>
+  <!-- Source (CMS) -->
+  <source>
+    <jdbcDriver>org.h2.Driver</jdbcDriver>
+    <jdbcUrl>jdbc:h2:~/cms-home/data/h2/cms</jdbcUrl>
+    <jdbcUser>sa</jdbcUser>
+    <jdbcPassword>***</jdbcPassword>
+    <blobStoreDir>./cms-home/data/blobs</blobStoreDir>
+    <resourcesDir>./cms-home/data/resources</resourcesDir>
+  </source>
+
+  <!-- Target (XP) -->
+  <target>
+    <exportDir>./export</exportDir>
+    <userExportDir>./export_user</userExportDir>
+    <applicationDir>./application</applicationDir>
+    <applicationName>com.enonic.xp.app.myApp</applicationName>
+    <applicationRepo>starter-base</applicationRepo>
+  </target>
+</config>
