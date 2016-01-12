@@ -1,7 +1,6 @@
 package com.enonic.cms2xp.converter;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,13 +53,8 @@ public class HtmlAreaConverter
 
     public Value toHtmlValue( final HtmlAreaDataEntry htmlEntry )
     {
-        final Set<ContentKey> relatedKeys = htmlEntry.resolveRelatedContentKeys();
-        if ( !relatedKeys.isEmpty() )
-        {
-            final String processedHtml = processLinks( htmlEntry.getValue() );
-            return ValueFactory.newString( processedHtml );
-        }
-        return ValueFactory.newString( htmlEntry.getValue() );
+        final String processedHtml = processLinks( htmlEntry.getValue() );
+        return ValueFactory.newString( processedHtml );
     }
 
     private String processLinks( final String html )

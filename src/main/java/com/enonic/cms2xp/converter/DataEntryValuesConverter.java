@@ -183,12 +183,12 @@ public class DataEntryValuesConverter
     private Value toValue( final RelationDataEntry relationDataEntry )
     {
         final ContentKey contentKey = relationDataEntry.getContentKey();
-        if ( contentKey != null )
-        { //TODO Why could that be null
-            final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
-            return ValueFactory.newReference( new Reference( nodeId ) );
+        if ( contentKey == null )
+        {
+            return null;
         }
-        return null;
+        final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
+        return ValueFactory.newReference( new Reference( nodeId ) );
     }
 
     private Value toValue( final AbstractStringBasedInputDataEntry stringBasedInputDataEntry )
