@@ -16,8 +16,8 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'org.slf4j:slf4j-simple:1.7.12'
     compile 'com.enonic.cms:cms-core:4.7.11'
-    compile 'com.enonic.xp:core-api:6.2.0'
-    compile 'com.enonic.xp:toolbox:6.2.0'
+    compile "com.enonic.xp:core-api:${xpVersion}"
+    compile "com.enonic.xp:toolbox:${xpVersion}"
     compile 'com.samskivert:jmustache:1.10'
     testCompile 'junit:junit:4.12'
 }
