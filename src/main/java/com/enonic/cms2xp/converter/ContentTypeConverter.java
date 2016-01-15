@@ -116,7 +116,7 @@ public final class ContentTypeConverter
             displayName( ct.getName() ).
             description( ct.getDescription() ).
             createdTime( ct.getTimestamp().toInstant() ).
-            superType( ContentTypeName.unstructured() ).
+            superType( ContentTypeName.structured() ).
             form( form );
         return contentType.build();
     }
