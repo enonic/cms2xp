@@ -26,6 +26,7 @@ import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
+import com.enonic.cms.core.structure.menuitem.MenuItemType;
 import com.enonic.cms.core.structure.menuitem.section.SectionContentEntity;
 import com.enonic.cms.core.structure.page.PageEntity;
 import com.enonic.cms.core.structure.page.PageWindowEntity;
@@ -48,6 +49,10 @@ public class MenuItemNodeConverter
 
     private final NodeIdRegistry nodeIdRegistry;
 
+    private final ContentTypeName sectionType;
+
+    private final ContentTypeName pageType;
+
     public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
                                   final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver,
                                   final NodeIdRegistry nodeIdRegistry )
@@ -57,6 +62,8 @@ public class MenuItemNodeConverter
         this.pageTemplateResolver = pageTemplateResolver;
         this.portletToPartResolver = portletToPartResolver;
         this.nodeIdRegistry = nodeIdRegistry;
+        this.sectionType = ContentTypeName.from( this.applicationKey, "section" );
+        this.pageType = ContentTypeName.from( this.applicationKey, "page" );
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
@@ -66,7 +73,8 @@ public class MenuItemNodeConverter
 
     private PropertyTree toData( final MenuItemEntity menuItem )
     {
-        final ContentTypeName type = ContentTypeName.from( this.applicationKey, menuItem.isSection() ? "section" : "page" );
+        final Boolean isShortcut = menuItem.getType() == MenuItemType.SHORTCUT;
+        final ContentTypeName type = menuItem.isSection() ? sectionType : isShortcut ? ContentTypeName.shortcut() : pageType;
 
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
@@ -92,6 +100,15 @@ public class MenuItemNodeConverter
 
             subData.setProperty( "description", ValueFactory.newString( menuItem.getName() ) ); //TODO No description?
             subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
+        }
+        else if ( isShortcut )
+        {
+            final MenuItemEntity shortcutMenu = menuItem.getMenuItemShortcut();
+            if ( shortcutMenu != null )
+            {
+                final NodeId forwardNodeId = nodeIdRegistry.getNodeId( shortcutMenu.getKey() );
+                subData.setProperty( "target", ValueFactory.newReference( Reference.from( forwardNodeId.toString() ) ) );
+            }
         }
         else if ( menuItem.isSection() )
         {
