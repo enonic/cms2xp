@@ -45,12 +45,14 @@ public class SiteExporter
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )
     {
+        Node topSiteNode = createSiteParent( parentNodePath );
+
         for ( SiteEntity siteEntity : siteEntities )
         {
             //Converts the site to a node
             Node siteNode = siteNodeConverter.convertToNode( siteEntity );
             siteNode = Node.create( siteNode ).
-                parentPath( parentNodePath ).
+                parentPath( topSiteNode.path() ).
                 build();
 
             //Exports the node
@@ -63,6 +65,18 @@ public class SiteExporter
             //Export site menu items
             exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
         }
+    }
+
+    private Node createSiteParent( final NodePath parentNodePath )
+    {
+        Node topSiteNode = siteNodeConverter.topSiteFolderToNode();
+        topSiteNode = Node.create( topSiteNode ).
+            parentPath( parentNodePath ).
+            build();
+
+        nodeExporter.exportNode( topSiteNode );
+
+        return topSiteNode;
     }
 
     private void exportMenuItems( final Node parentNode, final Collection<MenuItemEntity> menuItems )

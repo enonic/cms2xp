@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.converter;
 
+import java.time.Instant;
+
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
@@ -44,6 +46,57 @@ public class SiteNodeConverter
         siteConfig.setProperty( "config", ValueFactory.newPropertySet( new PropertySet() ) );
         final PropertySet subData = new PropertySet();
         subData.setProperty( "description", ValueFactory.newString( siteEntity.getName() ) ); //TODO No description?
+        subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
+        data.setSet( ContentPropertyNames.DATA, subData );
+
+        data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+        return data;
+    }
+
+    public Node topSiteFolderToNode()
+    {
+        return createNode( new NodeId(), "Sites", folderToData( "Sites" ) );
+    }
+
+    private PropertyTree folderToData( final String name )
+    {
+        final Instant time = Instant.now();
+        final PropertyTree data = new PropertyTree();
+        data.setBoolean( ContentPropertyNames.VALID, true );
+        data.setString( ContentPropertyNames.DISPLAY_NAME, name );
+        data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
+        data.setInstant( ContentPropertyNames.MODIFIED_TIME, time );
+        data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
+        data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
+        data.setInstant( ContentPropertyNames.CREATED_TIME, time );
+        data.setSet( ContentPropertyNames.DATA, new PropertySet() );
+        data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+        return data;
+    }
+
+    public Node topArchiveSiteToNode()
+    {
+        return createNode( new NodeId(), "Content", topSiteToData( "Content" ) );
+    }
+
+    private PropertyTree topSiteToData( final String displayName )
+    {
+        final Instant time = Instant.now();
+
+        final PropertyTree data = new PropertyTree();
+        data.setBoolean( ContentPropertyNames.VALID, true );
+        data.setString( ContentPropertyNames.DISPLAY_NAME, displayName );
+        data.setString( ContentPropertyNames.TYPE, ContentTypeName.site().toString() );
+        data.setInstant( ContentPropertyNames.MODIFIED_TIME, time );
+        data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
+        data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
+        data.setInstant( ContentPropertyNames.CREATED_TIME, time );
+
+        final PropertySet siteConfig = new PropertySet();
+        siteConfig.setProperty( "applicationKey", ValueFactory.newString( applicationKey.toString() ) );
+        siteConfig.setProperty( "config", ValueFactory.newPropertySet( new PropertySet() ) );
+        final PropertySet subData = new PropertySet();
+        subData.setProperty( "description", ValueFactory.newString( "" ) );
         subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
         data.setSet( ContentPropertyNames.DATA, subData );
 

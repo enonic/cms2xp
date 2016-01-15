@@ -264,7 +264,7 @@ public final class ExportData
                                       this.config );
         final ContentExporter contentExporter =
             new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
-        final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter );
+        final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter, applicationKey );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }
