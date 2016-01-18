@@ -1,10 +1,24 @@
 package com.enonic.cms2xp.converter;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Splitter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
+
+import com.google.common.base.Joiner;
 
 import com.enonic.xp.data.Value;
 import com.enonic.xp.data.ValueFactory;
@@ -13,7 +27,8 @@ import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
 import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 
-import static com.google.common.base.Strings.nullToEmpty;
+import static org.apache.commons.lang.StringUtils.substringAfter;
+import static org.apache.commons.lang.StringUtils.substringBefore;
 
 public class HtmlAreaConverter
 {
@@ -24,22 +39,6 @@ public class HtmlAreaConverter
     private static final String ATTACHMENT_TYPE = "attachment";
 
     private static final String PAGE_TYPE = "page";
-
-    private final static Pattern CONTENT_PATTERN = Pattern.compile(
-        "(?:href|src)=(\"((" + CONTENT_TYPE + "|" + IMAGE_TYPE + "|" + ATTACHMENT_TYPE + "|" + PAGE_TYPE + ")://([0-9]+)(\\?[^\"]+)?)\")",
-        Pattern.MULTILINE | Pattern.UNIX_LINES );
-
-    private static final int MATCH_INDEX = 1;
-
-    private static final int LINK_INDEX = MATCH_INDEX + 1;
-
-    private static final int TYPE_INDEX = LINK_INDEX + 1;
-
-    private static final int ID_INDEX = TYPE_INDEX + 1;
-
-    private static final int PARAMS_INDEX = ID_INDEX + 1;
-
-    private static final int NB_GROUPS = ID_INDEX;
 
     private static final String KEEP_SIZE_TRUE = "?keepsize=true";
 
@@ -59,57 +58,193 @@ public class HtmlAreaConverter
 
     private String processLinks( final String html )
     {
-        final Matcher contentMatcher = CONTENT_PATTERN.matcher( html );
+        final Document doc = Jsoup.parseBodyFragment( html );
+        final Element body = doc.body();
 
-        String processedHtml = html;
-        while ( contentMatcher.find() )
+        final Elements links = body.select( "a" );
+        for ( Element link : links )
         {
-            if ( contentMatcher.groupCount() >= NB_GROUPS )
-            {
-                final String match = contentMatcher.group( MATCH_INDEX );
-                final String link = contentMatcher.group( LINK_INDEX );
-                final String type = contentMatcher.group( TYPE_INDEX );
-                final String id = contentMatcher.group( ID_INDEX );
-                String urlParams = contentMatcher.groupCount() == PARAMS_INDEX ? contentMatcher.group( PARAMS_INDEX ) : null;
+            final String href = link.attr( "href" );
 
-                if ( CONTENT_TYPE.equals( type ) )
-                {
-                    final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
-                    processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + pageUrl + "\"" );
-                }
-                if ( PAGE_TYPE.equals( type ) )
-                {
-                    final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new MenuItemKey( id ) );
-                    processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + pageUrl + "\"" );
-                }
-                else if ( IMAGE_TYPE.equals( type ) )
-                {
-                    String imageUrl = "image://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
-                    final Map<String, String> params = parseParams( urlParams );
-                    if ( "full".equals( params.get( "_size" ) ) ) // _format, _filter
-                    {
-                        imageUrl = imageUrl + KEEP_SIZE_TRUE;
-                    }
-                    processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + imageUrl + "\"" );
-                }
-                else
-                {
-                    final String attachmentUrl = "media://download/" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
-                    processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + attachmentUrl + "\"" );
-                }
+            final String processedUrl = processUrl( href, null );
+            if ( !href.equals( processedUrl ) )
+            {
+                link.attr( "href", processedUrl );
             }
         }
-        return processedHtml;
+
+        final Elements images = body.select( "img" );
+        for ( Element image : images )
+        {
+            final String src = image.attr( "src" );
+
+            final String processedUrl = processUrl( src, image );
+            if ( !src.equals( processedUrl ) )
+            {
+                image.attr( "src", processedUrl );
+            }
+        }
+
+        final Document.OutputSettings settings = new Document.OutputSettings().prettyPrint( false );
+        return doc.outputSettings( settings ).body().html();
     }
 
-    private Map<String, String> parseParams( final String urlParams )
+    private String processUrl( final String url, final Element imageElement )
     {
-        String query = nullToEmpty( urlParams );
-        if ( query.startsWith( "?" ) )
+        if ( url.startsWith( CONTENT_TYPE + "://" ) )
         {
-            query = query.substring( 1 );
+            final String id = idFromUrl( url, CONTENT_TYPE );
+            final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
+            return pageUrl;
         }
-        query = query.replace( "&amp;", "&" );
-        return Splitter.on( '&' ).trimResults().withKeyValueSeparator( "=" ).split( query );
+        else if ( url.startsWith( PAGE_TYPE + "://" ) )
+        {
+            final String id = idFromUrl( url, PAGE_TYPE );
+            final String pageUrl = "content://" + this.nodeIdRegistry.getNodeId( new MenuItemKey( id ) );
+            return pageUrl;
+        }
+        else if ( url.startsWith( ATTACHMENT_TYPE + "://" ) )
+        {
+            final String id = idFromUrl( url, ATTACHMENT_TYPE );
+            final String attachmentUrl = "media://download/" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
+            return attachmentUrl;
+        }
+        else if ( url.startsWith( IMAGE_TYPE + "://" ) )
+        {
+            final String id = idFromUrl( url, IMAGE_TYPE );
+            String imageUrl = "image://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
+            final Map<String, String> params = getUrlParams( url );
+            final String sizeParam = params.get( "_size" );
+
+            final ImageAlignment imageAlignment = getAlignment( imageElement );
+            final ImageSize size = ImageSize.from( sizeParam );
+
+            switch ( size )
+            {
+                case CUSTOM:
+                case LIST:
+                case THUMBNAIL:
+                case REGULAR:
+                    setImageAlignment( imageElement, imageAlignment, size );
+                    break;
+
+                case WIDE:
+                case SQUARE:
+                    setImageAlignment( imageElement, imageAlignment, size );
+                    break;
+
+                case FULL:
+                    setImageAlignment( imageElement, ImageAlignment.JUSTIFIED, size );
+                    break;
+                case ORIGINAL:
+                    // keep size + alignment
+                    imageUrl = imageUrl + KEEP_SIZE_TRUE;
+                    setImageAlignment( imageElement, imageAlignment, size );
+                    break;
+            }
+            return imageUrl;
+        }
+
+        return url;
     }
+
+    private void setImageAlignment( final Element img, final ImageAlignment alignment, final ImageSize size )
+    {
+        final String styles = img.attr( "style" );
+        final Map<String, String> cssStyles = new LinkedHashMap<>();
+        if ( !StringUtils.isEmpty( styles ) )
+        {
+            final String[] stylePairs = styles.split( ";" );
+            for ( String style : stylePairs )
+            {
+                final String name = substringBefore( style, ":" );
+                final String value = substringAfter( style, ":" );
+                cssStyles.put( name, value );
+            }
+        }
+
+        cssStyles.put( "text-align", alignment.getId() );
+        cssStyles.put( "width", "100%" );
+
+        Joiner.MapJoiner joiner = Joiner.on( ";" ).withKeyValueSeparator( ": " );
+        final String newStyleAttr = joiner.join( cssStyles );
+        img.attr( "style", newStyleAttr );
+
+        // figure wrapper
+        final boolean isImageInOriginalSize = size == ImageSize.FULL;
+        final String styleFormat = "float: %s; margin: %s;" + ( isImageInOriginalSize ? "" : "width: %s;" );
+        String styleAttr = "text-align: " + alignment.getId() + ";";
+        switch ( alignment )
+        {
+            case LEFT:
+            case RIGHT:
+                styleAttr = String.format( styleFormat, alignment.getId(), "15px", "40%" );
+                break;
+            case CENTER:
+                styleAttr = styleAttr + String.format( styleFormat, "none", "auto", "60%" );
+                break;
+        }
+        final Attributes figureAttr = new Attributes();
+        figureAttr.put( "style", styleAttr );
+
+        final Element figureEl = new Element( Tag.valueOf( "figure" ), "", figureAttr );
+        img.replaceWith( figureEl );
+        figureEl.appendChild( img );
+    }
+
+    private ImageAlignment getAlignment( final Element imageElement )
+    {
+        if ( imageElement == null || !"img".equals( imageElement.tagName() ) )
+        {
+            return ImageAlignment.LEFT;
+        }
+
+        if ( imageElement.hasClass( "editor-image-right" ) )
+        {
+            return ImageAlignment.RIGHT;
+        }
+        if ( imageElement.hasClass( "editor-image-left" ) )
+        {
+            return ImageAlignment.LEFT;
+        }
+
+        final Element parent = imageElement.parent();
+        if ( parent != null && "p".equals( parent.tagName() ) )
+        {
+            if ( parent.hasClass( "editor-p-center" ) )
+            {
+                return ImageAlignment.CENTER;
+            }
+            if ( parent.hasClass( "editor-p-block" ) )
+            {
+                return ImageAlignment.JUSTIFIED;
+            }
+        }
+
+        return ImageAlignment.LEFT;
+    }
+
+    private Map<String, String> getUrlParams( final String url )
+    {
+        final URI uri;
+        try
+        {
+            uri = new URI( url );
+        }
+        catch ( URISyntaxException e )
+        {
+            return Collections.emptyMap();
+        }
+        List<NameValuePair> params = URLEncodedUtils.parse( uri, "UTF-8" );
+        return params.stream().collect( Collectors.toMap( NameValuePair::getName, NameValuePair::getValue ) );
+    }
+
+    private String idFromUrl( final String url, final String type )
+    {
+        String id = substringAfter( url, type + "://" );
+        id = substringBefore( id, "/" );
+        id = substringBefore( id, "?" );
+        return id;
+    }
+
 }
