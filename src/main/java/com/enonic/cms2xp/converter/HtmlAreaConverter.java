@@ -190,6 +190,20 @@ public class HtmlAreaConverter
         final Element figureEl = new Element( Tag.valueOf( "figure" ), "", figureAttr );
         img.replaceWith( figureEl );
         figureEl.appendChild( img );
+
+        String caption = img.attr( "title" );
+        if ( StringUtils.isBlank( caption ) )
+        {
+            caption = img.attr( "alt" );
+        }
+        if ( StringUtils.isNotBlank( caption ) )
+        {
+            final Attributes figCaptionAttr = new Attributes();
+            figCaptionAttr.put( "style", "text-align: center" );
+            final Element figCaption = new Element( Tag.valueOf( "figcaption" ), "", figCaptionAttr );
+            figCaption.text( caption );
+            figureEl.appendChild( figCaption );
+        }
     }
 
     private ImageAlignment getAlignment( final Element imageElement )
