@@ -19,15 +19,20 @@ import com.enonic.xp.security.Principal;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.PrincipalKeys;
 import com.enonic.xp.security.Role;
+import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.security.User;
 import com.enonic.xp.security.UserStore;
 import com.enonic.xp.security.UserStoreKey;
 import com.enonic.xp.security.acl.AccessControlList;
+import com.enonic.xp.security.acl.UserStoreAccessControlEntry;
 import com.enonic.xp.security.acl.UserStoreAccessControlList;
 
 import com.enonic.cms.core.security.group.GroupEntity;
 import com.enonic.cms.core.security.user.UserEntity;
 import com.enonic.cms.core.security.userstore.UserStoreEntity;
+
+import static com.enonic.xp.security.acl.UserStoreAccess.ADMINISTRATOR;
+import static com.enonic.xp.security.acl.UserStoreAccess.READ;
 
 public final class UserStoreConverter
     extends AbstractNodeConverter
@@ -103,7 +108,11 @@ public final class UserStoreConverter
         final PropertyTree data = new PropertyTree();
         data.setString( UserStorePropertyNames.DISPLAY_NAME_KEY, userStore.getDisplayName() );
 
-        final UserStoreAccessControlList permissions = UserStoreAccessControlList.empty();
+        final UserStoreAccessControlList permissions =
+            UserStoreAccessControlList.of( UserStoreAccessControlEntry.create().principal( RoleKeys.ADMIN ).access( ADMINISTRATOR ).build(),
+                                           UserStoreAccessControlEntry.create().principal( RoleKeys.AUTHENTICATED ).access(
+                                               READ ).build() );
+
         AccessControlList userStoreNodePermissions = UserStoreNodeTranslator.userStorePermissionsToUserStoreNodePermissions( permissions );
         AccessControlList usersNodePermissions = UserStoreNodeTranslator.userStorePermissionsToUsersNodePermissions( permissions );
         AccessControlList groupsNodePermissions = UserStoreNodeTranslator.userStorePermissionsToGroupsNodePermissions( permissions );
