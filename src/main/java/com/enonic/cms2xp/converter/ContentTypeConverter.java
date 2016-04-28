@@ -31,6 +31,7 @@ import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.content.contenttype.CtySetConfig;
 import com.enonic.cms.core.content.contenttype.InvalidContentTypeConfigException;
+import com.enonic.cms.core.content.contenttype.dataentryconfig.BinaryDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.CheckboxDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType;
@@ -233,7 +234,7 @@ public final class ContentTypeConverter
         switch ( type )
         {
             case BINARY:
-                // deprecated
+                convertBinaryEntry( (BinaryDataEntryConfig) entry, input );
                 break;
             case CHECKBOX:
                 convertCheckBoxEntry( (CheckboxDataEntryConfig) entry, input );
@@ -289,7 +290,15 @@ public final class ContentTypeConverter
 
     private void convertFileEntry( final FileDataEntryConfig entry, final Input.Builder input )
     {
-        input.inputType( InputTypeName.FILE_UPLOADER );
+        input.inputType( InputTypeName.CONTENT_SELECTOR );
+        input.maximumOccurrences( 1 );
+//        final String allowedType = ContentTypeName.media().toString();
+//        input.inputTypeProperty( InputTypeProperty.create( "allow-content-type", allowedType ).build() );
+    }
+
+    private void convertBinaryEntry( final BinaryDataEntryConfig entry, final Input.Builder input )
+    {
+        input.inputType( InputTypeName.ATTACHMENT_UPLOADER );
     }
 
     private void convertMultipleChoiceEntry( final MultipleChoiceDataEntryConfig entry, final Input.Builder input )
@@ -305,7 +314,7 @@ public final class ContentTypeConverter
         for ( String allowedContentTypeName : entry.getContentTypeNames() )
         {
             final String allowedType = ContentTypeName.from( appKey, allowedContentTypeName ).toString();
-            input.inputTypeProperty( InputTypeProperty.create( "allowedContentType", allowedType ).build() );
+            input.inputTypeProperty( InputTypeProperty.create( "allow-content-type", allowedType ).build() );
         }
     }
 
