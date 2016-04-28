@@ -25,14 +25,18 @@ public abstract class UserStoreNodeTranslator
 
     public final static String GROUP_FOLDER_NODE_NAME = "groups";
 
+    protected final static NodePath USER_STORE_PARENT_PATH = NodePath.create( NodePath.ROOT ).
+        addElement( PrincipalKey.IDENTITY_NODE_NAME ).
+        build();
+
     public static NodePath getRolesNodePath()
     {
-        return NodePath.create( NodePath.ROOT, PrincipalKey.ROLES_NODE_NAME ).build();
+        return NodePath.create( getUserStoresParentPath(), PrincipalKey.ROLES_NODE_NAME ).build();
     }
 
     public static NodePath getUserStoresParentPath()
     {
-        return NodePath.ROOT;
+        return USER_STORE_PARENT_PATH;
     }
 
     public static AccessControlList userStorePermissionsToUserStoreNodePermissions( final UserStoreAccessControlList userStorePermissions )
@@ -110,5 +114,4 @@ public abstract class UserStoreNodeTranslator
         }
         return AccessControlList.create().addAll( entries ).build();
     }
-
 }
