@@ -48,7 +48,7 @@ public class PortletExporter
         this.target = target;
         this.xsltPathToPartNameMapping = new HashMap<>();
         this.applicationKey = applicationKey;
-        this.fragmentsNodeConverter = new FragmentsNodeConverter( applicationKey );
+        this.fragmentsNodeConverter = new FragmentsNodeConverter( applicationKey, this );
         this.nodeExporter = nodeExporter;
     }
 

@@ -176,18 +176,10 @@ public final class ExportData
             form( SECTION_FORM ).
             icon( loadIcon( "section" ) ).
             build();
-        final ContentType fragmentContentType = ContentType.create().
-            name( ContentTypeName.from( this.applicationKey, "fragment" ) ).
-            displayName( "Fragment" ).
-            description( "" ).
-            createdTime( Instant.now() ).
-            superType( ContentTypeName.structured() ).
-            icon( loadIcon( "fragment" ) ).
-            build();
 
         ImmutableList.Builder<ContentType> contentTypeListBuilder = ImmutableList.builder();
         contentTypeList = contentTypeListBuilder.addAll( contentTypeList ).
-            add( pageContentType ).add( sectionContentType ).add( fragmentContentType ).
+            add( pageContentType ).add( sectionContentType ).
             build();
 
         //Exports the ContentTypes

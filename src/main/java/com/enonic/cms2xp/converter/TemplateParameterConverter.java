@@ -19,13 +19,11 @@ public class TemplateParameterConverter
 
     private final ContentTypeName pageContentType;
 
-    private final ContentTypeName fragmentContentType;
 
     public TemplateParameterConverter( final ApplicationKey applicationKey )
     {
         this.applicationKey = applicationKey;
         this.pageContentType = ContentTypeName.from( this.applicationKey, "page" );
-        this.fragmentContentType = ContentTypeName.from( this.applicationKey, "fragment" );
     }
 
     public Form toFormXml( final Collection<TemplateParameter> parameters )
@@ -62,7 +60,7 @@ public class TemplateParameterConverter
         {
             input.inputType( InputTypeName.CONTENT_SELECTOR );
             InputTypeConfig.create().
-                property( InputTypeProperty.create( "allowContentType", fragmentContentType.toString() ).build() );
+                property( InputTypeProperty.create( "allowContentType", ContentTypeName.fragment().toString() ).build() );
         }
         else if ( paramType == TemplateParameterType.PAGE )
         {
