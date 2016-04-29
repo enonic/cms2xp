@@ -73,7 +73,8 @@ public class MenuItemNodeConverter
 
     private PropertyTree toData( final MenuItemEntity menuItem )
     {
-        final Boolean isShortcut = menuItem.getType() == MenuItemType.SHORTCUT;
+        final boolean isShortcut = menuItem.getType() == MenuItemType.SHORTCUT;
+        final boolean isDefaultPage = menuItem.getType() == MenuItemType.PAGE;
         final ContentTypeName type = menuItem.isSection() ? sectionType : isShortcut ? ContentTypeName.shortcut() : pageType;
 
         final PropertyTree data = new PropertyTree();
@@ -92,13 +93,14 @@ public class MenuItemNodeConverter
 
         final PropertySet subData = new PropertySet();
         final boolean isSite = menuItem.isRootPage();
+        final PageEntity page = menuItem.getPage();
         if ( isSite )
         {
             final PropertySet siteConfig = new PropertySet();
             siteConfig.setProperty( "applicationKey", ValueFactory.newString( applicationKey.toString() ) );
             siteConfig.setProperty( "config", ValueFactory.newPropertySet( new PropertySet() ) );
 
-            subData.setProperty( "description", ValueFactory.newString( menuItem.getName() ) ); //TODO No description?
+            subData.setProperty( "description", ValueFactory.newString( menuItem.getName() ) );
             subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
         }
         else if ( isShortcut )
@@ -108,6 +110,15 @@ public class MenuItemNodeConverter
             {
                 final NodeId forwardNodeId = nodeIdRegistry.getNodeId( shortcutMenu.getKey() );
                 subData.setProperty( "target", ValueFactory.newReference( Reference.from( forwardNodeId.toString() ) ) );
+            }
+        }
+        else if ( isDefaultPage )
+        {
+            final PageTemplateKey pageTemplate = page.getTemplate().getPageTemplateKey();
+            final PropertyTree pageData = this.pageTemplateResolver.resolveTemplatePageData( pageTemplate );
+            if ( pageData != null )
+            {
+                data.setSet( ContentPropertyNames.PAGE, pageData.copy().getRoot() );
             }
         }
         else if ( menuItem.isSection() )
@@ -129,13 +140,12 @@ public class MenuItemNodeConverter
             }
         }
 
-        final PageEntity page = menuItem.getPage();
-        if ( page != null )
+        if ( !isDefaultPage && page != null )
         {
             final PropertySet pageData = new PropertySet();
             final PageTemplateKey pageTemplate = page.getTemplate().getPageTemplateKey();
             pageData.setProperty( "controller", ValueFactory.newString( null ) );
-            final NodeId templateNodeId = this.pageTemplateResolver.resolve( pageTemplate );
+            final NodeId templateNodeId = this.pageTemplateResolver.resolveTemplateNodeId( pageTemplate );
             pageData.setProperty( "template", ValueFactory.newReference( Reference.from( templateNodeId.toString() ) ) );
 
             final Multimap<String, PortletEntity> regionPortlets = ArrayListMultimap.create();

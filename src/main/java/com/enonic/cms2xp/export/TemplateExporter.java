@@ -55,7 +55,7 @@ public class TemplateExporter
     {
         this.nodeExporter = nodeExporter;
         this.applicationKey = applicationKey;
-        this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey, portletToPartResolver );
+        this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey, portletToPartResolver, pageTemplateResolver );
         this.pageDirectory = pageDirectory;
         this.pageTemplateResolver = pageTemplateResolver;
         this.xsltExported = new HashMap<>();
@@ -87,12 +87,15 @@ public class TemplateExporter
                 final String xsltPath = pageTemplateEntity.getStyleKey().toString();
                 final String pageName = this.xsltExported.get( xsltPath );
                 Node pageTemplateNode = pageTemplateNodeConverter.toNode( pageTemplateEntity, pageName );
-                pageTemplateNode = Node.create( pageTemplateNode ).
-                    parentPath( templateFolderNode.path() ).
-                    build();
-                nodeExporter.exportNode( pageTemplateNode );
-                children.add( pageTemplateNode );
-                pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
+                if ( pageTemplateNode != null )
+                {
+                    pageTemplateNode = Node.create( pageTemplateNode ).
+                        parentPath( templateFolderNode.path() ).
+                        build();
+                    nodeExporter.exportNode( pageTemplateNode );
+                    children.add( pageTemplateNode );
+                    pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
+                }
             }
 
             nodeExporter.writeNodeOrderList( templateFolderNode, Nodes.from( children ) );

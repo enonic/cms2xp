@@ -1,21 +1,18 @@
-var portal = require('/lib/xp/portal');
-var thymeleaf = require('/lib/xp/thymeleaf');
-var parentPath = './';
-var view = resolve(parentPath + '{{name}}.html');
+var portalLib = require('/lib/xp/portal');
+var thymeleafLib = require('/lib/xp/thymeleaf');
+var view = resolve('{{name}}.html');
 
 function handleGet(req) {
+    var site = portalLib.getSite();
+    var reqContent = portalLib.getContent();
 
-    var editMode = req.mode == 'edit';
-
-    var site = portal.getSite();
-    var reqContent = portal.getContent();
     var params = {
         context: req,
         site: site,
-        reqContent: reqContent,
-        editable: editMode
+        reqContent: reqContent
     };
-    var body = thymeleaf.render(view, params);
+
+    var body = thymeleafLib.render(view, params);
 
     return {
         contentType: 'text/html',
