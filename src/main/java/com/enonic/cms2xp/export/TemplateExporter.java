@@ -61,7 +61,7 @@ public class TemplateExporter
         this.xsltExported = new HashMap<>();
     }
 
-    public void export( final SiteEntity siteEntity, final NodePath parentNodePath )
+    public Node export( final SiteEntity siteEntity, final NodePath parentNodePath )
     {
 
         Node templateFolderNode = siteTemplatesNodeConverter.toNode( siteEntity );
@@ -100,6 +100,7 @@ public class TemplateExporter
 
             nodeExporter.writeNodeOrderList( templateFolderNode, Nodes.from( children ) );
         }
+        return templateFolderNode;
     }
 
     private void exportPages( final List<PageTemplateEntity> pageTemplates )

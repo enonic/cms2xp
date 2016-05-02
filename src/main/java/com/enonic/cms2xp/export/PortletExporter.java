@@ -70,11 +70,11 @@ public class PortletExporter
         return fragmentToPortletMapping.get( portletKey );
     }
 
-    public void export( final SiteEntity siteEntity, final NodePath parentNode )
+    public Node export( final SiteEntity siteEntity, final NodePath parentNode )
     {
         final List<PortletEntity> portletEntities = new PortletRetriever( session ).retrievePortlets( siteEntity.getKey() );
         exportParts( portletEntities );
-        exportFragments( portletEntities, parentNode );
+        return exportFragments( portletEntities, parentNode );
     }
 
     private void exportParts( Iterable<PortletEntity> portletEntities )
@@ -99,7 +99,7 @@ public class PortletExporter
         }
     }
 
-    private void exportFragments( final Iterable<PortletEntity> portletEntities, final NodePath parentNode )
+    private Node exportFragments( final Iterable<PortletEntity> portletEntities, final NodePath parentNode )
     {
 
         Node templateFolderNode = fragmentsNodeConverter.getFragmentsNode();
@@ -126,6 +126,7 @@ public class PortletExporter
                 logger.warn( "Could not export node '" + contentNode.path() + "'", e );
             }
         }
+        return templateFolderNode;
     }
 
     private void exportAsPart( final PortletEntity portletEntity, final String partName )

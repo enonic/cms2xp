@@ -1,6 +1,7 @@
 package com.enonic.cms2xp.export;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,8 +12,10 @@ import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.index.ChildOrder;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.node.Nodes;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
@@ -53,17 +56,21 @@ public class SiteExporter
             Node siteNode = siteNodeConverter.convertToNode( siteEntity );
             siteNode = Node.create( siteNode ).
                 parentPath( topSiteNode.path() ).
+                childOrder( ChildOrder.manualOrder() ).
                 build();
 
             //Exports the node
             nodeExporter.exportNode( siteNode );
 
-            portletExporter.export( siteEntity, siteNode.path() );
+            final Node portletsNode = portletExporter.export( siteEntity, siteNode.path() );
 
-            templateExporter.export( siteEntity, siteNode.path() );
+            final Node templatesNode = templateExporter.export( siteEntity, siteNode.path() );
 
             //Export site menu items
-            exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
+            final List<Node> menuNodes = exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
+            menuNodes.add( portletsNode );
+            menuNodes.add( templatesNode );
+            nodeExporter.writeNodeOrderList( siteNode, Nodes.from( menuNodes ) );
         }
     }
 
@@ -79,21 +86,29 @@ public class SiteExporter
         return topSiteNode;
     }
 
-    private void exportMenuItems( final Node parentNode, final Collection<MenuItemEntity> menuItems )
+    private List<Node> exportMenuItems( final Node parentNode, final Collection<MenuItemEntity> menuItems )
     {
+        final List<Node> nodes = new ArrayList<>();
         for ( MenuItemEntity menuItemEntity : menuItems )
         {
             //Converts the menu item to a node
-            Node node = menuItemNodeConverter.convertToNode( menuItemEntity );
-            node = Node.create( node ).
+            Node menuItemNode = menuItemNodeConverter.convertToNode( menuItemEntity );
+            final long order = menuItemEntity.getOrder().longValue();
+            menuItemNode = Node.create( menuItemNode ).
                 parentPath( parentNode.path() ).
+                childOrder( ChildOrder.manualOrder() ).
+                manualOrderValue( order ).
                 build();
 
             //Exports the node
-            nodeExporter.exportNode( node );
+            nodeExporter.exportNode( menuItemNode );
+            nodes.add( menuItemNode );
 
-            exportMenuItems( node, menuItemEntity.getChildren() );
+            final List<Node> menuNodes = exportMenuItems( menuItemNode, menuItemEntity.getChildren() );
+            nodeExporter.writeNodeOrderList( menuItemNode, Nodes.from( menuNodes ) );
         }
+        nodes.sort( ( n1, n2 ) -> Long.compare( n1.getManualOrderValue(), n2.getManualOrderValue() ) );
+        return nodes;
     }
 
 }
