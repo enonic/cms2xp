@@ -19,6 +19,9 @@ import com.enonic.cms.core.structure.portlet.PortletEntity;
 public final class FragmentsNodeConverter
     extends AbstractNodeConverter
 {
+
+    private static final String PART_COMPONENT = PartComponent.class.getSimpleName();
+
     private final ApplicationKey applicationKey;
 
     private final PortletToPartResolver portletToPartResolver;
@@ -56,13 +59,13 @@ public final class FragmentsNodeConverter
         page.setSet( "config", new PropertySet() );
 
         final PropertySet fragmentData = new PropertySet();
-        fragmentData.setString( "type", PartComponent.class.getSimpleName() );
+        fragmentData.setString( "type", PART_COMPONENT );
         final PropertySet partComponentData = new PropertySet();
         partComponentData.setString( "name", portlet.getName() );
         final String partName = portletToPartResolver.partNameFromPortlet( portlet );
         partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
         partComponentData.setSet( "config", new PropertySet() );
-        fragmentData.setSet( PartComponent.class.getSimpleName(), partComponentData );
+        fragmentData.setSet( PART_COMPONENT, partComponentData );
 
         page.addProperty( "fragment", ValueFactory.newPropertySet( fragmentData ) );
         return page;

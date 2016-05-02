@@ -19,10 +19,12 @@ import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
+import com.enonic.cms.core.structure.portlet.PortletKey;
 
 public class PortletExporter
     extends AbstractAppComponentExporter
@@ -42,11 +44,14 @@ public class PortletExporter
 
     private final Map<String, String> xsltPathToPartNameMapping;
 
+    private final Map<PortletKey, NodeId> fragmentToPortletMapping;
+
     public PortletExporter( final Session session, final File target, final NodeExporter nodeExporter, final ApplicationKey applicationKey )
     {
         this.session = session;
         this.target = target;
         this.xsltPathToPartNameMapping = new HashMap<>();
+        this.fragmentToPortletMapping = new HashMap<>();
         this.applicationKey = applicationKey;
         this.fragmentsNodeConverter = new FragmentsNodeConverter( applicationKey, this );
         this.nodeExporter = nodeExporter;
@@ -57,6 +62,12 @@ public class PortletExporter
     {
         final String xsltPath = portlet.getStyleKey().toString();
         return this.xsltPathToPartNameMapping.get( xsltPath );
+    }
+
+    @Override
+    public NodeId fragmentReferenceFromPortlet( final PortletKey portletKey )
+    {
+        return fragmentToPortletMapping.get( portletKey );
     }
 
     public void export( final SiteEntity siteEntity, final NodePath parentNode )
@@ -104,6 +115,7 @@ public class PortletExporter
             contentNode = Node.create( contentNode ).
                 parentPath( templateFolderNode.path() ).
                 build();
+            fragmentToPortletMapping.put( portlet.getPortletKey(), contentNode.id() );
 
             try
             {

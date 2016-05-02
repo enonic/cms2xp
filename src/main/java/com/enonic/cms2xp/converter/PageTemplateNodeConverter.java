@@ -11,7 +11,9 @@ import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
+import com.enonic.xp.region.FragmentComponent;
 import com.enonic.xp.schema.content.ContentTypeName;
+import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplatePortletEntity;
@@ -22,6 +24,8 @@ import com.enonic.cms.core.structure.portlet.PortletEntity;
 public final class PageTemplateNodeConverter
     extends AbstractNodeConverter
 {
+    private static final String FRAGMENT_COMPONENT = FragmentComponent.class.getSimpleName();
+
     private final ApplicationKey applicationKey;
 
     private final PortletToPartResolver portletToPartResolver;
@@ -91,14 +95,13 @@ public final class PageTemplateNodeConverter
             {
                 final PortletEntity portlet = portletTemplate.getPortlet();
                 final PropertySet componentData = new PropertySet();
-                componentData.setString( "type", "PartComponent" );
-                final PropertySet partComponentData = new PropertySet();
-                partComponentData.setString( "name", portlet.getName() );
-
-                final String partName = portletToPartResolver.partNameFromPortlet( portlet );
-                partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
-                partComponentData.setSet( "config", new PropertySet() );
-                componentData.setSet( "PartComponent", partComponentData );
+                componentData.setString( "type", FRAGMENT_COMPONENT );
+                final PropertySet fragmentData = new PropertySet();
+                fragmentData.setString( "name", portlet.getName() );
+                fragmentData.setSet( "config", new PropertySet() );
+                final NodeId fragmentNodeId = portletToPartResolver.fragmentReferenceFromPortlet( portlet.getPortletKey() );
+                fragmentData.setReference( "fragment", new Reference( fragmentNodeId ) );
+                componentData.setSet( FRAGMENT_COMPONENT, fragmentData );
                 regionsData.addSet( "component", componentData );
             }
             pageData.addProperty( "region", ValueFactory.newPropertySet( regionsData ) );

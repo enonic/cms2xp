@@ -16,7 +16,6 @@ import com.enonic.cms2xp.export.PageTemplateResolver;
 import com.enonic.cms2xp.export.PortletToPartResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.data.ValueFactory;
@@ -183,10 +182,5 @@ public class MenuItemNodeConverter
 
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
-    }
-
-    private String nameOf( final String value )
-    {
-        return new ContentPathNameGenerator().generatePathName( value );
     }
 }
