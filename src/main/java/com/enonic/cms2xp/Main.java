@@ -21,7 +21,7 @@ public final class Main
 
     private final static String DEFAULT_APPLICATION_NAME = "com.enonic.xp.app.myApp";
 
-    public static final String DEFAULT_APP_REPO = "starter-base";
+    public static final String DEFAULT_APP_REPO = "starter-vanilla";
 
     public static void main( final String... args )
         throws Exception

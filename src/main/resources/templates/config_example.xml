@@ -16,7 +16,7 @@
     <userExportDir>./export_user</userExportDir>
     <applicationDir>./application</applicationDir>
     <applicationName>com.enonic.xp.app.myApp</applicationName>
-    <applicationRepo>starter-base</applicationRepo>
+    <applicationRepo>starter-vanilla</applicationRepo>
     <exportPublishDateMixin>false</exportPublishDateMixin>
   </target>
 </config>
