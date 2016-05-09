@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hibernate.Session;
 
+import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.MenuItemNodeConverter;
 import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
@@ -34,7 +35,7 @@ public class SiteExporter
 
     public SiteExporter( final Session session, final NodeExporter nodeExporter, final File pageDirectory, final File partDirectory,
                          final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
-                         final NodeIdRegistry nodeIdRegistry )
+                         final NodeIdRegistry nodeIdRegistry, final MainConfig config )
     {
         final PageTemplateResolver pageTemplateResolver = new PageTemplateResolver();
         this.nodeExporter = nodeExporter;
@@ -43,7 +44,8 @@ public class SiteExporter
         this.templateExporter =
             new TemplateExporter( nodeExporter, pageDirectory, applicationKey, pageTemplateResolver, this.portletExporter );
         this.menuItemNodeConverter =
-            new MenuItemNodeConverter( applicationKey, contentKeyResolver, pageTemplateResolver, this.portletExporter, nodeIdRegistry );
+            new MenuItemNodeConverter( applicationKey, contentKeyResolver, pageTemplateResolver, this.portletExporter, nodeIdRegistry,
+                                       config );
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )

@@ -66,6 +66,10 @@ public final class ExportData
             build() ).
         build();
 
+    private static final String LIB_MENU_VERSION = "1.2.0";
+
+    private static final String LIB_MENU = "com.enonic.lib:menu:" + LIB_MENU_VERSION;
+
     private final MainConfig config;
 
     private final NodeExporter nodeExporter;
@@ -129,6 +133,9 @@ public final class ExportData
             // export Mixins
             exportMixins();
 
+            // include external Libs
+            includeLibs();
+
             //Retrieves, converts and exports the Categories
             exportCategories( session, contentTypeConverter );
 
@@ -188,6 +195,16 @@ public final class ExportData
         new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
     }
 
+    private void includeLibs()
+        throws IOException
+    {
+        logger.info( "Including external libs..." );
+        if ( config.target.exportMenuMixin )
+        {
+            includeLib( LIB_MENU );
+        }
+    }
+
     private void exportMixins()
         throws IOException
     {
@@ -195,6 +212,10 @@ public final class ExportData
         if ( config.target.exportPublishDateMixin )
         {
             exportMixin( "publishDate" );
+        }
+        if ( config.target.exportMenuMixin )
+        {
+            exportMixin( "menu-item" );
         }
     }
 
@@ -211,7 +232,7 @@ public final class ExportData
         // add line to site.xml <x-data mixin="_name_"/>
         final Path siteXml = config.target.applicationDir.toPath().resolve( "src/main/resources/site/site.xml" );
         final List<String> siteXmlLines = CharStreams.readLines( new FileReader( siteXml.toFile() ) );
-        for ( int i = siteXmlLines.size() - 1; i > 0; i++ )
+        for ( int i = siteXmlLines.size() - 1; i > 0; i-- )
         {
             final String line = siteXmlLines.get( i );
             if ( line.trim().equals( "</site>" ) )
@@ -221,6 +242,41 @@ public final class ExportData
             }
         }
         Files.write( siteXml, siteXmlLines, StandardCharsets.UTF_8 );
+    }
+
+    private void includeLib( final String libArtifactId )
+        throws IOException
+    {
+        final Path buildGradlePath = config.target.applicationDir.toPath().resolve( "build.gradle" );
+
+        // add line to build.gradle: include "${libArtifactId}"
+        final List<String> gradleLines = CharStreams.readLines( new FileReader( buildGradlePath.toFile() ) );
+        int level = 0;
+        boolean inDependenciesBlock = false;
+        for ( int i = 0; i < gradleLines.size(); i++ )
+        {
+            final String line = gradleLines.get( i );
+            if ( level == 0 && line.trim().equals( "dependencies {" ) )
+            {
+                inDependenciesBlock = true;
+            }
+
+            if ( line.trim().endsWith( "{" ) )
+            {
+                level++;
+            }
+            else if ( line.trim().endsWith( "}" ) )
+            {
+                level--;
+            }
+
+            if ( level == 0 && inDependenciesBlock )
+            {
+                gradleLines.add( i, "    include \"" + libArtifactId + "\"" );
+                break;
+            }
+        }
+        Files.write( buildGradlePath, gradleLines, StandardCharsets.UTF_8 );
     }
 
     private Icon loadIcon( final String name )
@@ -273,7 +329,7 @@ public final class ExportData
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
         final File partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
         new SiteExporter( session, nodeExporter, pagesDirectory, partsDirectory, this.applicationKey, this.contentKeyResolver,
-                          this.nodeIdRegistry ).
+                          this.nodeIdRegistry, config ).
             export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 

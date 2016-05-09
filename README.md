@@ -96,6 +96,7 @@ There are also some optional switches for altering the output.
 | applicationName | Name for the generated XP application. | "com.acme.myapp" |
 | applicationRepo | Name of an XP starter app to be used as a skeleton for the generated app. Default is "starter-vanilla". | "starter-vanilla" |
 | exportPublishDateMixin | Whether or not include the publish mixin in the application and content exported. Default is "false" | "true" |
+| exportMenuMixin | Whether or not convert CMS menu properties ('Menu name', 'Show in menu'), and include the menu mixin in the application. Default is "true" | "false" |
 
 
 ## How to use
@@ -158,4 +159,4 @@ See XP documentation for more details about the [import](http://xp.readthedocs.i
 ## TODO
  
  - [x] Document CMS2XP usage
- - [ ] Export menu properties as Mixin
+ - [x] Export menu properties as Mixin

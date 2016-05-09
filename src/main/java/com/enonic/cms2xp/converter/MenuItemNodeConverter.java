@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.PageTemplateResolver;
 import com.enonic.cms2xp.export.PortletToPartResolver;
@@ -52,9 +53,11 @@ public class MenuItemNodeConverter
 
     private final ContentTypeName pageType;
 
+    private final MainConfig config;
+
     public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
                                   final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver,
-                                  final NodeIdRegistry nodeIdRegistry )
+                                  final NodeIdRegistry nodeIdRegistry, final MainConfig config )
     {
         this.applicationKey = applicationKey;
         this.contentKeyResolver = contentKeyResolver;
@@ -63,6 +66,7 @@ public class MenuItemNodeConverter
         this.nodeIdRegistry = nodeIdRegistry;
         this.sectionType = ContentTypeName.from( this.applicationKey, "section" );
         this.pageType = ContentTypeName.from( this.applicationKey, "page" );
+        this.config = config;
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
@@ -180,7 +184,28 @@ public class MenuItemNodeConverter
         }
         data.setSet( ContentPropertyNames.DATA, subData );
 
-        data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+        final PropertySet extraData = new PropertySet();
+        if ( config.target.exportMenuMixin )
+        {
+            toMenuItemExtraData( menuItem, extraData );
+        }
+        data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
+
         return data;
+    }
+
+    private void toMenuItemExtraData( final MenuItemEntity menuItem, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+        final PropertySet menuItemData = new PropertySet();
+        if ( menuItem.getMenuName() != null )
+        {
+            menuItemData.setString( "menuName", menuItem.getMenuName() );
+        }
+        menuItemData.setBoolean( "menuItem", menuItem.showInMenu() );
+        final PropertySet appData = new PropertySet();
+        appData.setSet( "menu-item", menuItemData );
+
+        extraData.addSet( appId, appData );
     }
 }

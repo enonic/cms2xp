@@ -14,6 +14,8 @@ public final class TargetConfig
 
     public String applicationRepo;
 
-    // experimental switch
+    // experimental switches
     public boolean exportPublishDateMixin;
+
+    public boolean exportMenuMixin = true;
 }
