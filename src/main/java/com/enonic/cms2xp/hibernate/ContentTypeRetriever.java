@@ -18,7 +18,7 @@ public final class ContentTypeRetriever
         List<ContentTypeEntity> contentTypes = session.getNamedQuery( "ContentTypeEntity.getAll" ).list();
         for ( ContentTypeEntity contentType : contentTypes )
         {
-            logger.info( "Retrieved content type: " + contentType.getName() );
+            logger.info( "Content type loaded: " + contentType.getName() );
         }
         session.getTransaction().commit();
 

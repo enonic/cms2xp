@@ -84,6 +84,8 @@ public final class ExportData
 
     private final NodeIdRegistry nodeIdRegistry;
 
+    private ContentExporter contentExporter;
+
     public ExportData( final MainConfig config )
     {
         this.config = config;
@@ -147,6 +149,8 @@ public final class ExportData
 
             //Writes additional export information
             nodeExporter.writeExportProperties( "6.0.0" );
+
+            logger.info( "Export completed successfully" );
         }
         finally
         {
@@ -159,7 +163,7 @@ public final class ExportData
         //Retrieves the ContentTypeEntities
         logger.info( "Retrieving content types..." );
         final List<ContentTypeEntity> contentTypeEntities = new ContentTypeRetriever().retrieveContentTypes( session );
-        logger.info( contentTypeEntities.size() + " content types retrieved." );
+        logger.info( contentTypeEntities.size() + " content types loaded." );
 
         //Converts the ContentTypeEntities to ContentTypes
         ImmutableList<ContentType> contentTypeList = contentTypeConverter.export( contentTypeEntities );
@@ -294,7 +298,6 @@ public final class ExportData
         //Retrieves the CategoryEntities
         logger.info( "Retrieving root categories..." );
         final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
-        logger.info( categoryEntities.size() + " root categories retrieved." );
 
         //Converts and exports the CategoryEntities
         logger.info( "Exporting root categories and children..." );
@@ -303,16 +306,14 @@ public final class ExportData
 
     private void exportCategories( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
     {
-        //TODO Refactor this part.
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
         final ContentNodeConverter contentNodeConverter =
             new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey,
                                       this.config );
-        final ContentExporter contentExporter =
-            new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
-        final CategoryExporter exporter = new CategoryExporter( nodeExporter, contentExporter, applicationKey );
+        this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
+        final CategoryExporter exporter = new CategoryExporter( nodeExporter, this.contentExporter, applicationKey );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }
@@ -320,21 +321,22 @@ public final class ExportData
     private void exportSites( Session session )
     {
         //Retrieves the SiteEntities
-        logger.info( "Retrieving sites..." );
+        logger.info( "Loading sites..." );
         final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
-        logger.info( siteEntities.size() + " sites retrieved." );
+        logger.info( siteEntities.size() + " sites loaded." );
 
         //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
         final File partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
-        new SiteExporter( session, nodeExporter, pagesDirectory, partsDirectory, this.applicationKey, this.contentKeyResolver,
-                          this.nodeIdRegistry, config ).
+        new SiteExporter( session, nodeExporter, this.contentExporter, pagesDirectory, partsDirectory, this.applicationKey,
+                          this.contentKeyResolver, this.nodeIdRegistry, config ).
             export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 
     private void exportResources()
     {
+        logger.info( "Exporting resources..." );
         File source = config.source.resourcesDir.toPath().resolve( "_public" ).toFile();
         File target = new File( config.target.applicationDir, "src/main/resources/site/assets" );
         if ( source.isDirectory() )

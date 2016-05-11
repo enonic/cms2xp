@@ -58,49 +58,48 @@ public class ContentExporter
         this.contentKeyResolver = contentKeyResolver;
     }
 
-    public void export( final Iterable<ContentEntity> contents, final NodePath parentNode )
+    public Node export( final ContentEntity content, final NodePath parentNode )
     {
-        for ( ContentEntity content : contents )
+        //Converts the content to a node
+        Node contentNode = contentNodeConverter.toNode( content );
+        contentNode = Node.create( contentNode ).
+            parentPath( parentNode ).
+            build();
+
+        //Exports attachments
+        final ContentTypeName contentType = contentNodeConverter.convertType( content );
+        if ( contentType.isImageMedia() )
         {
-            //Converts the content to a node
-            Node contentNode = contentNodeConverter.toNode( content );
-            contentNode = Node.create( contentNode ).
-                parentPath( parentNode ).
-                build();
-
-            //Exports attachments
-            final ContentTypeName contentType = contentNodeConverter.convertType( content );
-            if ( contentType.isImageMedia() )
-            {
-                exportImageAttachments( content, contentNode );
-                contentNode = updateImageMetadata( contentNode, content );
-            }
-            else
-            {
-                final ContentTypeName mediaType = exportAttachments( content, contentNode );
-                if ( mediaType != null && mediaType.isDocumentMedia() )
-                {
-                    contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
-                    contentNode = updateDocumentMetadata( contentNode, content );
-                }
-                else if ( contentType.isUnknownMedia() && mediaType != null )
-                {
-                    contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
-                    contentNode = updateMediaMetadata( contentNode, content );
-                }
-            }
-
-            //Exports the node
-            try
-            {
-                nodeExporter.exportNode( contentNode );
-            }
-            catch ( Exception e )
-            {
-                logger.warn( "Could not export node '" + contentNode.path() + "'", e );
-            }
-            contentKeyResolver.add( content.getKey(), contentNode.id() );
+            exportImageAttachments( content, contentNode );
+            contentNode = updateImageMetadata( contentNode, content );
         }
+        else
+        {
+            final ContentTypeName mediaType = exportAttachments( content, contentNode );
+            if ( mediaType != null && mediaType.isDocumentMedia() )
+            {
+                contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
+                contentNode = updateDocumentMetadata( contentNode, content );
+            }
+            else if ( contentType.isUnknownMedia() && mediaType != null )
+            {
+                contentNode.data().setString( ContentPropertyNames.TYPE, mediaType.toString() );
+                contentNode = updateMediaMetadata( contentNode, content );
+            }
+        }
+
+        //Exports the node
+        try
+        {
+            nodeExporter.exportNode( contentNode );
+        }
+        catch ( Exception e )
+        {
+            logger.warn( "Could not export node '" + contentNode.path() + "'", e );
+        }
+        contentKeyResolver.add( content.getKey(), contentNode.id() );
+
+        return contentNode;
     }
 
     private Node updateImageMetadata( final Node contentNode, final ContentEntity content )

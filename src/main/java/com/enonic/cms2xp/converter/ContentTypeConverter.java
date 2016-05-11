@@ -71,7 +71,7 @@ public final class ContentTypeConverter
             forEach( ( ct ) -> {
                 final ContentType contentType = convert( ct );
                 this.typeResolver.put( ct.getContentTypeKey(), contentType );
-                logger.info( "Converted content type: {}", contentType );
+                logger.info( "Converted content type: {}", contentType.getName() );
             } );
         return ImmutableList.copyOf( typeResolver.values() );
     }

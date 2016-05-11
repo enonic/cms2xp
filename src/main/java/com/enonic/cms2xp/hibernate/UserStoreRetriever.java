@@ -23,7 +23,7 @@ public class UserStoreRetriever
         List<UserStoreEntity> userStores = session.getNamedQuery( "UserStoreEntity.findAll" ).list();
         for ( UserStoreEntity userStore : userStores )
         {
-            logger.info( "Retrieved user store: " + userStore.getName() );
+            logger.info( "User store loaded: " + userStore.getName() );
         }
         session.getTransaction().commit();
 

@@ -1,5 +1,6 @@
 package com.enonic.cms2xp.export;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +14,9 @@ import com.enonic.xp.node.NodePath;
 
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.category.CategoryEntity;
+import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
+
+import static com.google.common.collect.Iterables.getFirst;
 
 public class CategoryExporter
 {
@@ -59,7 +63,17 @@ public class CategoryExporter
             final Set<ContentEntity> contents = category.getContents();
             if ( !contents.isEmpty() )
             {
-                contentExporter.export( contents, categoryNode.path() );
+                for ( ContentEntity content : contents )
+                {
+                    final Collection<ContentHomeEntity> homes = content.getContentHomes();
+                    final ContentHomeEntity home = homes.size() == 1 ? getFirst( homes, null ) : null;
+                    if ( home != null )
+                    {
+                        continue; // skip; content with a single section Home will be added under the section
+                    }
+
+                    contentExporter.export( content, categoryNode.path() );
+                }
             }
 
             //Calls the export on the children

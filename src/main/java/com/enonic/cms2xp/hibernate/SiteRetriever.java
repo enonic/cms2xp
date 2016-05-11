@@ -14,12 +14,11 @@ public class SiteRetriever
 
     public List<SiteEntity> retrieveSites( final Session session )
     {
-
         session.beginTransaction();
         List<SiteEntity> siteEntities = session.getNamedQuery( "SiteEntity.findAll" ).list();
         for ( SiteEntity siteEntity : siteEntities )
         {
-            logger.info( "Retrieved site: " + siteEntity.toString() );
+            logger.info( "Site loaded: " + siteEntity.getName() );
         }
         session.getTransaction().commit();
 

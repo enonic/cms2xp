@@ -28,7 +28,7 @@ public class PortletRetriever
         List<PortletEntity> portletEntities = session.getNamedQuery( "PortletEntity.findAll" ).list();
         for ( PortletEntity portletEntity : portletEntities )
         {
-            logger.debug( "Retrieved portlet: " + portletEntity.toString() );
+            logger.debug( "Portlet loaded: " + portletEntity.toString() );
         }
         session.getTransaction().commit();
 
@@ -42,7 +42,7 @@ public class PortletRetriever
         portletEntities = portletEntities.stream().filter( ( p ) -> p.getSite().getKey().equals( siteKey ) ).collect( Collectors.toList() );
         for ( PortletEntity portletEntity : portletEntities )
         {
-            logger.debug( "Retrieved portlet: " + portletEntity.toString() );
+            logger.debug( "Portlet loaded: " + portletEntity.toString() );
         }
         session.getTransaction().commit();
 

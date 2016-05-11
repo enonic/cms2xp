@@ -135,8 +135,8 @@ public class MenuItemNodeConverter
                 final NodeId sectionContentId = this.contentKeyResolver.resolve( sectionContent.getContent().getKey() );
                 if ( sectionContentId == null )
                 {
-                    logger.warn( "Cannot resolve NodeId for content with key '" + sectionContent.getContent().getKey() +
-                                     "', published in section '" + sectionContent.getKey() + "'" );
+//                    logger.warn( "Cannot resolve NodeId for content with key '" + sectionContent.getContent().getKey() +
+//                                     "', published in section '" + sectionContent.getKey() + "'" );
                     continue;
                 }
                 subData.addProperty( "sectionContents", ValueFactory.newReference( Reference.from( sectionContentId.toString() ) ) );

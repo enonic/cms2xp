@@ -19,7 +19,7 @@ public class CategoryRetriever
         List<CategoryEntity> rootCategoryEntities = session.getNamedQuery( "CategoryEntity.findAllRootCategories" ).list();
         for ( CategoryEntity rootCategoryEntity : rootCategoryEntities )
         {
-            logger.info( "Retrieved category: " + rootCategoryEntity.toString() );
+            logger.info( "Category loaded: " + rootCategoryEntity.toString() );
         }
         session.getTransaction().commit();
 
