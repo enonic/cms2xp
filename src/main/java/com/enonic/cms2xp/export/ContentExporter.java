@@ -165,7 +165,7 @@ public class ContentExporter
         Element contentDataEl = data.getContentDataXml().getRootElement();
         String description = contentDataEl.getChildText( "description" );
         String tags = contentDataEl.getChildText( "keywords" );
-        // /node/data/data/
+
         final PropertySet contentData = contentNode.data().getSet( ContentPropertyNames.DATA, 0 );
         if ( StringUtils.isNotBlank( tags ) )
         {

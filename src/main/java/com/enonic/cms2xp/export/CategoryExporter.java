@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.CategoryNodeConverter;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
 import com.enonic.xp.app.ApplicationKey;
@@ -28,11 +29,15 @@ public class CategoryExporter
 
     private final SiteNodeConverter siteNodeConverter;
 
-    public CategoryExporter( final NodeExporter nodeExporter, final ContentExporter contentExporter, final ApplicationKey applicationKey )
+    private final MainConfig config;
+
+    public CategoryExporter( final NodeExporter nodeExporter, final ContentExporter contentExporter, final ApplicationKey applicationKey,
+                             final MainConfig config )
     {
         this.nodeExporter = nodeExporter;
         this.contentExporter = contentExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
+        this.config = config;
     }
 
     public void export( final List<CategoryEntity> categories, final NodePath parentNode )
@@ -65,11 +70,14 @@ public class CategoryExporter
             {
                 for ( ContentEntity content : contents )
                 {
-                    final Collection<ContentHomeEntity> homes = content.getContentHomes();
-                    final ContentHomeEntity home = homes.size() == 1 ? getFirst( homes, null ) : null;
-                    if ( home != null )
+                    if ( config.target.moveHomeContentToSection )
                     {
-                        continue; // skip; content with a single section Home will be added under the section
+                        final Collection<ContentHomeEntity> homes = content.getContentHomes();
+                        final ContentHomeEntity home = homes.size() == 1 ? getFirst( homes, null ) : null;
+                        if ( home != null )
+                        {
+                            continue; // skip; content with a single section Home will be added under the section
+                        }
                     }
 
                     contentExporter.export( content, categoryNode.path() );

@@ -40,6 +40,8 @@ public class SiteExporter
 
     private final ContentExporter contentExporter;
 
+    private final MainConfig config;
+
     public SiteExporter( final Session session, final NodeExporter nodeExporter, final ContentExporter contentExporter,
                          final File pageDirectory, final File partDirectory, final ApplicationKey applicationKey,
                          final ContentKeyResolver contentKeyResolver, final NodeIdRegistry nodeIdRegistry, final MainConfig config )
@@ -54,6 +56,7 @@ public class SiteExporter
         this.menuItemNodeConverter =
             new MenuItemNodeConverter( applicationKey, contentKeyResolver, pageTemplateResolver, this.portletExporter, nodeIdRegistry,
                                        config );
+        this.config = config;
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )
@@ -114,7 +117,7 @@ public class SiteExporter
             nodeExporter.exportNode( menuItemNode );
             nodes.add( menuItemNode );
             List<Node> sectionHomeContent = null;
-            if ( menuItemEntity.isSection() )
+            if ( config.target.moveHomeContentToSection && menuItemEntity.isSection() )
             {
                 sectionHomeContent = exportSingleHomeSectionContent( menuItemEntity, menuItemNode.path() );
             }

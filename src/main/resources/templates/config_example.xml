@@ -17,7 +17,9 @@
     <applicationDir>./application</applicationDir>
     <applicationName>com.enonic.xp.app.myApp</applicationName>
     <applicationRepo>starter-vanilla</applicationRepo>
+
     <exportPublishDateMixin>false</exportPublishDateMixin>
     <exportMenuMixin>true</exportMenuMixin>
+    <moveHomeContentToSection>true</moveHomeContentToSection>
   </target>
 </config>

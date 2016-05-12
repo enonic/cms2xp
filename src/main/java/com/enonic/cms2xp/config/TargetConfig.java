@@ -18,4 +18,6 @@ public final class TargetConfig
     public boolean exportPublishDateMixin;
 
     public boolean exportMenuMixin = true;
+
+    public boolean moveHomeContentToSection = true;
 }

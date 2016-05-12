@@ -313,7 +313,7 @@ public final class ExportData
             new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey,
                                       this.config );
         this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
-        final CategoryExporter exporter = new CategoryExporter( nodeExporter, this.contentExporter, applicationKey );
+        final CategoryExporter exporter = new CategoryExporter( nodeExporter, this.contentExporter, applicationKey, this.config );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }
