@@ -68,6 +68,7 @@ public class DataEntryValuesConverter
             case DATE:
                 return single( toValue( (DateDataEntry) dataEntry ) );
             case GROUP: //TODO
+                //Obsolete?
                 break;
             case FILES:
             case IMAGES:

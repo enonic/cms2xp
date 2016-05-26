@@ -38,9 +38,9 @@ public class FormValuesConverter
         {
             addElement( element, child );
         }
-        if ( el.getValue() != null && !el.getValue().isEmpty() )
+        if ( el.getText() != null && !el.getText().isEmpty() )
         {
-            element.setString( "_value", el.getValue() );
+            element.setString( "#text", el.getText() );
         }
 
         parent.addSet( el.getName(), element );
@@ -52,11 +52,9 @@ public class FormValuesConverter
         final List<Attribute> attributes = el.getAttributes();
         if ( !attributes.isEmpty() )
         {
-            final PropertySet attrSet = new PropertySet();
-            element.setSet( "_attributes", attrSet );
             for ( Attribute attr : attributes )
             {
-                attrSet.setString( attr.getName(), attr.getValue() );
+                element.addString( "@" + attr.getName(), attr.getValue() );
             }
         }
     }
