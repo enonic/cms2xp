@@ -10,8 +10,12 @@ import com.enonic.cms2xp.converter.SiteNodeConverter;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
+import com.enonic.xp.index.ChildOrder;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.query.expr.FieldOrderExpr;
+import com.enonic.xp.query.expr.OrderExpr;
 
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.category.CategoryEntity;
@@ -53,12 +57,16 @@ public class CategoryExporter
             parentPath = parentNode;
         }
 
+        final FieldOrderExpr orderByName = FieldOrderExpr.create( NodeIndexPath.NAME, OrderExpr.Direction.ASC );
+        final OrderExpr defaultOrder = FieldOrderExpr.create( NodeIndexPath.TIMESTAMP, OrderExpr.Direction.DESC );
+        final ChildOrder childOrder = ChildOrder.create().add( orderByName ).add( defaultOrder ).build();
         for ( CategoryEntity category : categories )
         {
             //Converts the category to a node
             Node categoryNode = categoryNodeConverter.toNode( category );
             categoryNode = Node.create( categoryNode ).
                 parentPath( parentPath ).
+                childOrder( childOrder ).
                 build();
 
             //Exports the node
