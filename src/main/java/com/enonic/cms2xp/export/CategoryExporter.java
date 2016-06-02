@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.CategoryNodeConverter;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
@@ -25,6 +28,8 @@ import static com.google.common.collect.Iterables.getFirst;
 
 public class CategoryExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( CategoryExporter.class );
+
     private final NodeExporter nodeExporter;
 
     private final ContentExporter contentExporter;
@@ -58,8 +63,7 @@ public class CategoryExporter
         }
 
         final FieldOrderExpr orderByName = FieldOrderExpr.create( NodeIndexPath.NAME, OrderExpr.Direction.ASC );
-        final OrderExpr defaultOrder = FieldOrderExpr.create( NodeIndexPath.TIMESTAMP, OrderExpr.Direction.DESC );
-        final ChildOrder childOrder = ChildOrder.create().add( orderByName ).add( defaultOrder ).build();
+        final ChildOrder childOrder = ChildOrder.create().add( orderByName ).build();
         for ( CategoryEntity category : categories )
         {
             //Converts the category to a node
@@ -88,7 +92,14 @@ public class CategoryExporter
                         }
                     }
 
-                    contentExporter.export( content, categoryNode.path() );
+                    try
+                    {
+                        contentExporter.export( content, categoryNode.path() );
+                    }
+                    catch ( Exception e )
+                    {
+                        logger.warn( "Could not export content: " + content.getPathAsString(), e );
+                    }
                 }
             }
 

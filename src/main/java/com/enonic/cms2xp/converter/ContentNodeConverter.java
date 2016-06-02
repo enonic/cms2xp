@@ -235,6 +235,10 @@ public final class ContentNodeConverter
 
     public ContentTypeName convertType( final ContentEntity content )
     {
+        if ( content.getContentType() == null )
+        {
+            return ContentTypeName.unstructured();
+        }
         final ContentTypeKey key = content.getContentType().getContentTypeKey();
         final ContentType contentType = this.contentTypeResolver.getContentType( key );
         if ( contentType != null )

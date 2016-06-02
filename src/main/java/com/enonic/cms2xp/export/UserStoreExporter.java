@@ -3,6 +3,7 @@ package com.enonic.cms2xp.export;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -144,6 +145,10 @@ public class UserStoreExporter
 
         for ( GroupEntity groupEntity : groupEntities )
         {
+            if ( groupEntity.isDeleted() )
+            {
+                continue;
+            }
             // group members
             final Set<GroupEntity> members = groupEntity.getMembers( false );
             for ( GroupEntity member : members )
@@ -167,6 +172,11 @@ public class UserStoreExporter
 
         // user memberships
         addMemberships( groupUserMembers, groupMembers );
+
+        final Map<PrincipalKey, Principal> uniquePrincipals = new LinkedHashMap<>();
+        principals.stream().forEach( ( p ) -> uniquePrincipals.put( p.getKey(), p ) );
+        principals.clear();
+        principals.addAll( uniquePrincipals.values() );
 
         final Principals members = Principals.from( principals );
         userStoreMembers.put( userStore, members );

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jdom.Document;
+import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +106,12 @@ public final class ContentTypeConverter
         {
             try
             {
-                form = convertConfig( ct.getContentTypeConfig() );
+                form = convertConfig( parseContentTypeConfig( ct ) );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                logger.warn( "Error converting config for content type " + ct.getName(), e );
+                form = Form.create().build();
             }
             catch ( InvalidContentTypeConfigException e )
             {
@@ -120,6 +127,42 @@ public final class ContentTypeConverter
             superType( ContentTypeName.structured() ).
             form( form );
         return contentType.build();
+    }
+
+    // extracted from com.enonic.cms.core.content.contenttype.ContentTypeEntity
+    private ContentTypeConfig parseContentTypeConfig( final ContentTypeEntity ct )
+    {
+        Document configData = ct.getData();
+        ContentHandlerName contentHandlerName = ct.getContentHandlerName();
+
+        if ( !ContentHandlerName.CUSTOM.equals( contentHandlerName ) )
+        {
+            throw new IllegalStateException( "This method is only supported when the content type based on the custom handler" );
+        }
+
+        if ( configData == null )
+        {
+            return null;
+        }
+        Document contentTypeDoc = configData;
+        if ( contentTypeDoc == null )
+        {
+            return null;
+        }
+
+        Element contentTypeRootEl = contentTypeDoc.getRootElement();
+        if ( "config".equals( contentTypeRootEl.getName() ) )
+        {
+            return ContentTypeConfigParser.parse( contentHandlerName, contentTypeRootEl );
+        }
+
+        Element contentTypeConfigEl = contentTypeRootEl.getChild( "config" );
+        if ( contentTypeConfigEl == null )
+        {
+            return null;
+        }
+
+        return ContentTypeConfigParser.parse( contentHandlerName, contentTypeConfigEl );
     }
 
     private Form newsletterForm()
@@ -192,7 +235,7 @@ public final class ContentTypeConverter
     private FormItem addFieldSet( final CtySetConfig ctyConfig )
     {
         final FieldSet.Builder fieldSet = FieldSet.create();
-        fieldSet.name( ctyConfig.getName() );
+        fieldSet.name( ctyConfig.getName().replace( ".", " " ).trim() );
         fieldSet.label( ctyConfig.getName() );
 
         for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )

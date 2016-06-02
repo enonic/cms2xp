@@ -137,6 +137,11 @@ public class ContentExporter
     {
         final Node.Builder documentNode = Node.create( contentNode );
 
+        if ( !( content.getMainVersion().getContentData() instanceof LegacyFileContentData ) )
+        {
+            logger.warn( "Expected LegacyFileContentData for document content: " + content.getPathAsString() );
+            return contentNode;
+        }
         final LegacyFileContentData data = (LegacyFileContentData) content.getMainVersion().getContentData();
 
         Element contentDataEl = data.getContentDataXml().getRootElement();
@@ -158,6 +163,7 @@ public class ContentExporter
 
         if ( !( content.getMainVersion().getContentData() instanceof LegacyFileContentData ) )
         {
+            logger.warn( "Expected LegacyFileContentData for media content: " + content.getPathAsString() );
             return contentNode;
         }
         final LegacyFileContentData data = (LegacyFileContentData) content.getMainVersion().getContentData();
@@ -261,6 +267,11 @@ public class ContentExporter
 
         final ByteSource byteSource = Files.asByteSource( blob.getAsFile() );
         final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+        if ( StringUtils.isBlank( binaryName ) )
+        {
+            logger.warn( "Invalid binary name [" + binaryData.getName() + "] in content '" + content.getPathAsString() + "'" );
+            return;
+        }
         final BinaryReference reference = BinaryReference.from( binaryName );
 
         nodeExporter.exportNodeBinary( contentNode, reference, byteSource );

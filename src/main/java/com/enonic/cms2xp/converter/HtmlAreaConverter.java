@@ -17,12 +17,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
 import com.enonic.xp.data.Value;
 import com.enonic.xp.data.ValueFactory;
 
+import com.enonic.cms.core.InvalidKeyException;
 import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
 import com.enonic.cms.core.structure.menuitem.MenuItemKey;
@@ -42,6 +45,7 @@ public class HtmlAreaConverter
 
     private static final String KEEP_SIZE_TRUE = "?keepsize=true";
 
+    private final static Logger logger = LoggerFactory.getLogger( HtmlAreaConverter.class );
 
     private final NodeIdRegistry nodeIdRegistry;
 
@@ -66,10 +70,17 @@ public class HtmlAreaConverter
         {
             final String href = link.attr( "href" );
 
-            final String processedUrl = processUrl( href, null );
-            if ( !href.equals( processedUrl ) )
+            try
             {
-                link.attr( "href", processedUrl );
+                final String processedUrl = processUrl( href, null );
+                if ( !href.equals( processedUrl ) )
+                {
+                    link.attr( "href", processedUrl );
+                }
+            }
+            catch ( InvalidKeyException e )
+            {
+                logger.warn( "Invalid key in link URL [" + href + "] : " + e.getKey() );
             }
         }
 
@@ -77,11 +88,17 @@ public class HtmlAreaConverter
         for ( Element image : images )
         {
             final String src = image.attr( "src" );
-
-            final String processedUrl = processUrl( src, image );
-            if ( !src.equals( processedUrl ) )
+            try
             {
-                image.attr( "src", processedUrl );
+                final String processedUrl = processUrl( src, image );
+                if ( !src.equals( processedUrl ) )
+                {
+                    image.attr( "src", processedUrl );
+                }
+            }
+            catch ( InvalidKeyException e )
+            {
+                logger.warn( "Invalid key in image URL [" + src + "] : " + e.getKey() );
             }
         }
 
