@@ -16,6 +16,7 @@ import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.data.Value;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -177,12 +178,20 @@ public final class ContentNodeConverter
                 if ( contentData instanceof DataEntry )
                 {
                     final DataEntry dataEntry = (DataEntry) contentData;
-                    data.setProperty( ContentPropertyNames.DATA, dataEntryValuesConverter.toValue( dataEntry ) );
+                    final Value value = dataEntryValuesConverter.toValue( dataEntry );
+                    if ( value != null )
+                    {
+                        data.setProperty( ContentPropertyNames.DATA, value );
+                    }
                 }
                 else if ( contentData instanceof LegacyFormContentData )
                 {
                     final LegacyFormContentData formData = (LegacyFormContentData) contentData;
-                    data.setProperty( ContentPropertyNames.DATA, formValuesConverter.toValue( formData ) );
+                    final Value value = formValuesConverter.toValue( formData );
+                    if ( value != null )
+                    {
+                        data.setProperty( ContentPropertyNames.DATA, value );
+                    }
                 }
                 else if ( contentData instanceof LegacyImageContentData )
                 {
@@ -195,7 +204,11 @@ public final class ContentNodeConverter
                 else if ( contentData instanceof LegacyNewsletterContentData )
                 {
                     final LegacyNewsletterContentData newsletterData = (LegacyNewsletterContentData) contentData;
-                    data.setProperty( ContentPropertyNames.DATA, newsletterValuesConverter.toValue( newsletterData ) );
+                    final Value value = newsletterValuesConverter.toValue( newsletterData );
+                    if ( value != null )
+                    {
+                        data.setProperty( ContentPropertyNames.DATA, value );
+                    }
                 }
                 else
                 {

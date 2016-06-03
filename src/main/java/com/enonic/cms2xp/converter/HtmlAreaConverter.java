@@ -62,6 +62,10 @@ public class HtmlAreaConverter
 
     private String processLinks( final String html )
     {
+        if ( html == null )
+        {
+            return null;
+        }
         final Document doc = Jsoup.parseBodyFragment( html );
         final Element body = doc.body();
 
@@ -167,6 +171,11 @@ public class HtmlAreaConverter
 
     private void setImageAlignment( final Element img, final ImageAlignment alignment, final ImageSize size )
     {
+        if ( img == null )
+        {
+            return;
+        }
+
         final String styles = img.attr( "style" );
         final Map<String, String> cssStyles = new LinkedHashMap<>();
         if ( !StringUtils.isEmpty( styles ) )
@@ -266,8 +275,17 @@ public class HtmlAreaConverter
         {
             return Collections.emptyMap();
         }
-        List<NameValuePair> params = URLEncodedUtils.parse( uri, "UTF-8" );
-        return params.stream().collect( Collectors.toMap( NameValuePair::getName, NameValuePair::getValue ) );
+
+        try
+        {
+            List<NameValuePair> params = URLEncodedUtils.parse( uri, "UTF-8" );
+            return params.stream().collect( Collectors.toMap( NameValuePair::getName, NameValuePair::getValue ) );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            logger.warn( "HtmlArea: could not parse URL parameters in HtmlArea '" + url + "'" );
+            return Collections.emptyMap();
+        }
     }
 
     private String idFromUrl( final String url, final String type )
@@ -275,7 +293,9 @@ public class HtmlAreaConverter
         String id = substringAfter( url, type + "://" );
         id = substringBefore( id, "/" );
         id = substringBefore( id, "?" );
-        return id;
+        id = substringBefore( id, "&" );
+        id = substringBefore( id, "#" );
+        return id.trim();
     }
 
 }

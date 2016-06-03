@@ -2,6 +2,11 @@ package com.enonic.cms2xp;
 
 import java.io.File;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -51,7 +56,17 @@ public final class Main
         initApp( config );
 
         //Exports the data
-        new ExportData( config ).execute();
+        final Instant t1 = Instant.now();
+        try
+        {
+            new ExportData( config ).execute();
+        }
+        finally
+        {
+            final Duration duration = Duration.between( t1, Instant.now() );
+            final String durationStr = LocalTime.MIDNIGHT.plus( duration ).format( DateTimeFormatter.ofPattern( "HH:mm:ss" ) );
+            System.out.printf( formatInstant( Instant.now() ) + " - Total time: " + durationStr );
+        }
     }
 
     private static void initApp( final MainConfig config )
@@ -82,5 +97,11 @@ public final class Main
         {
             config.target.applicationRepo = DEFAULT_APP_REPO;
         }
+    }
+
+    private static String formatInstant( Instant value )
+    {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" ).withZone( ZoneId.systemDefault() );
+        return formatter.format( value );
     }
 }
