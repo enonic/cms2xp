@@ -1,28 +1,50 @@
 package com.enonic.cms2xp.hibernate;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.enonic.cms.core.content.category.CategoryEntity;
+import com.enonic.cms.core.content.category.CategoryKey;
 
 public class CategoryRetriever
 {
-    private final static Logger logger = LoggerFactory.getLogger( CategoryRetriever.class );
-
-    public List<CategoryEntity> retrieveRootCategories( final Session session )
+    public static List<CategoryKey> retrieveRootCategories( final Session session )
     {
+        final List<CategoryKey> categories = new ArrayList<>();
 
         session.beginTransaction();
         List<CategoryEntity> rootCategoryEntities = session.getNamedQuery( "CategoryEntity.findAllRootCategories" ).list();
-        for ( CategoryEntity rootCategoryEntity : rootCategoryEntities )
-        {
-            logger.info( "Category loaded: " + rootCategoryEntity.toString() );
-        }
+        categories.addAll( rootCategoryEntities.stream().map( CategoryEntity::getKey ).collect( Collectors.toList() ) );
         session.getTransaction().commit();
 
-        return rootCategoryEntities;
+        return categories;
+    }
+
+    public static CategoryEntity retrieveCategory( final Session session, final CategoryKey categoryKey )
+    {
+        session.beginTransaction();
+        CategoryEntity category = (CategoryEntity) session.get( CategoryEntity.class, categoryKey );
+        if ( category == null )
+        {
+            return null;
+        }
+
+        if ( category.isDeleted() )
+        {
+            return null;
+        }
+        return category;
+    }
+
+    public static List<CategoryKey> retrieveSubCategories( final Session session, final CategoryKey parentCategoryKey )
+    {
+        session.beginTransaction();
+        List<CategoryKey> categoryKeys = session.getNamedQuery( "CategoryEntity.findChildrenByCategoryKey" ).
+            setParameter( "categoryKey", parentCategoryKey.toInt() ).list();
+        session.getTransaction().commit();
+        return categoryKeys;
     }
 }

@@ -95,4 +95,10 @@
     where c.parent.key = :categoryKey
     and c.deleted = 0
   </query>
+  <query name="CategoryEntity.findChildrenByCategoryKey" cacheable="false">
+    select c.key
+    from CategoryEntity c
+    where c.parent.key = :categoryKey
+    and c.deleted = 0
+  </query>
 </hibernate-mapping>

@@ -170,7 +170,7 @@ public final class ContentNodeConverter
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         final ContentVersionEntity mainVersion = content.getMainVersion();
-        if ( mainVersion != null )
+        if ( mainVersion != null && mainVersion.getContentData() != null )
         {
             try
             {

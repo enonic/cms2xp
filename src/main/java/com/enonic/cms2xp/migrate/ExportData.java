@@ -47,7 +47,7 @@ import com.enonic.xp.schema.content.ContentTypeName;
 
 import com.enonic.cms.framework.blob.file.FileBlobStore;
 
-import com.enonic.cms.core.content.category.CategoryEntity;
+import com.enonic.cms.core.content.category.CategoryKey;
 import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.structure.SiteEntity;
 
@@ -151,6 +151,10 @@ public final class ExportData
             nodeExporter.writeExportProperties( "6.0.0" );
 
             logger.info( "Export completed successfully" );
+        }
+        catch ( Throwable t )
+        {
+            logger.error( "Export failed.", t );
         }
         finally
         {
@@ -293,18 +297,19 @@ public final class ExportData
         return Icon.from( resource, "image/png", Instant.now() );
     }
 
-    private void exportCategories( Session session, final ContentTypeResolver contentTypeResolver )
+    private void exportCategories( final Session session, final ContentTypeResolver contentTypeResolver )
     {
         //Retrieves the CategoryEntities
         logger.info( "Retrieving root categories..." );
-        final List<CategoryEntity> categoryEntities = new CategoryRetriever().retrieveRootCategories( session );
+        final List<CategoryKey> categoryEntities = CategoryRetriever.retrieveRootCategories( session );
 
         //Converts and exports the CategoryEntities
         logger.info( "Exporting root categories and children..." );
-        exportCategories( categoryEntities, contentTypeResolver );
+        exportCategories( session, categoryEntities, contentTypeResolver );
     }
 
-    private void exportCategories( final List<CategoryEntity> categories, final ContentTypeResolver contentTypeResolver )
+    private void exportCategories( final Session session, final List<CategoryKey> categories,
+                                   final ContentTypeResolver contentTypeResolver )
     {
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
@@ -313,7 +318,7 @@ public final class ExportData
             new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey,
                                       this.config );
         this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver );
-        final CategoryExporter exporter = new CategoryExporter( nodeExporter, this.contentExporter, applicationKey, this.config );
+        final CategoryExporter exporter = new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }
