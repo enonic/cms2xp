@@ -1,5 +1,9 @@
 package com.enonic.cms2xp.export;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -182,13 +186,46 @@ public class ContentExporter
         return imageNode.build();
     }
 
+    private Collection<BinaryDataKey> filterAttachmentDuplicates( final ContentVersionEntity main, final Set<BinaryDataKey> binaryKeys )
+    {
+        // in case of duplicated attachments(same name), take the latest created one
+        if ( binaryKeys.size() == 1 )
+        {
+            return binaryKeys;
+        }
+
+        final Map<String, Date> duplicates = new HashMap<>();
+        final Map<String, BinaryDataKey> keys = new HashMap<>();
+        for ( BinaryDataKey key : binaryKeys )
+        {
+            final BinaryDataEntity binaryData = main.getBinaryData( key );
+            final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+            if ( !duplicates.containsKey( binaryName ) )
+            {
+                duplicates.put( binaryName, binaryData.getCreatedAt() );
+                keys.put( binaryName, key );
+            }
+            else
+            {
+                final Date existingBinaryCreated = duplicates.get( binaryName );
+                if ( existingBinaryCreated.before( binaryData.getCreatedAt() ) )
+                {
+                    duplicates.put( binaryName, binaryData.getCreatedAt() );
+                    keys.put( binaryName, key );
+                }
+            }
+        }
+        return keys.values();
+    }
+
     private ContentTypeName exportAttachments( final ContentEntity content, final Node contentNode )
     {
         final ContentVersionEntity main = content.getMainVersion();
         final Set<BinaryDataKey> binaryKeys = main.getContentBinaryDataKeys();
 
         ContentTypeName mediaType = null;
-        for ( BinaryDataKey key : binaryKeys )
+
+        for ( BinaryDataKey key : filterAttachmentDuplicates( main, binaryKeys ) )
         {
             final BinaryDataEntity binaryData = main.getBinaryData( key );
 
@@ -229,6 +266,10 @@ public class ContentExporter
         final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
 
         // /node/data/attachment
+        if ( nodeData.getSet( ContentPropertyNames.ATTACHMENT ) != null )
+        {
+            System.out.println( nodeData );
+        }
         final PropertySet attachmentSet = nodeData.addSet( ContentPropertyNames.ATTACHMENT );
         attachmentSet.setString( "name", binaryName );
         attachmentSet.setString( "label", label );
