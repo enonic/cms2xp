@@ -266,10 +266,6 @@ public class ContentExporter
         final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
 
         // /node/data/attachment
-        if ( nodeData.getSet( ContentPropertyNames.ATTACHMENT ) != null )
-        {
-            System.out.println( nodeData );
-        }
         final PropertySet attachmentSet = nodeData.addSet( ContentPropertyNames.ATTACHMENT );
         attachmentSet.setString( "name", binaryName );
         attachmentSet.setString( "label", label );
