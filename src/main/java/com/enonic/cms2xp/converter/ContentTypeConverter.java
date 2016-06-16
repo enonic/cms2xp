@@ -130,7 +130,7 @@ public final class ContentTypeConverter
     }
 
     // extracted from com.enonic.cms.core.content.contenttype.ContentTypeEntity
-    private ContentTypeConfig parseContentTypeConfig( final ContentTypeEntity ct )
+    public static ContentTypeConfig parseContentTypeConfig( final ContentTypeEntity ct )
     {
         Document configData = ct.getData();
         ContentHandlerName contentHandlerName = ct.getContentHandlerName();

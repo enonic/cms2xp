@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.jdom.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +31,14 @@ import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.access.ContentAccessEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
+import com.enonic.cms.core.content.contentdata.ContentDataParser;
 import com.enonic.cms.core.content.contentdata.custom.DataEntry;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyFileContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyFormContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyNewsletterContentData;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
+import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.security.group.GroupEntity;
 import com.enonic.cms.core.security.group.GroupType;
@@ -170,57 +173,75 @@ public final class ContentNodeConverter
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         final ContentVersionEntity mainVersion = content.getMainVersion();
-        if ( mainVersion != null && mainVersion.getContentData() != null )
+        if ( mainVersion == null )
         {
-            try
+            return data;
+        }
+
+        try
+        {
+            final ContentData contentData = getContentData( mainVersion );
+            if ( contentData == null )
             {
-                final ContentData contentData = mainVersion.getContentData();
-                if ( contentData instanceof DataEntry )
+                return data;
+            }
+            else if ( contentData instanceof DataEntry )
+            {
+                final DataEntry dataEntry = (DataEntry) contentData;
+                final Value value = dataEntryValuesConverter.toValue( dataEntry );
+                if ( value != null )
                 {
-                    final DataEntry dataEntry = (DataEntry) contentData;
-                    final Value value = dataEntryValuesConverter.toValue( dataEntry );
-                    if ( value != null )
-                    {
-                        data.setProperty( ContentPropertyNames.DATA, value );
-                    }
-                }
-                else if ( contentData instanceof LegacyFormContentData )
-                {
-                    final LegacyFormContentData formData = (LegacyFormContentData) contentData;
-                    final Value value = formValuesConverter.toValue( formData );
-                    if ( value != null )
-                    {
-                        data.setProperty( ContentPropertyNames.DATA, value );
-                    }
-                }
-                else if ( contentData instanceof LegacyImageContentData )
-                {
-
-                }
-                else if ( contentData instanceof LegacyFileContentData )
-                {
-
-                }
-                else if ( contentData instanceof LegacyNewsletterContentData )
-                {
-                    final LegacyNewsletterContentData newsletterData = (LegacyNewsletterContentData) contentData;
-                    final Value value = newsletterValuesConverter.toValue( newsletterData );
-                    if ( value != null )
-                    {
-                        data.setProperty( ContentPropertyNames.DATA, value );
-                    }
-                }
-                else
-                {
-                    logger.info( "Unsupported ContentData: " + content.getClass().getSimpleName() );
+                    data.setProperty( ContentPropertyNames.DATA, value );
                 }
             }
-            catch ( Exception e )
+            else if ( contentData instanceof LegacyFormContentData )
             {
-                logger.warn( "Cannot get ContentData from '" + content.getPathAsString() + "'", e );
+                final LegacyFormContentData formData = (LegacyFormContentData) contentData;
+                final Value value = formValuesConverter.toValue( formData );
+                if ( value != null )
+                {
+                    data.setProperty( ContentPropertyNames.DATA, value );
+                }
+            }
+            else if ( contentData instanceof LegacyImageContentData )
+            {
+
+            }
+            else if ( contentData instanceof LegacyFileContentData )
+            {
+
+            }
+            else if ( contentData instanceof LegacyNewsletterContentData )
+            {
+                final LegacyNewsletterContentData newsletterData = (LegacyNewsletterContentData) contentData;
+                final Value value = newsletterValuesConverter.toValue( newsletterData );
+                if ( value != null )
+                {
+                    data.setProperty( ContentPropertyNames.DATA, value );
+                }
+            }
+            else
+            {
+                logger.info( "Unsupported ContentData: " + content.getClass().getSimpleName() );
             }
         }
+        catch ( Exception e )
+        {
+            logger.warn( "Cannot get ContentData from '" + content.getPathAsString() + "'", e );
+        }
         return data;
+    }
+
+    private ContentData getContentData( ContentVersionEntity contentVersion )
+    {
+        final Document contentDataXml = contentVersion.getContentDataAsJDomDocument();
+        if ( contentDataXml == null )
+        {
+            return null;
+        }
+
+        final ContentTypeEntity contentType = contentVersion.getContent().getCategory().getContentType();
+        return ContentDataParser.parse( contentDataXml, contentType, null );
     }
 
     private void toPublishExtraData( final ContentEntity content, final PropertySet extraData )
