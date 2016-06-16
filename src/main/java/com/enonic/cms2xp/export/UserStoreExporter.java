@@ -157,14 +157,7 @@ public class UserStoreExporter
             }
 
             final Principal groupOrRole;
-            if ( groupEntity.getUserStore() == null )
-            {
-                groupOrRole = converter.convertToRole( groupEntity );
-            }
-            else
-            {
-                groupOrRole = converter.convert( groupEntity );
-            }
+            groupOrRole = converter.convert( groupEntity );
             principals.add( groupOrRole );
             principalKeyResolver.add( groupEntity.getGroupKey(), groupOrRole.getKey() );
 
