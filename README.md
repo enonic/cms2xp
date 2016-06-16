@@ -1,4 +1,5 @@
 # Enonic CMS to XP migration tool
+<img align="right" alt="Enonic Logo" src="https://raw.githubusercontent.com/enonic/cms2xp/master/src/main/resources/icons/enonic-xp-shield-logo.svg" width="128">
 
 This repository contains the code for the CMS to XP migration tool.
 
