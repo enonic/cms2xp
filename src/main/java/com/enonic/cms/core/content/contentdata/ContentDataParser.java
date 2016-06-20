@@ -29,6 +29,10 @@ public class ContentDataParser
                                      final List<BinaryDataKey> binaryDatas )
     {
         ContentData contentData;
+        if ( contentType == null )
+        {
+            return null;
+        }
 
         switch ( contentType.getContentHandlerName() )
         {
