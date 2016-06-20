@@ -157,7 +157,7 @@ These are the suggested steps for migrating CMS data:
     ```
 
 
-See XP documentation for more details about the [import](http://xp.readthedocs.io/en/latest/reference/toolbox/import.html) and [reprocess](http://xp.readthedocs.io/en/latest/reference/toolbox/index.html) commands.
+See XP documentation for more details about the [import](http://xp.readthedocs.io/en/latest/reference/toolbox/import.html) and [reprocess](http://xp.readthedocs.io/en/latest/reference/toolbox/reprocess.html) commands.
 
 
 ## Tips 
