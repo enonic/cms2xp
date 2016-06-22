@@ -15,9 +15,9 @@ import com.enonic.cms2xp.converter.TemplateParameterConverter;
 import com.enonic.cms2xp.export.xml.XmlFormSerializer;
 import com.enonic.cms2xp.hibernate.PortletRetriever;
 import com.enonic.xp.app.ApplicationKey;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.form.Form;
+import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
@@ -155,7 +155,7 @@ public class PortletExporter
     private String partNameFromXslt( final PortletEntity portletEntity )
     {
         final String xsltName = FilenameUtils.removeExtension( portletEntity.getStyleKey().getName() );
-        return new ContentPathNameGenerator().generatePathName( xsltName );
+        return NamePrettyfier.create( xsltName );
     }
 
 }

@@ -19,10 +19,10 @@ import com.enonic.cms2xp.converter.SiteTemplatesNodeConverter;
 import com.enonic.cms2xp.converter.TemplateParameterConverter;
 import com.enonic.cms2xp.export.xml.XmlFormSerializer;
 import com.enonic.xp.app.ApplicationKey;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.index.ChildOrder;
+import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.Nodes;
@@ -161,6 +161,6 @@ public class TemplateExporter
     private String pageNameFromXslt( final PageTemplateEntity pageTemplateEntity )
     {
         final String xsltName = FilenameUtils.removeExtension( pageTemplateEntity.getStyleKey().getName() );
-        return new ContentPathNameGenerator().generatePathName( xsltName );
+        return NamePrettyfier.create( xsltName );
     }
 }

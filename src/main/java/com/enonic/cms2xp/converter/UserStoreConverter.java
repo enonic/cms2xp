@@ -6,11 +6,11 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
 
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.security.PrincipalNodeTranslator;
 import com.enonic.xp.core.impl.security.UserStoreNodeTranslator;
 import com.enonic.xp.core.impl.security.UserStorePropertyNames;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
@@ -164,6 +164,6 @@ public final class UserStoreConverter
 
     private String generateName( final String value )
     {
-        return new ContentPathNameGenerator().generatePathName( value ).replace( "ø", "o" ).replace( "å", "aa" ).replace( "æ", "ae" );
+        return NamePrettyfier.create( value );
     }
 }

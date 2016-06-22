@@ -19,11 +19,11 @@ import com.google.common.io.Files;
 
 import com.enonic.cms2xp.converter.ContentNodeConverter;
 import com.enonic.xp.content.ContentPropertyNames;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.core.impl.content.ContentTypeFromMimeTypeResolver;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -199,7 +199,7 @@ public class ContentExporter
         for ( BinaryDataKey key : binaryKeys )
         {
             final BinaryDataEntity binaryData = main.getBinaryData( key );
-            final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+            final String binaryName = NamePrettyfier.create( binaryData.getName() );
             if ( !duplicates.containsKey( binaryName ) )
             {
                 duplicates.put( binaryName, binaryData.getCreatedAt() );
@@ -239,7 +239,7 @@ public class ContentExporter
             }
 
             final ByteSource byteSource = Files.asByteSource( blob.getAsFile() );
-            final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+            final String binaryName = NamePrettyfier.create( binaryData.getName() );
             final BinaryReference reference = BinaryReference.from( binaryName );
 
             nodeExporter.exportNodeBinary( contentNode, reference, byteSource );
@@ -263,7 +263,7 @@ public class ContentExporter
     private void addAttachmentData( final PropertyTree nodeData, final String label, final BinaryDataEntity binaryData,
                                     final BinaryReference reference, final String mimeType )
     {
-        final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+        final String binaryName = NamePrettyfier.create( binaryData.getName() );
 
         // /node/data/attachment
         final PropertySet attachmentSet = nodeData.addSet( ContentPropertyNames.ATTACHMENT );
@@ -303,7 +303,7 @@ public class ContentExporter
         }
 
         final ByteSource byteSource = Files.asByteSource( blob.getAsFile() );
-        final String binaryName = new ContentPathNameGenerator().generatePathName( binaryData.getName() );
+        final String binaryName = NamePrettyfier.create( binaryData.getName() );
         if ( StringUtils.isBlank( binaryName ) )
         {
             logger.warn( "Invalid binary name [" + binaryData.getName() + "] in content '" + content.getPathAsString() + "'" );

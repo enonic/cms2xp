@@ -6,9 +6,9 @@ import java.time.Instant;
 import org.apache.commons.lang.StringUtils;
 
 import com.enonic.xp.content.ContentConstants;
-import com.enonic.xp.core.impl.content.ContentPathNameGenerator;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.index.ChildOrder;
+import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeName;
@@ -48,6 +48,6 @@ public abstract class AbstractNodeConverter
 
     private String generatePathName( final String name )
     {
-        return new ContentPathNameGenerator().generatePathName( name );
+        return NamePrettyfier.create( name );
     }
 }
