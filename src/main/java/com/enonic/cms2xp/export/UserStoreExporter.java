@@ -157,7 +157,14 @@ public class UserStoreExporter
             }
 
             final Principal groupOrRole;
-            groupOrRole = converter.convert( groupEntity );
+            if ( groupEntity.getUserStore() == null )
+            {
+                groupOrRole = converter.convertToRole( groupEntity );
+            }
+            else
+            {
+                groupOrRole = converter.convert( groupEntity );
+            }
             principals.add( groupOrRole );
             principalKeyResolver.add( groupEntity.getGroupKey(), groupOrRole.getKey() );
 
@@ -199,10 +206,16 @@ public class UserStoreExporter
             {
                 final PrincipalKey member = principalKeyResolver.getPrincipal( memberKey );
                 final PrincipalKey group = principalKeyResolver.getPrincipal( groupKey );
-                if ( group != null && member != null )
+                if ( group == null || member == null )
                 {
-                    this.members.put( group, member );
+                    continue;
                 }
+                if ( group.isRole() && member.isRole() )
+                {
+                    // Skipping membership of role as member of role
+                    continue;
+                }
+                this.members.put( group, member );
             }
         }
     }
