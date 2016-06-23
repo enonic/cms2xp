@@ -160,8 +160,13 @@ These are the suggested steps for migrating CMS data:
 See XP documentation for more details about the [import](http://xp.readthedocs.io/en/latest/reference/toolbox/import.html) and [reprocess](http://xp.readthedocs.io/en/latest/reference/toolbox/reprocess.html) commands.
 
 
-## Tips 
+## Notes 
 
+There are some remarks and limitations on the exported data:
+- The Menu tree of the sites is exported maintaining the same structure. CMS page templates are converted to XP page-template, and portlets are converted to XP fragments. 
+But the parts and pages generated in the app are placeholders. The xsl logic and datasources from CMS is currently **not** converted to XP.
+- CMS section does not have an equivalent in XP. Content published in a section is referenced in a "sectionContents" property of the section content type. 
+In addition, if ``<moveHomeContentToSection>`` is set to true in the cms2xp config, the published content will be placed under the section content.
+- CMS global groups is currently converted to roles in XP. But due to roles not allowing to be member of other roles in XP, the memberships of global groups are skipped on the exported data.
 
-## TODO
-
+For questions, feature requests, or reporting issues, please use the [Enonic Discuss forum](https://discuss.enonic.com/).
