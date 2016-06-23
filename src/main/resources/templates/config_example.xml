@@ -21,5 +21,6 @@
     <exportPublishDateMixin>false</exportPublishDateMixin>
     <exportMenuMixin>true</exportMenuMixin>
     <moveHomeContentToSection>true</moveHomeContentToSection>
+    <exportCmsKeyMixin>false</exportCmsKeyMixin>
   </target>
 </config>

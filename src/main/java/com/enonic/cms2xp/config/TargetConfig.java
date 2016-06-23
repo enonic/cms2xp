@@ -20,4 +20,6 @@ public final class TargetConfig
     public boolean exportMenuMixin = true;
 
     public boolean moveHomeContentToSection = true;
+
+    public boolean exportCmsKeyMixin;
 }

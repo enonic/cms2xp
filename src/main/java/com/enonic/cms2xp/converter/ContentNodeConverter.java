@@ -170,6 +170,10 @@ public final class ContentNodeConverter
         {
             toPublishExtraData( content, extraData );
         }
+        if ( config.target.exportCmsKeyMixin )
+        {
+            toCmsContentExtraData( content, extraData );
+        }
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         final ContentVersionEntity mainVersion = content.getMainVersion();
@@ -260,6 +264,24 @@ public final class ContentNodeConverter
         appData.setSet( "publishDate", publishData );
 
         extraData.addSet( appId, appData );
+    }
+
+    private void toCmsContentExtraData( final ContentEntity content, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+
+        final PropertySet cmsContent = new PropertySet();
+        final String contentKey = content.getKey().toString();
+        cmsContent.setString( "key", contentKey );
+
+        PropertySet appData = extraData.getSet( appId );
+        if ( appData == null )
+        {
+            appData = new PropertySet();
+            extraData.addSet( appId, appData );
+        }
+
+        appData.setSet( "cmsContent", cmsContent );
     }
 
     private String getDisplayName( final ContentEntity content )
