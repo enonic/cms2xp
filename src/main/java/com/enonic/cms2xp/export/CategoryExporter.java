@@ -37,7 +37,7 @@ public class CategoryExporter
 
     private final ContentExporter contentExporter;
 
-    private final CategoryNodeConverter categoryNodeConverter = new CategoryNodeConverter();
+    private final CategoryNodeConverter categoryNodeConverter;
 
     private final SiteNodeConverter siteNodeConverter;
 
@@ -53,6 +53,7 @@ public class CategoryExporter
         this.contentExporter = contentExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.config = config;
+        this.categoryNodeConverter = new CategoryNodeConverter( applicationKey, config );
     }
 
     public void export( final List<CategoryKey> categories, final NodePath parentNode )

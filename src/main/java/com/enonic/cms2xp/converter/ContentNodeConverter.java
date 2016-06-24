@@ -272,7 +272,7 @@ public final class ContentNodeConverter
 
         final PropertySet cmsContent = new PropertySet();
         final String contentKey = content.getKey().toString();
-        cmsContent.setString( "key", contentKey );
+        cmsContent.setString( "contentKey", contentKey );
 
         PropertySet appData = extraData.getSet( appId );
         if ( appData == null )

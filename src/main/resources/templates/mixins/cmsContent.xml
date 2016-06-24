@@ -2,8 +2,12 @@
 <mixin>
   <display-name>CMS Content</display-name>
   <items>
-    <input type="TextLine" name="key">
+    <input type="TextLine" name="contentKey">
       <label>Content key</label>
+      <occurrences minimum="0" maximum="1"/>
+    </input>
+    <input type="TextLine" name="categoryKey">
+      <label>Category key</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
   </items>

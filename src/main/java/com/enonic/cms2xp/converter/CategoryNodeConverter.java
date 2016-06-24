@@ -1,5 +1,7 @@
 package com.enonic.cms2xp.converter;
 
+import com.enonic.cms2xp.config.MainConfig;
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
@@ -12,6 +14,16 @@ import com.enonic.cms.core.content.category.CategoryEntity;
 public final class CategoryNodeConverter
     extends AbstractNodeConverter
 {
+    private final MainConfig config;
+
+    private final ApplicationKey applicationKey;
+
+    public CategoryNodeConverter( final ApplicationKey applicationKey, final MainConfig config )
+    {
+        this.applicationKey = applicationKey;
+        this.config = config;
+    }
+
     public Node toNode( final CategoryEntity category )
     {
         return createNode( new NodeId(), category.getName(), toData( category ) );
@@ -29,7 +41,32 @@ public final class CategoryNodeConverter
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
         data.setInstant( ContentPropertyNames.CREATED_TIME, category.getCreated().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
-        data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
+
+        final PropertySet extraData = new PropertySet();
+        if ( config.target.exportCmsKeyMixin )
+        {
+            toCmsContentExtraData( category, extraData );
+        }
+        data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
+
         return data;
+    }
+
+    private void toCmsContentExtraData( final CategoryEntity category, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+
+        final PropertySet cmsContent = new PropertySet();
+        final String contentKey = category.getKey().toString();
+        cmsContent.setString( "categoryKey", contentKey );
+
+        PropertySet appData = extraData.getSet( appId );
+        if ( appData == null )
+        {
+            appData = new PropertySet();
+            extraData.addSet( appId, appData );
+        }
+
+        appData.setSet( "cmsContent", cmsContent );
     }
 }
