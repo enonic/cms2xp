@@ -42,6 +42,7 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.DropdownDataEntry
 import com.enonic.cms.core.content.contenttype.dataentryconfig.FileDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.HtmlAreaDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.ImageDataEntryConfig;
+import com.enonic.cms.core.content.contenttype.dataentryconfig.ImagesDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.MultipleChoiceDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.RadioButtonDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.RelatedContentDataEntryConfig;
@@ -301,7 +302,8 @@ public final class ContentTypeConverter
                 convertImageEntry( (ImageDataEntryConfig) entry, input );
                 break;
             case IMAGES:
-                // deprecated
+                // deprecated (but still alive)
+                convertImagesEntry( (ImagesDataEntryConfig) entry, input );
                 break;
             case KEYWORDS:
                 // deprecated
@@ -367,6 +369,11 @@ public final class ContentTypeConverter
     }
 
     private void convertImageEntry( final ImageDataEntryConfig entry, final Input.Builder input )
+    {
+        input.inputType( InputTypeName.IMAGE_SELECTOR );
+    }
+
+    private void convertImagesEntry( final ImagesDataEntryConfig entry, final Input.Builder input )
     {
         input.inputType( InputTypeName.IMAGE_SELECTOR );
     }
