@@ -149,7 +149,14 @@ public class MenuItemNodeConverter
             final PageTemplateKey pageTemplate = page.getTemplate().getPageTemplateKey();
             pageData.setProperty( "controller", ValueFactory.newString( null ) );
             final NodeId templateNodeId = this.pageTemplateResolver.resolveTemplateNodeId( pageTemplate );
-            pageData.setProperty( "template", ValueFactory.newReference( Reference.from( templateNodeId.toString() ) ) );
+            if ( templateNodeId == null )
+            {
+                pageData.setProperty( "template", ValueFactory.newReference( null ) );
+            }
+            else
+            {
+                pageData.setProperty( "template", ValueFactory.newReference( Reference.from( templateNodeId.toString() ) ) );
+            }
 
             final Multimap<String, PortletEntity> regionPortlets = ArrayListMultimap.create();
             for ( PageWindowEntity pageWindow : menuItem.getPage().getPageWindows() )
