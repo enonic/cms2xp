@@ -1,6 +1,8 @@
 # Enonic CMS to XP migration tool
 This repository contains the code for the CMS to XP migration tool.
 
+The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
+
 <img align="left" alt="Enonic CMS" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-cms-logo.png" width="200">
 <img align="right" style="margin-top:10px;" alt="Enonic XP" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-xp-shield-logo.svg" width="200">  
 <br/>
@@ -165,6 +167,7 @@ See XP documentation for more details about the [import](http://xp.readthedocs.i
 ## Notes 
 
 There are some remarks and limitations on the exported data:
+- The source CMS data must be from Enonic CMS version 4.7. To convert from an older installation (e.g. 4.5.x, 4.4.x) it is necessary to first upgrade to the latest CMS 4.7 version.
 - The Menu tree of the sites is exported maintaining the same structure. CMS page templates are converted to XP page-template, and portlets are converted to XP fragments. 
 But the parts and pages generated in the app are placeholders. The xsl logic and datasources from CMS is currently **not** converted to XP.
 - CMS section does not have an equivalent in XP. Content published in a section is referenced in a "sectionContents" property of the section content type. 
