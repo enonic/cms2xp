@@ -15,9 +15,13 @@ import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentPropertyNames;
+import com.enonic.xp.core.impl.content.ContentIndexConfigFactory;
+import com.enonic.xp.core.impl.schema.content.BuiltinContentTypes;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.data.Value;
+import com.enonic.xp.form.Form;
+import com.enonic.xp.index.IndexConfigDocument;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -53,7 +57,11 @@ public final class ContentNodeConverter
             put( ContentHandlerName.FILE, ContentTypeName.unknownMedia() ).
             build();
 
+    private static final BuiltinContentTypes BUILTIN_CONTENT_TYPES = new BuiltinContentTypes();
+
     private final static Logger logger = LoggerFactory.getLogger( ContentNodeConverter.class );
+
+    private static final Form EMPTY_FORM = Form.create().build();
 
     private final NodeIdRegistry nodeIdRegistry;
 
@@ -88,7 +96,12 @@ public final class ContentNodeConverter
     {
         final Node node = createNode( nodeIdRegistry.getNodeId( content.getKey() ), content.getName(), toData( content ) );
         final AccessControlList permissions = getPermissions( content.getContentAccessRights() );
-        return Node.create( node ).permissions( permissions ).inheritPermissions( false ).build();
+
+        final Form form = getContentTypeForm( content );
+        final ContentTypeName contentType = convertType( content );
+        final IndexConfigDocument indexConfig = ContentIndexConfigFactory.create( form, contentType );
+
+        return Node.create( node ).permissions( permissions ).inheritPermissions( false ).indexConfigDocument( indexConfig ).build();
     }
 
     private AccessControlList getPermissions( final Collection<ContentAccessEntity> contentAccessRights )
@@ -302,5 +315,27 @@ public final class ContentNodeConverter
             return contentType.getName();
         }
         return SYSTEM_TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
+    }
+
+    private Form getContentTypeForm( final ContentEntity content )
+    {
+        if ( content.getContentType() == null )
+        {
+            return EMPTY_FORM;
+        }
+        final ContentTypeKey key = content.getContentType().getContentTypeKey();
+        final ContentType contentType = this.contentTypeResolver.getContentType( key );
+        if ( contentType != null )
+        {
+            return contentType.getForm();
+        }
+
+        final ContentTypeName xpType =
+            SYSTEM_TYPES.getOrDefault( content.getContentType().getContentHandlerName(), ContentTypeName.unstructured() );
+        final ContentType ctype = BUILTIN_CONTENT_TYPES.getAll().stream().
+            filter( ( ct ) -> ct.getName().equals( xpType ) ).
+            findFirst().
+            orElse( null );
+        return ctype != null ? ctype.getForm() : EMPTY_FORM;
     }
 }
