@@ -80,7 +80,6 @@ public final class XmlFormSerializer
         serializeValueElement( "label", formItemSet.getLabel() );
         serializeValueElement( "custom-text", formItemSet.getCustomText() );
         serializeValueElement( "help-text", formItemSet.getHelpText() );
-        serializeValueElement( "immutable", formItemSet.isImmutable() );
         serialize( formItemSet.getOccurrences() );
         serialize( formItemSet.getFormItems() );
     }
@@ -91,13 +90,13 @@ public final class XmlFormSerializer
         serializeValueAttribute( "name", input.getName() );
         serializeValueElement( "label", input.getLabel() );
         serializeValueElement( "custom-text", input.getCustomText() );
-        serializeValueElement( "immutable", input.isImmutable() );
-        serializeValueElement( "indexed", input.isIndexed() );
         serializeValueElement( "validation-regexp", input.getValidationRegexp() );
-        serializeValueElement( "maximize", input.isMaximizeUIInputWidth() );
         serialize( input.getOccurrences() );
-        serialize( input.getInputTypeConfig() );
-
+        final InputTypeConfig config = input.getInputTypeConfig();
+        if ( config != null && config.getSize() > 0 )
+        {
+            serialize( input.getInputTypeConfig() );
+        }
     }
 
     private void serialize( FieldSet fieldSet )
