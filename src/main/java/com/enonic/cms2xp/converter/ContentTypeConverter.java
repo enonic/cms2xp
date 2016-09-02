@@ -258,7 +258,20 @@ public final class ContentTypeConverter
         {
             formItemSet.addFormItem( convertConfigEntry( entry ) );
         }
-        return formItemSet.build();
+        final FormItemSet res = formItemSet.build();
+
+        final String[] blockNameParts = ctyConfig.getGroupXPath().split( "/" );
+        if ( blockNameParts.length > 2 )
+        {
+            final FormItemSet.Builder wrapperFormItemSet = FormItemSet.create();
+            wrapperFormItemSet.name( blockNameParts[1] );
+            wrapperFormItemSet.label( ctyConfig.getName() );
+            wrapperFormItemSet.occurrences( 0, 1 );
+            wrapperFormItemSet.addFormItem( res );
+            return wrapperFormItemSet.build();
+        }
+
+        return res;
     }
 
     private FormItem convertConfigEntry( final DataEntryConfig entry )

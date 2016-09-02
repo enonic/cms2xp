@@ -111,6 +111,24 @@ public class DataEntryValuesConverter
         final PropertySet propertySet = new PropertySet();
         for ( DataEntry dataEntry : dataEntries )
         {
+            PropertySet parentPropertySet = propertySet;
+            final String[] dataPathParts = dataEntry.getXPath().split( "/" );
+            if ( dataPathParts.length > 2 )
+            {
+                for ( int i = 1; i < dataPathParts.length - 1; i++ )
+                {
+                    final PropertySet childSet = parentPropertySet.getSet( dataPathParts[i] );
+                    if ( childSet == null )
+                    {
+                        parentPropertySet = parentPropertySet.addSet( dataPathParts[i] );
+                    }
+                    else
+                    {
+                        parentPropertySet = childSet;
+                    }
+                }
+            }
+
             final String entryPathName = StringUtils.substringAfterLast( dataEntry.getXPath(), "/" );
             final String propertyName = StringUtils.isBlank( entryPathName ) ? dataEntry.getName() : entryPathName;
 
@@ -124,7 +142,7 @@ public class DataEntryValuesConverter
             {
                 if ( propertyValue != null && !( propertyValue.isSet() && propertyValue.asData().getPropertySize() == 0 ) )
                 {
-                    propertySet.addProperty( propertyName, propertyValue );
+                    parentPropertySet.addProperty( propertyName, propertyValue );
                 }
             }
         }
