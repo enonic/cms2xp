@@ -44,7 +44,7 @@ public final class UserStoreConverter
 
     public UserStore convert( final UserStoreEntity userStoreEntity )
     {
-        final com.enonic.xp.security.UserStoreKey key = com.enonic.xp.security.UserStoreKey.from( userStoreEntity.getName().toLowerCase() );
+        final UserStoreKey key = normalizeUserStoreKey( userStoreEntity );
 
         return UserStore.create().
             displayName( userStoreEntity.getName() ).
@@ -56,7 +56,7 @@ public final class UserStoreConverter
         final com.enonic.xp.security.UserStoreKey key;
         if ( groupEntity.getUserStore() != null )
         {
-            key = com.enonic.xp.security.UserStoreKey.from( generateName( groupEntity.getUserStore().getName() ) );
+            key = normalizeUserStoreKey( groupEntity.getUserStore() );
         }
         else
         {
@@ -89,8 +89,7 @@ public final class UserStoreConverter
 
     public User convert( final UserEntity userEntity )
     {
-        final com.enonic.xp.security.UserStoreKey key =
-            com.enonic.xp.security.UserStoreKey.from( generateName( userEntity.getUserStore().getName() ) );
+        final UserStoreKey key = normalizeUserStoreKey( userEntity.getUserStore() );
 
         final String userId = generateName( userEntity.getName() );
         final PrincipalKey userKey = PrincipalKey.ofUser( key, userId );
@@ -160,6 +159,11 @@ public final class UserStoreConverter
         {
             return PrincipalNodeTranslator.toNode( principal, members );
         }
+    }
+
+    private UserStoreKey normalizeUserStoreKey( UserStoreEntity userStoreEntity )
+    {
+        return UserStoreKey.from( userStoreEntity.getName().toLowerCase() );
     }
 
     private String generateName( final String value )

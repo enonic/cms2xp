@@ -42,7 +42,7 @@ public class TemplateParameterConverter
     private Input createParameterFormInput( final TemplateParameter parameter )
     {
         final Input.Builder input = Input.create();
-        input.name( parameter.getName() );
+        input.name( parameter.getName().replace( ".", "_" ) );
         input.label( parameter.getName() );
 
         TemplateParameterType paramType = parameter.getType();
