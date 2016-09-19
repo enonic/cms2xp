@@ -93,6 +93,10 @@ public class CategoryExporter
                 int contentCount = 0;
                 for ( ContentEntity content : contents )
                 {
+                    if ( content.isDeleted() )
+                    {
+                        continue;
+                    }
                     contentCount++;
                     if ( contentCount % 20 == 0 )
                     {
