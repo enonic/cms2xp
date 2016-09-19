@@ -218,7 +218,7 @@ public class HtmlAreaConverter
         figureEl.appendChild( img );
 
         String caption = img.attr( "title" );
-        if ( StringUtils.isBlank( caption ) )
+        if ( StringUtils.isBlank( caption ) )//
         {
             caption = img.attr( "alt" );
         }
