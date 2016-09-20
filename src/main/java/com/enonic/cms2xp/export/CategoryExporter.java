@@ -3,6 +3,7 @@ package com.enonic.cms2xp.export;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import com.enonic.xp.query.expr.FieldOrderExpr;
 import com.enonic.xp.query.expr.OrderExpr;
 
 import com.enonic.cms.core.content.ContentEntity;
+import com.enonic.cms.core.content.ContentStatus;
 import com.enonic.cms.core.content.category.CategoryEntity;
 import com.enonic.cms.core.content.category.CategoryKey;
 import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
@@ -86,17 +88,39 @@ public class CategoryExporter
             //Exports the node
             nodeExporter.exportNode( categoryNode );
 
+            //Calls the export on the children
+            // It's important to export categories first so it's the content (not the category folder) that gets renamed in case 2 nodes get the same path
+            final List<CategoryKey> subCategories = CategoryRetriever.retrieveSubCategories( session, categoryKey );
+            if ( !subCategories.isEmpty() )
+            {
+                export( subCategories, categoryNode.path() );
+            }
+
+            category = CategoryRetriever.retrieveCategory( session, categoryKey );
+
             //Calls the export on the contents
             final Set<ContentEntity> contents = category.getContents();
             if ( !contents.isEmpty() )
             {
+                final List<ContentEntity> sortedContent = contents.stream().
+                    filter( ( c ) -> !c.isDeleted() ).
+                    sorted( ( c1, c2 ) ->
+                            {
+                                int res = c1.getName().compareTo( c2.getName() );
+                                if ( res == 0 )
+                                {
+                                    // if same name, first the approved one
+                                    final ContentStatus st1 = c1.getMainVersion().getStatus();
+                                    final ContentStatus st2 = c2.getMainVersion().getStatus();
+                                    return st1 == st2 ? 0 : st1 == ContentStatus.APPROVED ? -1 : 1;
+                                }
+                                return res;
+                            } ).
+                    collect( Collectors.toList() );
+
                 int contentCount = 0;
-                for ( ContentEntity content : contents )
+                for ( ContentEntity content : sortedContent )
                 {
-                    if ( content.isDeleted() )
-                    {
-                        continue;
-                    }
                     contentCount++;
                     if ( contentCount % 20 == 0 )
                     {
@@ -126,16 +150,8 @@ public class CategoryExporter
                     logger.info( contentCount + " contents exported" );
                 }
             }
-
-            //Calls the export on the children
-            final List<CategoryKey> subCategories = CategoryRetriever.retrieveSubCategories( session, categoryKey );
-            if ( !subCategories.isEmpty() )
-            {
-                export( subCategories, categoryNode.path() );
-            }
         }
     }
-
 
     private Node createArchiveParent( final NodePath parentNodePath )
     {

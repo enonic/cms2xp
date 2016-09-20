@@ -2,6 +2,9 @@ package com.enonic.xp.core.impl.export;
 
 import java.nio.file.Path;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
@@ -15,6 +18,8 @@ import com.enonic.xp.util.BinaryReference;
 
 public class NodeExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( NodeExporter.class );
+
     private final static String LINE_SEPARATOR = System.getProperty( "line.separator" );
 
     private final NodePath sourceNodePath;
@@ -67,21 +72,70 @@ public class NodeExporter
         exportNodeBinary( node, BinaryReference.from( binaryPath.getFileName().toString() ), Files.asByteSource( binaryPath.toFile() ) );
     }
 
-    private void writeNode( final Node node )
+    public Node renameIfDuplicated( final Node sourceNode )
     {
-        final NodePath newParentPath = resolveNewParentPath( node );
+        Path nodeDataFolder = resolveNodeDataFolder( sourceNode );
+        Path nodeXmlPath = NodeExportPathResolver.resolveNodeXmlPath( nodeDataFolder );
+
+        Node node = sourceNode;
+        int suffix = 1;
+        while ( nodeXmlPath.toFile().exists() )
+        {
+            suffix++;
+            node = renameNodeWithSuffix( sourceNode, suffix );
+
+            nodeDataFolder = resolveNodeDataFolder( node );
+            nodeXmlPath = NodeExportPathResolver.resolveNodeXmlPath( nodeDataFolder );
+        }
+        return node;
+    }
+
+    private void writeNode( final Node sourceNode )
+    {
+        NodePath newParentPath = resolveNewParentPath( sourceNode );
+        Path nodeDataFolder = resolveNodeDataFolder( sourceNode );
+        Path nodeXmlPath = NodeExportPathResolver.resolveNodeXmlPath( nodeDataFolder );
+
+        Node node = sourceNode;
+        int suffix = 1;
+        while ( nodeXmlPath.toFile().exists() )
+        {
+            suffix++;
+            node = renameNodeWithSuffix( sourceNode, suffix );
+
+            newParentPath = resolveNewParentPath( node );
+            nodeDataFolder = resolveNodeDataFolder( node );
+            nodeXmlPath = NodeExportPathResolver.resolveNodeXmlPath( nodeDataFolder );
+        }
+        if ( suffix > 1 )
+        {
+            logger.info( "Content with duplicated path '" + sourceNode.path() + "' renamed to '" + node.path() + "'" );
+        }
 
         final Node relativeNode = Node.create( node ).parentPath( newParentPath ).build();
-
         final XmlNodeSerializer serializer = new XmlNodeSerializer();
         serializer.exportNodeIds( this.exportNodeIds );
         serializer.node( relativeNode );
         final String serializedNode = serializer.serialize();
 
-        final Path nodeDataFolder = resolveNodeDataFolder( node );
-
-        final Path nodeXmlPath = NodeExportPathResolver.resolveNodeXmlPath( nodeDataFolder );
         exportWriter.writeElement( nodeXmlPath, serializedNode );
+    }
+
+    private Node renameNodeWithSuffix( final Node node, final int suffix )
+    {
+        final String name = node.name().toString();
+        String newName = nameWithPrefix( name, suffix );
+        return Node.create( node ).name( newName ).build();
+    }
+
+    private String nameWithPrefix( final String name, int suffix )
+    {
+        if ( name.contains( "." ) )
+        {
+            int dot = name.lastIndexOf( "." );
+            return name.substring( 0, dot ) + "_" + suffix + "." + name.substring( dot + 1 );
+        }
+        return name + "_" + suffix;
     }
 
     private NodePath resolveNewParentPath( final Node node )

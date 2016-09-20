@@ -69,6 +69,7 @@ public class ContentExporter
         contentNode = Node.create( contentNode ).
             parentPath( parentNode ).
             build();
+        contentNode = nodeExporter.renameIfDuplicated( contentNode );
 
         //Exports attachments
         final ContentTypeName contentType = contentNodeConverter.convertType( content );
