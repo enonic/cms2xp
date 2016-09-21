@@ -8,6 +8,13 @@
     <jdbcPassword>***</jdbcPassword>
     <blobStoreDir>./cms-home/data/blobs</blobStoreDir>
     <resourcesDir>./cms-home/data/resources</resourcesDir>
+
+    <exclude>
+      <site>old_site</site>
+      <site>424242</site>
+      <contentPath>/content/old</contentPath>
+      <contentPath>/content/images/not_in_use</contentPath>
+    </exclude>
   </source>
 
   <!-- Target (XP) -->

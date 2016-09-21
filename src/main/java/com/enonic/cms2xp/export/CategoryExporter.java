@@ -47,8 +47,10 @@ public class CategoryExporter
 
     private final Session session;
 
+    private final ContentFilter contentFilter;
+
     public CategoryExporter( final Session session, final NodeExporter nodeExporter, final ContentExporter contentExporter,
-                             final ApplicationKey applicationKey, final MainConfig config )
+                             final ApplicationKey applicationKey, final MainConfig config, final ContentFilter contentFilter )
     {
         this.session = session;
         this.nodeExporter = nodeExporter;
@@ -56,6 +58,7 @@ public class CategoryExporter
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.config = config;
         this.categoryNodeConverter = new CategoryNodeConverter( applicationKey, config );
+        this.contentFilter = contentFilter;
     }
 
     public void export( final List<CategoryKey> categories, final NodePath parentNode )
@@ -77,6 +80,10 @@ public class CategoryExporter
         {
             session.clear(); // release memory
             CategoryEntity category = CategoryRetriever.retrieveCategory( session, categoryKey );
+            if ( contentFilter.skipCategory( category ) )
+            {
+                continue;
+            }
             logger.info( "Exporting category '" + category.getPathAsString() + "'" );
             //Converts the category to a node
             Node categoryNode = categoryNodeConverter.toNode( category );

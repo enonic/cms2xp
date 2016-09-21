@@ -53,17 +53,25 @@ public class ContentExporter
 
     private final ContentKeyResolver contentKeyResolver;
 
+    private final ContentFilter contentFilter;
+
     public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore,
-                            final ContentNodeConverter contentNodeConverter, final ContentKeyResolver contentKeyResolver )
+                            final ContentNodeConverter contentNodeConverter, final ContentKeyResolver contentKeyResolver,
+                            final ContentFilter contentFilter )
     {
         this.nodeExporter = nodeExporter;
         this.fileBlobStore = fileBlobStore;
         this.contentNodeConverter = contentNodeConverter;
         this.contentKeyResolver = contentKeyResolver;
+        this.contentFilter = contentFilter;
     }
 
     public Node export( final ContentEntity content, final NodePath parentNode )
     {
+        if ( contentFilter.skipContent( content ) )
+        {
+            return null;
+        }
         //Converts the content to a node
         Node contentNode = contentNodeConverter.toNode( content );
         contentNode = Node.create( contentNode ).

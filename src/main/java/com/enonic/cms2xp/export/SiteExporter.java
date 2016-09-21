@@ -144,7 +144,10 @@ public class SiteExporter
             {
                 final ContentEntity content = home.getContent();
                 final Node node = contentExporter.export( content, parentPath );
-                sectionNodesAdded.add( node );
+                if ( node != null )
+                {
+                    sectionNodesAdded.add( node );
+                }
             }
         }
         return sectionNodesAdded;
