@@ -15,4 +15,7 @@ public final class SourceConfig
     public File blobStoreDir;
 
     public File resourcesDir;
+
+    public ExcludeConfig exclude;
+
 }

@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
@@ -331,7 +332,10 @@ public final class ExportData
     {
         //Retrieves the SiteEntities
         logger.info( "Loading sites..." );
-        final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session );
+        final SiteFilter siteFilter = new SiteFilter( config.source.exclude );
+        final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session ).stream().
+            filter( siteFilter ).
+            collect( Collectors.toList() );
         logger.info( siteEntities.size() + " sites loaded." );
 
         //Converts and exports the Sites
