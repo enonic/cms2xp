@@ -58,6 +58,12 @@ Example of config.xml:
     <jdbcPassword>***</jdbcPassword>
     <blobStoreDir>./cms-home/data/blobs</blobStoreDir>
     <resourcesDir>./cms-home/data/resources</resourcesDir>
+    <exclude>
+      <site>old_site</site>
+      <site>42</site>
+      <contentPath>/content/old</contentPath>
+      <contentPath>/content/images/not_in_use</contentPath>
+    </exclude>
   </source>
 
   <!-- Target (XP) -->
@@ -87,6 +93,9 @@ The source parameters include the details necessary for connecting to the CMS da
 | jdbcPassword | Password for the CMS database. | "password123" |
 | blobStoreDir | Local file path to the blobs directory of the CMS. | "./cms-home/data/blobs" |
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
+| resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
+| exclude/site | Site key or name in the CMS to be excluded from the export. | "old_Site", "33" |
+| exclude/contentPath | Content path prefix in the CMS to exclude from the export. If the path corresponds with a category, none of its subcategories will be exported. | "MyContent/old/data" |
 
 #### Target parameters
 
