@@ -23,6 +23,7 @@ import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.ContentNodeConverter;
 import com.enonic.cms2xp.converter.ContentTypeConverter;
 import com.enonic.cms2xp.converter.ContentTypeResolver;
+import com.enonic.cms2xp.converter.ImageDescriptionResolver;
 import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
@@ -321,12 +322,15 @@ public final class ExportData
         final FileBlobStore fileBlobStore = new FileBlobStore();
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
+        final ImageDescriptionResolver imageDescriptionResolver = new ImageDescriptionResolver( session );
         final ContentFilter contentFilter = new ContentFilter( config.source.exclude );
         final ContentNodeConverter contentNodeConverter =
-            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey,
-                                      this.config );
-        this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver, contentFilter );
-        final CategoryExporter exporter = new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config,contentFilter );
+            new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey, this.config,
+                                      imageDescriptionResolver );
+        this.contentExporter =
+            new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver, contentFilter );
+        final CategoryExporter exporter =
+            new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config, contentFilter );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }

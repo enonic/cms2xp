@@ -49,9 +49,12 @@ public class HtmlAreaConverter
 
     private final NodeIdRegistry nodeIdRegistry;
 
-    public HtmlAreaConverter( final NodeIdRegistry nodeIdRegistry )
+    private final ImageDescriptionResolver imageDescriptionResolver;
+
+    public HtmlAreaConverter( final NodeIdRegistry nodeIdRegistry, final ImageDescriptionResolver imageDescriptionResolver )
     {
         this.nodeIdRegistry = nodeIdRegistry;
+        this.imageDescriptionResolver = imageDescriptionResolver;
     }
 
     public Value toHtmlValue( final HtmlAreaDataEntry htmlEntry )
@@ -106,7 +109,10 @@ public class HtmlAreaConverter
             }
         }
 
-        final Document.OutputSettings settings = new Document.OutputSettings().prettyPrint( false );
+        final Document.OutputSettings settings = new Document.OutputSettings().
+            syntax( Document.OutputSettings.Syntax.xml ).
+            prettyPrint( false );
+
         return doc.outputSettings( settings ).body().html();
     }
 
@@ -133,7 +139,8 @@ public class HtmlAreaConverter
         else if ( url.startsWith( IMAGE_TYPE + "://" ) )
         {
             final String id = idFromUrl( url, IMAGE_TYPE );
-            String imageUrl = "image://" + this.nodeIdRegistry.getNodeId( new ContentKey( id ) );
+            final ContentKey contentKey = new ContentKey( id );
+            String imageUrl = "image://" + this.nodeIdRegistry.getNodeId( contentKey );
             final Map<String, String> params = getUrlParams( url );
             final String sizeParam = params.get( "_size" );
 
@@ -146,21 +153,21 @@ public class HtmlAreaConverter
                 case LIST:
                 case THUMBNAIL:
                 case REGULAR:
-                    setImageAlignment( imageElement, imageAlignment, size );
+                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
                     break;
 
                 case WIDE:
                 case SQUARE:
-                    setImageAlignment( imageElement, imageAlignment, size );
+                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
                     break;
 
                 case FULL:
-                    setImageAlignment( imageElement, ImageAlignment.JUSTIFIED, size );
+                    setImageAlignment( imageElement, ImageAlignment.JUSTIFIED, size, contentKey );
                     break;
                 case ORIGINAL:
                     // keep size + alignment
                     imageUrl = imageUrl + KEEP_SIZE_TRUE;
-                    setImageAlignment( imageElement, imageAlignment, size );
+                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
                     break;
             }
             return imageUrl;
@@ -169,7 +176,7 @@ public class HtmlAreaConverter
         return url;
     }
 
-    private void setImageAlignment( final Element img, final ImageAlignment alignment, final ImageSize size )
+    private void setImageAlignment( Element img, final ImageAlignment alignment, final ImageSize size, final ContentKey contentKey )
     {
         if ( img == null )
         {
@@ -217,11 +224,7 @@ public class HtmlAreaConverter
         img.replaceWith( figureEl );
         figureEl.appendChild( img );
 
-        String caption = img.attr( "title" );
-        if ( StringUtils.isBlank( caption ) )//
-        {
-            caption = img.attr( "alt" );
-        }
+        final String caption = imageDescriptionResolver.getImageDescription( contentKey );
         if ( StringUtils.isNotBlank( caption ) )
         {
             final Attributes figCaptionAttr = new Attributes();

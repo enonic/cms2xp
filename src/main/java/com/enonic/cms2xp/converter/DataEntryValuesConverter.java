@@ -32,10 +32,10 @@ public class DataEntryValuesConverter
 
     private final HtmlAreaConverter htmlAreaConverter;
 
-    public DataEntryValuesConverter( final NodeIdRegistry nodeIdRegistry )
+    public DataEntryValuesConverter( final NodeIdRegistry nodeIdRegistry, final ImageDescriptionResolver imageDescriptionResolver )
     {
         this.nodeIdRegistry = nodeIdRegistry;
-        this.htmlAreaConverter = new HtmlAreaConverter( nodeIdRegistry );
+        this.htmlAreaConverter = new HtmlAreaConverter( nodeIdRegistry, imageDescriptionResolver );
     }
 
     public Value toValue( final DataEntry dataEntry )
@@ -183,18 +183,20 @@ public class DataEntryValuesConverter
         final PropertySet multipleChoicePropertySet = new PropertySet();
         multipleChoicePropertySet.setProperty( "text", ValueFactory.newString( multipleChoiceText ) );
         alternatives.stream().
-            map( multipleChoiceAlternative -> {
-                PropertySet multipleChoiceAlternativePropertySet = new PropertySet();
-                multipleChoiceAlternativePropertySet.setProperty( "alternativeText", ValueFactory.newString(
-                    multipleChoiceAlternative.getAlternativeText() ) );
-                multipleChoiceAlternativePropertySet.setProperty( "correct",
-                                                                  ValueFactory.newBoolean( multipleChoiceAlternative.isCorrect() ) );
-                return multipleChoiceAlternativePropertySet;
-            } ).
-            forEach( multipleChoiceAlternativePropertySet -> {
-                final Value multipleChoiceAlternativeValue = ValueFactory.newPropertySet( multipleChoiceAlternativePropertySet );
-                multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
-            } );
+            map( multipleChoiceAlternative ->
+                 {
+                     PropertySet multipleChoiceAlternativePropertySet = new PropertySet();
+                     multipleChoiceAlternativePropertySet.setProperty( "alternativeText", ValueFactory.newString(
+                         multipleChoiceAlternative.getAlternativeText() ) );
+                     multipleChoiceAlternativePropertySet.setProperty( "correct",
+                                                                       ValueFactory.newBoolean( multipleChoiceAlternative.isCorrect() ) );
+                     return multipleChoiceAlternativePropertySet;
+                 } ).
+            forEach( multipleChoiceAlternativePropertySet ->
+                     {
+                         final Value multipleChoiceAlternativeValue = ValueFactory.newPropertySet( multipleChoiceAlternativePropertySet );
+                         multipleChoicePropertySet.addProperty( "alternative", multipleChoiceAlternativeValue );
+                     } );
 
         return ValueFactory.newPropertySet( multipleChoicePropertySet );
     }

@@ -80,11 +80,12 @@ public final class ContentNodeConverter
     private final MainConfig config;
 
     public ContentNodeConverter( final ContentTypeResolver contentTypeResolver, final PrincipalKeyResolver principalKeyResolver,
-                                 final NodeIdRegistry nodeIdRegistry, final ApplicationKey applicationKey, final MainConfig config )
+                                 final NodeIdRegistry nodeIdRegistry, final ApplicationKey applicationKey, final MainConfig config,
+                                 final ImageDescriptionResolver imageDescriptionResolver )
     {
         this.contentTypeResolver = contentTypeResolver;
         this.nodeIdRegistry = nodeIdRegistry;
-        this.dataEntryValuesConverter = new DataEntryValuesConverter( this.nodeIdRegistry );
+        this.dataEntryValuesConverter = new DataEntryValuesConverter( this.nodeIdRegistry, imageDescriptionResolver );
         this.formValuesConverter = new FormValuesConverter();
         this.newsletterValuesConverter = new NewsletterValuesConverter( this.nodeIdRegistry );
         this.principalKeyResolver = principalKeyResolver;
