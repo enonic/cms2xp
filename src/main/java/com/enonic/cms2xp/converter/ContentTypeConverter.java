@@ -21,6 +21,7 @@ import com.enonic.xp.form.Form;
 import com.enonic.xp.form.FormItem;
 import com.enonic.xp.form.FormItemSet;
 import com.enonic.xp.form.Input;
+import com.enonic.xp.form.Occurrences;
 import com.enonic.xp.inputtype.InputTypeConfig;
 import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.inputtype.InputTypeProperty;
@@ -52,6 +53,8 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.TextDataEntryConf
 import com.enonic.cms.core.content.contenttype.dataentryconfig.UrlDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.XmlDataEntryConfig;
 
+import static com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType.IMAGES;
+
 public final class ContentTypeConverter
     implements ContentTypeResolver
 {
@@ -71,11 +74,12 @@ public final class ContentTypeConverter
     {
         contentTypeEntities.stream().
             filter( this::isConvertible ).
-            forEach( ( ct ) -> {
-                final ContentType contentType = convert( ct );
-                this.typeResolver.put( ct.getContentTypeKey(), contentType );
-                logger.info( "Converted content type: {}", contentType.getName() );
-            } );
+            forEach( ( ct ) ->
+                     {
+                         final ContentType contentType = convert( ct );
+                         this.typeResolver.put( ct.getContentTypeKey(), contentType );
+                         logger.info( "Converted content type: {}", contentType.getName() );
+                     } );
         return ImmutableList.copyOf( typeResolver.values() );
     }
 
@@ -280,6 +284,12 @@ public final class ContentTypeConverter
         final String entryPathName = StringUtils.substringAfterLast( entry.getXpath(), "/" );
         final String inputName = StringUtils.isBlank( entryPathName ) ? entry.getName() : entryPathName;
 
+        if ( entry.getType() == IMAGES )
+        {
+            // convert to ItemSet with ImageSelector + TextArea
+            return convertImagesEntry( inputName, label, (ImagesDataEntryConfig) entry );
+        }
+
         final Input.Builder input = Input.create().
             name( inputName ).
             label( label ).
@@ -313,10 +323,6 @@ public final class ContentTypeConverter
                 break;
             case IMAGE:
                 convertImageEntry( (ImageDataEntryConfig) entry, input );
-                break;
-            case IMAGES:
-                // deprecated (but still alive)
-                convertImagesEntry( (ImagesDataEntryConfig) entry, input );
                 break;
             case KEYWORDS:
                 // deprecated
@@ -386,9 +392,50 @@ public final class ContentTypeConverter
         input.inputType( InputTypeName.IMAGE_SELECTOR );
     }
 
-    private void convertImagesEntry( final ImagesDataEntryConfig entry, final Input.Builder input )
+    private FormItemSet convertImagesEntry( final String inputName, final String label, final ImagesDataEntryConfig entry )
     {
-        input.inputType( InputTypeName.IMAGE_SELECTOR );
+        final Input imageInput = Input.create().
+            name( "image" ).
+            label( "Image" ).
+            required( true ).
+            customText( entry.getXpath() ).
+            inputType( InputTypeName.IMAGE_SELECTOR ).
+            build();
+        final Input imageDescriptionInput = Input.create().
+            name( "text" ).
+            label( "Image text" ).
+            required( false ).
+            customText( entry.getXpath() ).
+            inputType( InputTypeName.TEXT_AREA ).
+            build();
+
+        final FormItemSet.Builder formItemSet = FormItemSet.create().
+            name( inputName ).
+            label( label ).
+            customText( entry.getXpath() );
+        if ( entry.isRequired() )
+        {
+            formItemSet.occurrences( Occurrences.create( 1, 0 ) );
+        }
+        else
+        {
+            formItemSet.occurrences( Occurrences.create( 0, 0 ) );
+        }
+        formItemSet.addFormItem( imageInput );
+        formItemSet.addFormItem( imageDescriptionInput );
+
+        final String[] xpathNameParts = entry.getXpath().split( "/" );
+        if ( xpathNameParts.length > 2 )
+        {
+            final FormItemSet.Builder wrapperFormItemSet = FormItemSet.create();
+            wrapperFormItemSet.name( xpathNameParts[1] );
+            wrapperFormItemSet.label( label );
+            wrapperFormItemSet.occurrences( 0, 1 );
+            wrapperFormItemSet.addFormItem( formItemSet.build() );
+            return wrapperFormItemSet.build();
+        }
+
+        return formItemSet.build();
     }
 
     private void convertCheckBoxEntry( final CheckboxDataEntryConfig entry, final Input.Builder input )

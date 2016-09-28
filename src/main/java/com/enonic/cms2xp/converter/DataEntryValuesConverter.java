@@ -21,7 +21,9 @@ import com.enonic.cms.core.content.contentdata.custom.DateDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceAlternative;
 import com.enonic.cms.core.content.contentdata.custom.MultipleChoiceDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.RelationDataEntry;
+import com.enonic.cms.core.content.contentdata.custom.contentkeybased.ImageDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.relationdataentrylistbased.AbstractRelationDataEntryListBasedInputDataEntry;
+import com.enonic.cms.core.content.contentdata.custom.relationdataentrylistbased.ImagesDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.AbstractStringBasedInputDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
 import com.enonic.cms.core.content.contentdata.custom.xmlbased.AbstractXmlBasedInputDataEntry;
@@ -70,8 +72,9 @@ public class DataEntryValuesConverter
             case GROUP: //TODO
                 //Obsolete?
                 break;
-            case FILES:
             case IMAGES:
+                return toValue( (ImagesDataEntry) dataEntry );
+            case FILES:
             case RELATED_CONTENTS:
                 return toValue( (AbstractRelationDataEntryListBasedInputDataEntry<RelationDataEntry>) dataEntry );
             case KEYWORDS:
@@ -175,6 +178,16 @@ public class DataEntryValuesConverter
         return relationDataEntries.stream().map( this::toValue ).filter( Objects::nonNull ).toArray( Value[]::new );
     }
 
+    private Value[] toValue( final ImagesDataEntry imagesDataEntry )
+    {
+        final List<ImageDataEntry> relationDataEntries = imagesDataEntry.getEntries();
+        if ( relationDataEntries.isEmpty() )
+        {
+            return null;
+        }
+        return relationDataEntries.stream().map( this::toValue ).filter( Objects::nonNull ).toArray( Value[]::new );
+    }
+
     private Value toValue( final MultipleChoiceDataEntry multipleChoiceDataEntry )
     {
         final String multipleChoiceText = multipleChoiceDataEntry.getText();
@@ -210,6 +223,25 @@ public class DataEntryValuesConverter
         }
         final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
         return ValueFactory.newReference( new Reference( nodeId ) );
+    }
+
+    private Value toValue( final ImageDataEntry relationDataEntry )
+    {
+        final ContentKey contentKey = relationDataEntry.getContentKey();
+        if ( contentKey == null )
+        {
+            return null;
+        }
+        final NodeId nodeId = nodeIdRegistry.getNodeId( contentKey );
+        final String text = relationDataEntry.getImageText();
+
+        final PropertySet propertySet = new PropertySet();
+        if ( text != null )
+        {
+            propertySet.addProperty( "text", ValueFactory.newString( text ) );
+        }
+        propertySet.addProperty( "image", ValueFactory.newReference( new Reference( nodeId ) ) );
+        return ValueFactory.newPropertySet( propertySet );
     }
 
     private Value toValue( final AbstractStringBasedInputDataEntry stringBasedInputDataEntry )
