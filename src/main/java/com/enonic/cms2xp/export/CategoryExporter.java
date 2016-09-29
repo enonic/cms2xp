@@ -17,8 +17,8 @@ import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.index.ChildOrder;
+import com.enonic.xp.index.IndexPath;
 import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.query.expr.FieldOrderExpr;
 import com.enonic.xp.query.expr.OrderExpr;
@@ -29,11 +29,16 @@ import com.enonic.cms.core.content.category.CategoryEntity;
 import com.enonic.cms.core.content.category.CategoryKey;
 import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
 
+import static com.enonic.xp.content.ContentPropertyNames.MODIFIED_TIME;
 import static com.google.common.collect.Iterables.getFirst;
 
 public class CategoryExporter
 {
     private final static Logger logger = LoggerFactory.getLogger( CategoryExporter.class );
+
+    private static final OrderExpr DEFAULT_ORDER = FieldOrderExpr.create( IndexPath.from( MODIFIED_TIME ), OrderExpr.Direction.DESC );
+
+    private static final ChildOrder DEFAULT_CHILD_ORDER = ChildOrder.create().add( DEFAULT_ORDER ).build();
 
     private final NodeExporter nodeExporter;
 
@@ -74,8 +79,6 @@ public class CategoryExporter
             parentPath = parentNode;
         }
 
-        final FieldOrderExpr orderByName = FieldOrderExpr.create( NodeIndexPath.NAME, OrderExpr.Direction.ASC );
-        final ChildOrder childOrder = ChildOrder.create().add( orderByName ).build();
         for ( CategoryKey categoryKey : categories )
         {
             session.clear(); // release memory
@@ -89,7 +92,7 @@ public class CategoryExporter
             Node categoryNode = categoryNodeConverter.toNode( category );
             categoryNode = Node.create( categoryNode ).
                 parentPath( parentPath ).
-                childOrder( childOrder ).
+                childOrder( DEFAULT_CHILD_ORDER ).
                 build();
 
             //Exports the node
@@ -165,6 +168,7 @@ public class CategoryExporter
         Node topArchiveNode = siteNodeConverter.topArchiveSiteToNode();
         topArchiveNode = Node.create( topArchiveNode ).
             parentPath( parentNodePath ).
+            childOrder( DEFAULT_CHILD_ORDER ).
             build();
 
         nodeExporter.exportNode( topArchiveNode );

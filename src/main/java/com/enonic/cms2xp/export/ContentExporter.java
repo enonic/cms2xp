@@ -23,9 +23,13 @@ import com.enonic.xp.core.impl.content.ContentTypeFromMimeTypeResolver;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.index.ChildOrder;
+import com.enonic.xp.index.IndexPath;
 import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
+import com.enonic.xp.query.expr.FieldOrderExpr;
+import com.enonic.xp.query.expr.OrderExpr;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.BinaryReference;
 import com.enonic.xp.util.MediaTypes;
@@ -41,9 +45,15 @@ import com.enonic.cms.core.content.binary.BinaryDataKey;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyFileContentData;
 import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
 
+import static com.enonic.xp.content.ContentPropertyNames.MODIFIED_TIME;
+
 public class ContentExporter
 {
     private final static Logger logger = LoggerFactory.getLogger( ContentExporter.class );
+
+    private static final OrderExpr DEFAULT_ORDER = FieldOrderExpr.create( IndexPath.from( MODIFIED_TIME ), OrderExpr.Direction.DESC );
+
+    private static final ChildOrder DEFAULT_CHILD_ORDER = ChildOrder.create().add( DEFAULT_ORDER ).build();
 
     private final NodeExporter nodeExporter;
 
@@ -76,6 +86,7 @@ public class ContentExporter
         Node contentNode = contentNodeConverter.toNode( content );
         contentNode = Node.create( contentNode ).
             parentPath( parentNode ).
+            childOrder( DEFAULT_CHILD_ORDER ).
             build();
         contentNode = nodeExporter.renameIfDuplicated( contentNode );
 
