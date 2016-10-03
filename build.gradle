@@ -37,10 +37,15 @@ startScripts {
     }
 }
 
+artifacts {
+    archives distZip
+}
+
 publishing {
     publications {
         mavenJava( MavenPublication ) {
             from components.java
+            artifact distZip
         }
     }
     repositories {
