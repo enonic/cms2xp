@@ -1,6 +1,8 @@
 package com.enonic.cms2xp.converter;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -38,8 +40,11 @@ public final class UserStoreConverter
     extends AbstractNodeConverter
 {
 
+    private final Set<PrincipalKey> userKeys;
+
     public UserStoreConverter()
     {
+        userKeys = new HashSet<>();
     }
 
     public UserStore convert( final UserStoreEntity userStoreEntity )
@@ -91,8 +96,17 @@ public final class UserStoreConverter
     {
         final UserStoreKey key = normalizeUserStoreKey( userEntity.getUserStore() );
 
-        final String userId = generateName( userEntity.getName() );
+        String userId;
+        int suffix = 1;
+        do
+        {
+            userId = suffix == 1 ? generateName( userEntity.getName() ) : generateName( userEntity.getName() + "_" + suffix );
+            suffix++;
+        }
+        while ( userKeys.contains( PrincipalKey.ofUser( key, userId ) ) );
+
         final PrincipalKey userKey = PrincipalKey.ofUser( key, userId );
+        userKeys.add( userKey );
 
         return User.create().
             login( userId ).
