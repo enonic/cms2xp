@@ -1,5 +1,6 @@
 package com.enonic.cms2xp.converter;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.jdom.Attribute;
@@ -13,6 +14,7 @@ import com.enonic.cms.core.content.contenttype.CtyImportConfig;
 import com.enonic.cms.core.content.contenttype.CtySetConfig;
 import com.enonic.cms.core.content.contenttype.InputConfigParser;
 import com.enonic.cms.core.content.contenttype.InvalidContentTypeConfigException;
+import com.enonic.cms.core.content.contenttype.dataentryconfig.AbstractBaseDataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfig;
 import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType;
 
@@ -98,6 +100,15 @@ public class ContentTypeConfigParser
         {
             InputConfigParser inputConfigParser = new InputConfigParser( inputConfigPosition++ );
             DataEntryConfig inputConfig = inputConfigParser.parserInputConfigElement( inputEl );
+            if ( inputEl.getChild( "help" ) != null && inputEl.getChild( "help" ).getText() != null )
+            {
+                final String help = inputEl.getChild( "help" ).getText();
+                if ( inputConfig instanceof AbstractBaseDataEntryConfig )
+                {
+                    setHelpTextInEntry( (AbstractBaseDataEntryConfig) inputConfig, help );
+                }
+            }
+
             if ( inputConfig.getName().equals( titleField ) )
             {
                 DataEntryConfigType type = inputConfig.getType();
@@ -112,6 +123,20 @@ public class ContentTypeConfigParser
             block.addInput( inputConfig );
         }
         return block;
+    }
+
+    private void setHelpTextInEntry( final AbstractBaseDataEntryConfig entry, final String text )
+    {
+        try
+        {   // set value in private field using reflection
+            Field f1 = AbstractBaseDataEntryConfig.class.getDeclaredField( "relativeXPath" );
+            f1.setAccessible( true );
+            f1.set( entry, text );
+        }
+        catch ( IllegalAccessException | NoSuchFieldException e )
+        {
+            e.printStackTrace();
+        }
     }
 
     private String parseBlockName( final Element blockEl, final int blockPosition )

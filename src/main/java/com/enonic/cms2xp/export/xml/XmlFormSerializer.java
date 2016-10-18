@@ -91,6 +91,7 @@ public final class XmlFormSerializer
         serializeValueElement( "label", input.getLabel() );
         serializeValueElement( "custom-text", input.getCustomText() );
         serializeValueElement( "validation-regexp", input.getValidationRegexp() );
+        serializeValueElement( "help-text", input.getHelpText() );
         serialize( input.getOccurrences() );
         final InputTypeConfig config = input.getInputTypeConfig();
         if ( config != null && config.getSize() > 0 )

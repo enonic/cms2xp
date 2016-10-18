@@ -290,11 +290,13 @@ public final class ContentTypeConverter
             return convertImagesEntry( inputName, label, (ImagesDataEntryConfig) entry );
         }
 
+        final String helpText = entry.getXpath().equals( entry.getRelativeXPath() ) ? null : entry.getRelativeXPath();
         final Input.Builder input = Input.create().
             name( inputName ).
             label( label ).
             required( entry.isRequired() ).
             customText( entry.getXpath() ).
+            helpText( helpText ).
             inputType( InputTypeName.TEXT_LINE );
 
         final DataEntryConfigType type = entry.getType();
