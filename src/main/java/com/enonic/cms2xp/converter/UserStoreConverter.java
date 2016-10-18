@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
@@ -108,9 +111,10 @@ public final class UserStoreConverter
         final PrincipalKey userKey = PrincipalKey.ofUser( key, userId );
         userKeys.add( userKey );
 
+        final String email = isValid( userEntity.getEmail() ) ? userEntity.getEmail() : null;
         return User.create().
             login( userId ).
-            email( userEntity.getEmail() ).
+            email( email ).
             displayName( userEntity.getDisplayName() ).
             key( userKey ).
             build();
@@ -183,5 +187,23 @@ public final class UserStoreConverter
     private String generateName( final String value )
     {
         return NamePrettyfier.create( value );
+    }
+
+    private boolean isValid( final String email )
+    {
+        if ( email == null )
+        {
+            return false;
+        }
+        try
+        {
+            InternetAddress emailAddress = new InternetAddress( email );
+            emailAddress.validate();
+            return true;
+        }
+        catch ( AddressException ex )
+        {
+            return false;
+        }
     }
 }
