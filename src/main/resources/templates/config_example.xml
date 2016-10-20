@@ -15,6 +15,10 @@
       <contentPath>/content/old</contentPath>
       <contentPath>/content/images/not_in_use</contentPath>
     </exclude>
+    <!--<include>
+          <site>new_site</site>
+          <contentPath>/content/new</contentPath>
+        </include> -->
   </source>
 
   <!-- Target (XP) -->

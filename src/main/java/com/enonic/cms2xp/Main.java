@@ -16,6 +16,8 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 
+import com.enonic.cms2xp.config.ExcludeConfig;
+import com.enonic.cms2xp.config.IncludeConfig;
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.config.MainConfigLoader;
 import com.enonic.cms2xp.migrate.ExportData;
@@ -96,6 +98,33 @@ public final class Main
         if ( config.target.applicationRepo == null )
         {
             config.target.applicationRepo = DEFAULT_APP_REPO;
+        }
+        config.source.include = config.source.include == null ? new IncludeConfig() : config.source.include;
+        config.source.exclude = config.source.exclude == null ? new ExcludeConfig() : config.source.exclude;
+        if ( config.source.include.contentPath == null )
+        {
+            config.source.include.contentPath = new String[0];
+        }
+        if ( config.source.exclude.contentPath == null )
+        {
+            config.source.exclude.contentPath = new String[0];
+        }
+        if ( config.source.include.site == null )
+        {
+            config.source.include.site = new String[0];
+        }
+        if ( config.source.exclude.site == null )
+        {
+            config.source.exclude.site = new String[0];
+        }
+
+        if ( config.source.include.contentPath.length > 0 && config.source.exclude.contentPath.length > 0 )
+        {
+            throw new IllegalArgumentException( "Config exclude and include contentPath cannot be specified at the same time" );
+        }
+        if ( config.source.include.site.length > 0 && config.source.exclude.site.length > 0 )
+        {
+            throw new IllegalArgumentException( "Config exclude and include site cannot be specified at the same time" );
         }
     }
 

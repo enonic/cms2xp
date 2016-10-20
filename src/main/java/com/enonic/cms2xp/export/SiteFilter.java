@@ -2,44 +2,79 @@ package com.enonic.cms2xp.export;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import com.enonic.cms2xp.config.ExcludeConfig;
+import com.enonic.cms2xp.config.IncludeConfig;
 
 import com.enonic.cms.core.structure.SiteEntity;
 
 public final class SiteFilter
-    implements Predicate<SiteEntity>
 {
-    private final Set<String> siteNames;
+    private final Set<String> excludeSiteNames;
 
-    private final Set<Integer> siteKeys;
+    private final Set<Integer> excludeSiteKeys;
 
-    public SiteFilter( final ExcludeConfig excludeConfig )
+    private final Set<String> includeSiteNames;
+
+    private final Set<Integer> includeSiteKeys;
+
+    private boolean excludeMode;
+
+    public SiteFilter( final ExcludeConfig excludeConfig, final IncludeConfig includeConfig )
     {
-        final HashSet<String> names = new HashSet<>();
-        final HashSet<Integer> keys = new HashSet<>();
+        final HashSet<String> excludeNames = new HashSet<>();
+        final HashSet<Integer> excludeKeys = new HashSet<>();
         if ( excludeConfig != null && excludeConfig.site != null )
         {
             for ( String value : excludeConfig.site )
             {
                 if ( value.matches( "^\\d+$" ) )
                 {
-                    keys.add( new Integer( value ) );
+                    excludeKeys.add( new Integer( value ) );
                 }
                 else
                 {
-                    names.add( value );
+                    excludeNames.add( value );
                 }
             }
         }
-        siteNames = names;
-        siteKeys = keys;
+        excludeSiteNames = excludeNames;
+        excludeSiteKeys = excludeKeys;
+
+        final HashSet<String> includeNames = new HashSet<>();
+        final HashSet<Integer> includeKeys = new HashSet<>();
+        if ( includeConfig != null && includeConfig.site != null )
+        {
+            for ( String value : includeConfig.site )
+            {
+                if ( value.matches( "^\\d+$" ) )
+                {
+                    includeKeys.add( new Integer( value ) );
+                }
+                else
+                {
+                    includeNames.add( value );
+                }
+            }
+        }
+        includeSiteNames = includeNames;
+        includeSiteKeys = includeKeys;
+
+        excludeMode = includeSiteNames.isEmpty() && includeSiteKeys.isEmpty();
     }
 
-    @Override
-    public boolean test( final SiteEntity siteEntity )
+    public boolean includeSite( final SiteEntity siteEntity )
     {
-        return !siteNames.contains( siteEntity.getName() ) && !siteKeys.contains( siteEntity.getKey().toInt() );
+        return excludeMode ? !isSiteExcluded( siteEntity ) : isSiteIncluded( siteEntity );
+    }
+
+    private boolean isSiteExcluded( final SiteEntity siteEntity )
+    {
+        return excludeSiteNames.contains( siteEntity.getName() ) || excludeSiteKeys.contains( siteEntity.getKey().toInt() );
+    }
+
+    private boolean isSiteIncluded( final SiteEntity siteEntity )
+    {
+        return includeSiteNames.contains( siteEntity.getName() ) || includeSiteKeys.contains( siteEntity.getKey().toInt() );
     }
 }

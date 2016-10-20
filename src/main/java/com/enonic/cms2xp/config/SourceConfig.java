@@ -18,4 +18,6 @@ public final class SourceConfig
 
     public ExcludeConfig exclude;
 
+    public IncludeConfig include;
+
 }

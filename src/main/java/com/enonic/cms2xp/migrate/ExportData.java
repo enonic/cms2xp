@@ -323,7 +323,7 @@ public final class ExportData
         fileBlobStore.setDirectory( config.source.blobStoreDir );
 
         final ImageDescriptionResolver imageDescriptionResolver = new ImageDescriptionResolver( session );
-        final ContentFilter contentFilter = new ContentFilter( config.source.exclude );
+        final ContentFilter contentFilter = new ContentFilter( config.source.exclude, config.source.include );
         final ContentNodeConverter contentNodeConverter =
             new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey, this.config,
                                       imageDescriptionResolver );
@@ -339,9 +339,9 @@ public final class ExportData
     {
         //Retrieves the SiteEntities
         logger.info( "Loading sites..." );
-        final SiteFilter siteFilter = new SiteFilter( config.source.exclude );
+        final SiteFilter siteFilter = new SiteFilter( config.source.exclude, config.source.include );
         final List<SiteEntity> siteEntities = new SiteRetriever().retrieveSites( session ).stream().
-            filter( siteFilter ).
+            filter( siteFilter::includeSite ).
             collect( Collectors.toList() );
         logger.info( siteEntities.size() + " sites loaded." );
 
