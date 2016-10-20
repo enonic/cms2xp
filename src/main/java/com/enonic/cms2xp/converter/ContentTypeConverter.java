@@ -1,10 +1,16 @@
 package com.enonic.cms2xp.converter;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
@@ -12,8 +18,12 @@ import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.form.FieldSet;
@@ -54,6 +64,7 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.UrlDataEntryConfi
 import com.enonic.cms.core.content.contenttype.dataentryconfig.XmlDataEntryConfig;
 
 import static com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType.IMAGES;
+import static org.apache.commons.lang.StringUtils.substringBeforeLast;
 
 public final class ContentTypeConverter
     implements ContentTypeResolver
@@ -218,7 +229,9 @@ public final class ContentTypeConverter
             return Form.create().build();
         }
 
-        final Form.Builder form = Form.create();
+        Form.Builder form = Form.create();
+        final Set<String> addedItemNames = new HashSet<>();
+
         final List<CtySetConfig> setConfig = contentTypeConfig.getSetConfig();
         for ( CtySetConfig ctyConfig : setConfig )
         {
@@ -227,14 +240,116 @@ public final class ContentTypeConverter
             {
                 formItem = addFormItemSet( ctyConfig );
             }
+            else if ( blockHasCommonXpathPrefix( ctyConfig ) )
+            {
+                formItem = addVisualBlockAsFormItemSet( ctyConfig );
+            }
             else
             {
                 formItem = addFieldSet( ctyConfig );
             }
-            form.addFormItem( formItem );
+
+            if ( addedItemNames.contains( formItem.getName() ) && formItem instanceof FormItemSet )
+            {
+                final Form.Builder newForm = mergeItemSets( form.build(), (FormItemSet) formItem );
+                if ( newForm == null )
+                {
+                    logger.warn(
+                        "Duplicated item name in Content Type form: " + formItem.getName() + " (" + ( (FormItemSet) formItem ).getLabel() +
+                            ")" );
+                }
+                else
+                {
+                    form = newForm;
+                    addedItemNames.add( formItem.getName() );
+                }
+            }
+            else
+            {
+                form.addFormItem( formItem );
+                addedItemNames.add( formItem.getName() );
+            }
         }
 
         return form.build();
+    }
+
+    private Form.Builder mergeItemSets( final Form form, final FormItemSet newFormItemSet )
+    {
+        final Form.Builder newForm = Form.create();
+        for ( FormItem item : form )
+        {
+            if ( item.getName().equals( newFormItemSet.getName() ) )
+            {
+                if ( item instanceof FormItemSet )
+                {
+                    final FormItemSet.Builder fis = FormItemSet.create( (FormItemSet) item );
+                    for ( FormItem fi : newFormItemSet )
+                    {
+                        fis.addFormItem( fi.copy() );
+                    }
+                    try
+                    {
+                        newForm.addFormItem( fis.build() );
+                        logger.info( "Item sets merged: " + newFormItemSet.getPath() + " <- " + item.getPath() );
+                    }
+                    catch ( Exception e )
+                    {
+                        logger.error( "Could not merge item sets: ", e );
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                newForm.addFormItem( item.copy() );
+            }
+        }
+        return newForm;
+    }
+
+    private boolean blockHasCommonXpathPrefix( final CtySetConfig ctyConfig )
+    {
+        final List<String> xpathPrefixes = ctyConfig.getInputConfigs().stream().
+            map( DataEntryConfig::getXpath ).
+            map( this::normalizedXpathPrefix ).
+            collect( Collectors.toList() );
+
+        if ( xpathPrefixes.stream().allMatch( Objects::isNull ) )
+        {
+            return false; // xpath without prefix, only one level
+        }
+        final String firstElement = xpathPrefixes.get( 0 );
+        return xpathPrefixes.stream().allMatch( ( xpath ) -> Objects.equals( firstElement, xpath ) );
+    }
+
+    private String normalizedXpathPrefix( final String xpath )
+    {
+        final List<String> xpathParts = Stream.of( xpath.split( "/" ) ).filter( ( s ) -> !s.isEmpty() ).collect( Collectors.toList() );
+        if ( !xpathParts.isEmpty() && xpathParts.get( 0 ).equals( "contentdata" ) )
+        {
+            xpathParts.remove( 0 );
+        }
+        if ( xpathParts.size() == 1 )
+        {
+            return null;
+        }
+        xpathParts.remove( xpathParts.size() - 1 );
+        return "/" + Joiner.on( "/" ).join( xpathParts );
+    }
+
+    private String normalizeXpath( final String xpath )
+    {
+        final List<String> xpathParts = Stream.of( xpath.split( "/" ) ).filter( ( s ) -> !s.isEmpty() ).collect( Collectors.toList() );
+        if ( !xpathParts.isEmpty() && xpathParts.get( 0 ).equals( "contentdata" ) )
+        {
+            xpathParts.remove( 0 );
+        }
+        return "/" + Joiner.on( "/" ).join( xpathParts );
     }
 
     private FormItem addFieldSet( final CtySetConfig ctyConfig )
@@ -243,11 +358,91 @@ public final class ContentTypeConverter
         fieldSet.name( ctyConfig.getName().replace( ".", " " ).trim() );
         fieldSet.label( ctyConfig.getName() );
 
-        for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
+        // group in item-sets if multilevel xpath
+        final Multimap<String, DataEntryConfig> configEntriesByXpath = groupConfigEntries( ctyConfig.getInputConfigs() );
+        final Map<String, FormItemSet.Builder> xpathPrefixItemSets = new HashMap<>();
+        for ( String xpathPrefix : configEntriesByXpath.keySet() )
         {
-            fieldSet.addFormItem( convertConfigEntry( entry ) );
+            final Collection<DataEntryConfig> entries = configEntriesByXpath.get( xpathPrefix );
+            if ( "".equals( xpathPrefix ) )
+            {
+                for ( DataEntryConfig entry : entries )
+                {
+                    fieldSet.addFormItem( convertConfigEntry( entry ) );
+                }
+            }
+            else
+            {
+                final List<String> xpathParts = Splitter.on( "/" ).omitEmptyStrings().splitToList( xpathPrefix );
+
+                FormItemSet.Builder is = xpathPrefixItemSets.get( xpathPrefix );
+                if ( is == null )
+                {
+                    is = FormItemSet.create();
+                    is.name( xpathParts.get( xpathParts.size() - 1 ) );
+                    is.label( xpathParts.get( xpathParts.size() - 1 ) );
+                    is.occurrences( 0, 1 );
+                    xpathPrefixItemSets.put( xpathPrefix, is );
+                }
+                for ( DataEntryConfig entry : entries )
+                {
+                    is.addFormItem( convertConfigEntry( entry ) );
+                }
+            }
         }
+
+        // wrap inputs with multilevel xpath in item-sets, so data structure matches schema
+        final Map<String, FormItemSet> itemSetWrappers = new HashMap<>();
+        for ( String xpathPrefix : xpathPrefixItemSets.keySet() )
+        {
+            final FormItemSet.Builder is = xpathPrefixItemSets.get( xpathPrefix );
+            final List<String> xpathParts = Splitter.on( "/" ).omitEmptyStrings().splitToList( xpathPrefix );
+
+            FormItemSet child = is.build();
+            for ( int i = xpathParts.size() - 2; i >= 0; i-- )
+            {
+                final String itemPath = xpathParts.subList( 0, i + 1 ).stream().collect( Collectors.joining( "/", "/", "" ) );
+                FormItemSet wrappingItemSet = itemSetWrappers.get( itemPath );
+                if ( wrappingItemSet == null )
+                {
+                    child = FormItemSet.create().
+                        name( xpathParts.get( i ) ).
+                        label( xpathParts.get( i ) ).
+                        occurrences( 1, 1 ).
+                        addFormItem( child ).
+                        build();
+                    itemSetWrappers.put( itemPath, child );
+                }
+                else
+                {
+                    child = FormItemSet.create( wrappingItemSet ).
+                        addFormItem( child ).
+                        build();
+                    itemSetWrappers.put( itemPath, child );
+                }
+
+            }
+        }
+        for ( FormItemSet fis : itemSetWrappers.values() )
+        {
+            if ( fis.getParent() == null )
+            {
+                fieldSet.addFormItem( fis );
+            }
+        }
+
         return fieldSet.build();
+    }
+
+    private Multimap<String, DataEntryConfig> groupConfigEntries( final List<DataEntryConfig> configEntries )
+    {
+        final Multimap<String, DataEntryConfig> map = LinkedListMultimap.create();
+        for ( DataEntryConfig entry : configEntries )
+        {
+            final String xpathPrefix = normalizedXpathPrefix( entry.getXpath() );
+            map.put( xpathPrefix == null ? "" : xpathPrefix, entry );
+        }
+        return map;
     }
 
     private FormItem addFormItemSet( final CtySetConfig ctyConfig )
@@ -264,11 +459,48 @@ public final class ContentTypeConverter
         }
         final FormItemSet res = formItemSet.build();
 
-        final String[] blockNameParts = ctyConfig.getGroupXPath().split( "/" );
-        if ( blockNameParts.length > 2 )
+        final List<String> blockNameParts =
+            Splitter.on( "/" ).omitEmptyStrings().splitToList( normalizeXpath( ctyConfig.getGroupXPath() ) );
+        if ( blockNameParts.size() > 1 )
+        {
+            FormItem child = res;
+            for ( int i = blockNameParts.size() - 2; i >= 0; i-- )
+            {
+                final FormItemSet.Builder wrapperFormItemSet = FormItemSet.create();
+                wrapperFormItemSet.name( blockNameParts.get( i ) );
+                wrapperFormItemSet.label( ctyConfig.getName() );
+                wrapperFormItemSet.occurrences( 0, 1 );
+                wrapperFormItemSet.addFormItem( child );
+                child = wrapperFormItemSet.build();
+            }
+            return child;
+        }
+
+        return res;
+    }
+
+    private FormItem addVisualBlockAsFormItemSet( final CtySetConfig ctyConfig )
+    {
+        String groupXpath = substringBeforeLast( normalizeXpath( ctyConfig.getInputConfigs().get( 0 ).getXpath() ), "/" );
+        groupXpath = groupXpath.substring( 0, groupXpath.length() );
+
+        final String blockName = StringUtils.substringAfterLast( groupXpath, "/" );
+        final FormItemSet.Builder formItemSet = FormItemSet.create();
+        formItemSet.name( blockName );
+        formItemSet.label( ctyConfig.getName() );
+        formItemSet.occurrences( 0, 0 );
+
+        for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
+        {
+            formItemSet.addFormItem( convertConfigEntry( entry ) );
+        }
+        final FormItemSet res = formItemSet.build();
+
+        final List<String> blockNameParts = Splitter.on( "/" ).omitEmptyStrings().splitToList( groupXpath );
+        if ( blockNameParts.size() > 2 )
         {
             final FormItemSet.Builder wrapperFormItemSet = FormItemSet.create();
-            wrapperFormItemSet.name( blockNameParts[1] );
+            wrapperFormItemSet.name( blockNameParts.get( 1 ) );
             wrapperFormItemSet.label( ctyConfig.getName() );
             wrapperFormItemSet.occurrences( 0, 1 );
             wrapperFormItemSet.addFormItem( res );
