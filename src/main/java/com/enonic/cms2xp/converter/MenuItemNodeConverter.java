@@ -196,9 +196,31 @@ public class MenuItemNodeConverter
         {
             toMenuItemExtraData( menuItem, extraData );
         }
+        if ( config.target.exportCmsMenuKeyMixin )
+        {
+            toCmsMenuKeyExtraData( menuItem, extraData );
+        }
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         return data;
+    }
+
+    private void toCmsMenuKeyExtraData( final MenuItemEntity menuItem, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+
+        final PropertySet cmsContent = new PropertySet();
+        final String contentKey = menuItem.getKey().toString();
+        cmsContent.setString( "menuKey", contentKey );
+
+        PropertySet appData = extraData.getSet( appId );
+        if ( appData == null )
+        {
+            appData = new PropertySet();
+            extraData.addSet( appId, appData );
+        }
+
+        appData.setSet( "cmsMenu", cmsContent );
     }
 
     private void toMenuItemExtraData( final MenuItemEntity menuItem, final PropertySet extraData )

@@ -22,4 +22,6 @@ public final class TargetConfig
     public boolean moveHomeContentToSection = true;
 
     public boolean exportCmsKeyMixin;
+
+    public boolean exportCmsMenuKeyMixin;
 }

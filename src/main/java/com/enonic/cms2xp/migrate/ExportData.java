@@ -233,6 +233,10 @@ public final class ExportData
         {
             exportMixin( "cmsContent" );
         }
+        if ( config.target.exportCmsMenuKeyMixin )
+        {
+            exportMixin( "cmsMenu" );
+        }
     }
 
     private void exportMixin( final String name )
