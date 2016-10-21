@@ -19,7 +19,7 @@ Build all code and run all tests including integration tests:
 
     gradle build
    
-A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.7.1.zip```
+A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.7.2.zip```
    
 
 ## Running
@@ -64,6 +64,9 @@ Example of config.xml:
       <contentPath>/content/old</contentPath>
       <contentPath>/content/images/not_in_use</contentPath>
     </exclude>
+    <include>
+      <!-- specify either exclude or include, but not both at the same time -->
+    </include>
   </source>
 
   <!-- Target (XP) -->
@@ -94,8 +97,10 @@ The source parameters include the details necessary for connecting to the CMS da
 | blobStoreDir | Local file path to the blobs directory of the CMS. | "./cms-home/data/blobs" |
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
-| exclude/site | Site key or name in the CMS to be excluded from the export. | "old_Site", "33" |
-| exclude/contentPath | Content path prefix in the CMS to exclude from the export. If the path corresponds with a category, none of its subcategories will be exported. | "MyContent/old/data" |
+| exclude/site | Site key or name in the CMS to be excluded from the export. Optional. | "old_Site", "33" |
+| exclude/contentPath | Content path prefix in the CMS to exclude from the export. If the path corresponds with a category, none of its subcategories will be exported. Optional. | "MyContent/old/data" |
+| include/site | Site key or name in the CMS to be included in the export. Optional. | "new_Site", "42" |
+| include/contentPath | Content path prefix in the CMS to include in the export. If the path corresponds with a category, all its subcategories will be exported. Optional. | "MyContent/new/data" |
 
 #### Target parameters
 
