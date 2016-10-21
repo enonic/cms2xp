@@ -95,7 +95,7 @@ public class MenuItemNodeConverter
         data.setInstant( ContentPropertyNames.CREATED_TIME, menuItem.getTimestamp().toInstant() );
 
         final PropertySet subData = new PropertySet();
-        final boolean isSite = menuItem.isRootPage();
+        final boolean isSite = type.isSite(); // menuItem.isRootPage();
         final PageEntity page = menuItem.getPage();
         if ( isSite )
         {
