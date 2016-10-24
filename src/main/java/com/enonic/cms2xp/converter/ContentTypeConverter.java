@@ -657,18 +657,6 @@ public final class ContentTypeConverter
         }
         formItemSet.addFormItem( imageInput );
         formItemSet.addFormItem( imageDescriptionInput );
-
-        final String[] xpathNameParts = entry.getXpath().split( "/" );
-        if ( xpathNameParts.length > 2 )
-        {
-            final FormItemSet.Builder wrapperFormItemSet = FormItemSet.create();
-            wrapperFormItemSet.name( xpathNameParts[1] );
-            wrapperFormItemSet.label( label );
-            wrapperFormItemSet.occurrences( 0, 1 );
-            wrapperFormItemSet.addFormItem( formItemSet.build() );
-            return wrapperFormItemSet.build();
-        }
-
         return formItemSet.build();
     }
 
