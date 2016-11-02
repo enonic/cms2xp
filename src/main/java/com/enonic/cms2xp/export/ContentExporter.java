@@ -305,14 +305,19 @@ public class ContentExporter
     private void exportImageAttachments( final ContentEntity content, final Node contentNode )
     {
         final ContentVersionEntity main = content.getMainVersion();
-        final LegacyImageContentData imageData = (LegacyImageContentData) main.getContentData();
-
-        final BinaryDataKey key = getSourceImageKey( imageData.getContentDataXml() );
-        if ( key == null )
+        final BinaryDataEntity sourceBinaryData = main.getBinaryData( "source" );
+        BinaryDataKey sourceBinaryKey = sourceBinaryData != null ? sourceBinaryData.getBinaryDataKey() : null;
+        if ( sourceBinaryKey == null )
+        {
+            final LegacyImageContentData imageData = (LegacyImageContentData) main.getContentData();
+            sourceBinaryKey = getSourceImageKey( imageData.getContentDataXml() );
+        }
+        if ( sourceBinaryKey == null )
         {
             return;
         }
-        final BinaryDataEntity binaryData = main.getBinaryData( key );
+
+        final BinaryDataEntity binaryData = main.getBinaryData( sourceBinaryKey );
 
         final BlobKey blobKey = new BlobKey( binaryData.getBlobKey() );
         final BlobRecord blob = fileBlobStore.getRecord( blobKey );
