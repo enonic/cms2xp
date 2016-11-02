@@ -10,6 +10,9 @@ import com.enonic.cms2xp.config.IncludeConfig;
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.category.CategoryEntity;
 
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.StringUtils.trimTrailingCharacter;
+
 public final class ContentFilter
 {
     private final List<String> excludePaths;
@@ -22,7 +25,7 @@ public final class ContentFilter
     {
         if ( excludeConfig != null && excludeConfig.contentPath != null )
         {
-            excludePaths = Arrays.asList( excludeConfig.contentPath );
+            excludePaths = Arrays.stream( excludeConfig.contentPath ).map( ( cp ) -> trimTrailingCharacter( cp, '/' ) ).collect( toList() );
         }
         else
         {
@@ -30,7 +33,7 @@ public final class ContentFilter
         }
         if ( includeConfig != null && includeConfig.contentPath != null )
         {
-            includePaths = Arrays.asList( includeConfig.contentPath );
+            includePaths = Arrays.stream( includeConfig.contentPath ).map( ( cp ) -> trimTrailingCharacter( cp, '/' ) ).collect( toList() );
         }
         else
         {
@@ -81,7 +84,7 @@ public final class ContentFilter
         final String path = category.getPathAsString();
         for ( String includePath : includePaths )
         {
-            if ( path.equals( includePath ) || path.startsWith( includePath + "/" ) )
+            if ( path.equals( includePath ) || includePath.startsWith( path + "/" ) )
             {
                 return true;
             }
@@ -94,7 +97,7 @@ public final class ContentFilter
         final String path = content.getPathAsString();
         for ( String includePath : includePaths )
         {
-            if ( path.equals( includePath ) )
+            if ( path.equals( includePath ) || path.startsWith( includePath + "/" ) )
             {
                 return true;
             }
