@@ -8,7 +8,7 @@ import org.jdom.Element;
 
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentKey;
-import com.enonic.cms.core.content.contentdata.legacy.LegacyImageContentData;
+import com.enonic.cms.core.content.contentdata.legacy.AbstractBaseLegacyContentData;
 
 public final class ImageDescriptionResolver
 {
@@ -30,7 +30,7 @@ public final class ImageDescriptionResolver
             final ContentEntity content = fetchContent( contentKey );
             if ( content != null )
             {
-                final LegacyImageContentData data = (LegacyImageContentData) content.getMainVersion().getContentData();
+                final AbstractBaseLegacyContentData data = (AbstractBaseLegacyContentData) content.getMainVersion().getContentData();
 
                 Element contentDataEl = data.getContentDataXml().getRootElement();
                 description = contentDataEl.getChildText( "description" );
