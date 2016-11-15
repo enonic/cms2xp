@@ -84,7 +84,7 @@ public final class ContentFilter
         final String path = category.getPathAsString();
         for ( String includePath : includePaths )
         {
-            if ( path.equals( includePath ) || includePath.startsWith( path + "/" ) )
+            if ( path.equals( includePath ) || path.startsWith( includePath + "/" ) )
             {
                 return true;
             }
