@@ -3,7 +3,9 @@ package com.enonic.cms2xp.export;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Session;
 
@@ -135,6 +137,7 @@ public class SiteExporter
 
     private List<Node> exportSingleHomeSectionContent( final MenuItemEntity menuItemEntity, final NodePath parentPath )
     {
+        final Set<Integer> addedContentKeys = new HashSet<>();
         final List<Node> sectionNodesAdded = new ArrayList<>();
         for ( SectionContentEntity sectionContent : menuItemEntity.getSectionContents() )
         {
@@ -143,7 +146,14 @@ public class SiteExporter
             if ( home != null )
             {
                 final ContentEntity content = home.getContent();
+                if ( addedContentKeys.contains( content.getKey().toInt() ) )
+                {
+                    continue;
+                }
+
                 final Node node = contentExporter.export( content, parentPath );
+                addedContentKeys.add( content.getKey().toInt() );
+
                 if ( node != null )
                 {
                     sectionNodesAdded.add( node );
