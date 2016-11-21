@@ -7,6 +7,12 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 <img align="right" style="margin-top:10px;" alt="Enonic XP" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-xp-shield-logo.svg" width="200">  
 <br/>
 
+## Releases
+
+| CMS2XP version | Required XP version | Download |
+| -------------- | ------------------- | -------- |
+| 0.7.5 | 6.0.0 | [Download 0.7.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.7.5/cms2xp-0.7.5.zip) |
+
 ## Building
 
 Before trying to build the project, you need to verify that the following
