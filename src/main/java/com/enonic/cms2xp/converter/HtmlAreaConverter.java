@@ -228,7 +228,7 @@ public class HtmlAreaConverter
         if ( StringUtils.isNotBlank( caption ) )
         {
             final Attributes figCaptionAttr = new Attributes();
-            figCaptionAttr.put( "style", "text-align: center" );
+            figCaptionAttr.put( "style", "text-align: left" );
             final Element figCaption = new Element( Tag.valueOf( "figcaption" ), "", figCaptionAttr );
             figCaption.text( caption );
             figureEl.appendChild( figCaption );
