@@ -6,5 +6,9 @@
       <label>Menu item key</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
+    <input type="ContentSelector" name="content">
+      <label>Menu item related content</label>
+      <occurrences minimum="0" maximum="1"/>
+    </input>
   </items>
 </mixin>

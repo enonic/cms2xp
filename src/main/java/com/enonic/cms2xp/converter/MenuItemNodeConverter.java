@@ -25,6 +25,7 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.Reference;
 
+import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemType;
 import com.enonic.cms.core.structure.menuitem.section.SectionContentEntity;
@@ -218,6 +219,13 @@ public class MenuItemNodeConverter
         {
             appData = new PropertySet();
             extraData.addSet( appId, appData );
+        }
+
+        if ( menuItem.getType() == MenuItemType.CONTENT && menuItem.getContent() != null )
+        {
+            final ContentKey contentParamKey = menuItem.getContent().getKey();
+            final NodeId contentParamId = this.contentKeyResolver.resolve( contentParamKey );
+            cmsContent.setReference( "content", Reference.from( contentParamId.toString() ) );
         }
 
         appData.setSet( "cmsMenu", cmsContent );
