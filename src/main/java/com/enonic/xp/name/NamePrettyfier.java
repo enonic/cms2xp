@@ -38,6 +38,11 @@ public final class NamePrettyfier
 
     public static String create( final String originalName )
     {
+        return create( originalName, true );
+    }
+
+    public static String create( final String originalName, final boolean convertDiacritics )
+    {
         if ( StringUtils.isBlank( originalName ) )
         {
             throw new IllegalArgumentException( "Generate name failed; Original name cannot be empty or blank" );
@@ -53,7 +58,7 @@ public final class NamePrettyfier
         prettifiedPathName = replaceHyphensAroundDot( prettifiedPathName );
         prettifiedPathName = ensureNiceBeginningAndEnding( prettifiedPathName );
 
-        prettifiedPathName = transcribe( prettifiedPathName );
+        prettifiedPathName = transcribe( prettifiedPathName, convertDiacritics );
 
         if ( StringUtils.isBlank( prettifiedPathName ) )
         {
@@ -201,7 +206,7 @@ public final class NamePrettyfier
         return false;
     }
 
-    private static String transcribe( final String string )
+    private static String transcribe( final String string, final boolean convertDiacritics )
     {
         if ( string == null )
         {
@@ -222,8 +227,16 @@ public final class NamePrettyfier
         }
 
         final String normalized = Normalizer.normalize( stringBuilder, Normalizer.Form.NFD );
-        final String diacriticsCleaned = DIACRITICS.matcher( normalized ).replaceAll( DEFAULT_REPLACE );
-        final String nonAsciiCleaned = diacriticsCleaned.replaceAll( NOT_ASCII, DEFAULT_REPLACE );
+        final String nonAsciiCleaned;
+        if ( convertDiacritics )
+        {
+            final String diacriticsCleaned = DIACRITICS.matcher( normalized ).replaceAll( DEFAULT_REPLACE );
+            nonAsciiCleaned = diacriticsCleaned.replaceAll( NOT_ASCII, DEFAULT_REPLACE );
+        }
+        else
+        {
+            nonAsciiCleaned = normalized;
+        }
         return nonAsciiCleaned.toLowerCase();
     }
 

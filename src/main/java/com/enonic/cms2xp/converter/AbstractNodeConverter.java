@@ -20,7 +20,12 @@ public abstract class AbstractNodeConverter
 
     public Node createNode( NodeId nodeId, String name, PropertyTree data )
     {
-        String pathName = generatePathName( name );
+        return createNode( nodeId, name, data, true );
+    }
+
+    public Node createNode( NodeId nodeId, String name, PropertyTree data, final boolean convertDiacritics )
+    {
+        String pathName = generatePathName( name, convertDiacritics );
         if ( StringUtils.isBlank( pathName ) )
         {
             pathName = "_noname_";
@@ -46,8 +51,8 @@ public abstract class AbstractNodeConverter
             build();
     }
 
-    private String generatePathName( final String name )
+    private String generatePathName( final String name, final boolean convertDiacritics )
     {
-        return NamePrettyfier.create( name );
+        return NamePrettyfier.create( name, convertDiacritics );
     }
 }

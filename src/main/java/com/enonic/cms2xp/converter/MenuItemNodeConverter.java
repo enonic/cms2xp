@@ -72,7 +72,7 @@ public class MenuItemNodeConverter
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
     {
-        return createNode( nodeIdRegistry.getNodeId( menuItemEntity.getKey() ), menuItemEntity.getName(), toData( menuItemEntity ) );
+        return createNode( nodeIdRegistry.getNodeId( menuItemEntity.getKey() ), menuItemEntity.getName(), toData( menuItemEntity ), false );
     }
 
     private PropertyTree toData( final MenuItemEntity menuItem )
