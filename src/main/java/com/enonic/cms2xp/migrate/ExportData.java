@@ -42,6 +42,7 @@ import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.core.impl.export.NodeExporter;
 import com.enonic.xp.form.Form;
+import com.enonic.xp.form.FormItemSet;
 import com.enonic.xp.form.Input;
 import com.enonic.xp.icon.Icon;
 import com.enonic.xp.inputtype.InputTypeName;
@@ -58,17 +59,6 @@ import com.enonic.cms.core.structure.SiteEntity;
 public final class ExportData
 {
     private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
-
-    private static final Form SECTION_FORM = Form.create().
-        addFormItem( Input.create().
-            name( "sectionContents" ).
-            label( "Contents" ).
-            helpText( "Add contents to section" ).
-            inputType( InputTypeName.CONTENT_SELECTOR ).
-            required( false ).
-            multiple( true ).
-            build() ).
-        build();
 
     private static final String LIB_MENU_VERSION = "1.2.0";
 
@@ -176,23 +166,67 @@ public final class ExportData
         //Converts the ContentTypeEntities to ContentTypes
         ImmutableList<ContentType> contentTypeList = contentTypeConverter.export( contentTypeEntities );
 
+        final FormItemSet parameters = FormItemSet.create().
+            name( "parameters" ).
+            label( "Menu item parameters" ).
+            addFormItem( Input.create().
+                name( "name" ).
+                label( "Parameter name" ).
+                inputType( InputTypeName.TEXT_LINE ).
+                required( true ).
+                multiple( false ).
+                build() ).
+            addFormItem( Input.create().
+                name( "value" ).
+                label( "Parameter value" ).
+                inputType( InputTypeName.TEXT_LINE ).
+                required( false ).
+                multiple( false ).
+                build() ).
+            addFormItem( Input.create().
+                name( "override" ).
+                label( "Override" ).
+                helpText( "Can be overridden by the request" ).
+                inputType( InputTypeName.CHECK_BOX ).
+                required( false ).
+                multiple( false ).
+                build() ).
+            build();
+
         //Adds the Content Type page
+        final Form pageForm = Form.create().
+            addFormItem( parameters.copy() ).
+            build();
+
         final ContentType pageContentType = ContentType.create().
             name( ContentTypeName.from( this.applicationKey, "page" ) ).
             displayName( "Page" ).
             description( "" ).
             createdTime( Instant.now() ).
             superType( ContentTypeName.structured() ).
+            form( pageForm ).
             icon( loadIcon( "page" ) ).
             build();
         //Adds the Content Type section
+        final Form sectionForm = Form.create().
+            addFormItem( Input.create().
+                name( "sectionContents" ).
+                label( "Contents" ).
+                helpText( "Add contents to section" ).
+                inputType( InputTypeName.CONTENT_SELECTOR ).
+                required( false ).
+                multiple( true ).
+                build() ).
+            addFormItem( parameters.copy() ).
+            build();
+
         final ContentType sectionContentType = ContentType.create().
             name( ContentTypeName.from( this.applicationKey, "section" ) ).
             displayName( "Section" ).
             description( "" ).
             createdTime( Instant.now() ).
             superType( ContentTypeName.structured() ).
-            form( SECTION_FORM ).
+            form( sectionForm ).
             icon( loadIcon( "section" ) ).
             build();
 

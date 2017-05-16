@@ -190,6 +190,7 @@ public class MenuItemNodeConverter
 
             data.setSet( ContentPropertyNames.PAGE, pageData );
         }
+        addPageParameters( menuItem, subData );
         data.setSet( ContentPropertyNames.DATA, subData );
 
         final PropertySet extraData = new PropertySet();
@@ -229,6 +230,24 @@ public class MenuItemNodeConverter
         }
 
         appData.setSet( "cmsMenu", cmsContent );
+    }
+
+    private void addPageParameters( final MenuItemEntity menuItem, final PropertySet appData )
+    {
+        if ( menuItem.getRequestParameters().isEmpty() )
+        {
+            return;
+        }
+
+        menuItem.getRequestParameters().
+            forEach( ( key, item ) ->
+                     {
+                         PropertySet paramData = new PropertySet();
+                         paramData.setString( "name", item.getName() );
+                         paramData.setString( "value", item.getValue() );
+                         paramData.setBoolean( "override", item.isOverridableByRequest() );
+                         appData.addSet( "parameters", paramData );
+                     } );
     }
 
     private void toMenuItemExtraData( final MenuItemEntity menuItem, final PropertySet extraData )
