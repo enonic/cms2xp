@@ -21,9 +21,6 @@ repositories {
     maven {
         url 'http://repo.enonic.com/public'
     }
-    maven {
-        url 'http://repo.enonic.com/enterprise'
-    }
 }
 
 sourceCompatibility = '1.8'
