@@ -127,7 +127,8 @@ There are also some optional switches for altering the output.
 | exportPublishDateMixin | Whether or not include the publish mixin in the application and content exported. Default is "false" | "true" |
 | exportMenuMixin | Whether or not convert CMS menu properties ('Menu name', 'Show in menu'), and include the menu mixin in the application. Default is "true" | "false" |
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
-| exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. Default is "false" | "true" |
+| exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. 
+Also the *Home* menu-item key where the content is published will be included. Default is "false" | "true" |
 | exportCmsMenuKeyMixin | Whether or not include the cmsMenu mixin and add the menu item key as a property in every content exported. Default is "false" | "true" |
 
 

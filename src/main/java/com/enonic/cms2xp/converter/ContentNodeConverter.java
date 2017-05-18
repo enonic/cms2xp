@@ -23,6 +23,7 @@ import com.enonic.xp.data.Value;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.index.IndexConfigDocument;
 import com.enonic.xp.node.Node;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.security.PrincipalKey;
@@ -30,6 +31,7 @@ import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.security.acl.AccessControlEntry;
 import com.enonic.xp.security.acl.AccessControlList;
 import com.enonic.xp.security.acl.Permission;
+import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentVersionEntity;
@@ -46,6 +48,7 @@ import com.enonic.cms.core.content.contenttype.ContentTypeEntity;
 import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.security.group.GroupEntity;
 import com.enonic.cms.core.security.group.GroupType;
+import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
 
 public final class ContentNodeConverter
     extends AbstractNodeConverter
@@ -293,6 +296,12 @@ public final class ContentNodeConverter
         {
             appData = new PropertySet();
             extraData.addSet( appId, appData );
+        }
+
+        for ( ContentHomeEntity home : content.getContentHomes() )
+        {
+            final NodeId homeMenuItemId = nodeIdRegistry.getNodeId( home.getMenuItem().getKey() );
+            cmsContent.setReference( "contentHome", Reference.from( homeMenuItemId.toString() ) );
         }
 
         appData.setSet( "cmsContent", cmsContent );
