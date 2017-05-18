@@ -1,11 +1,28 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://repo.enonic.com/public'
+        }
+    }
+
+    dependencies {
+        classpath 'com.enonic.gradle:gradle-defaults:1.0.1'
+    }
+}
+
+apply plugin: 'com.enonic.defaults'
 apply plugin: 'java'
 apply plugin: 'application'
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
 
 repositories {
     jcenter()
     maven {
         url 'http://repo.enonic.com/public'
+    }
+    maven {
+        url 'http://repo.enonic.com/enterprise'
     }
 }
 
@@ -16,7 +33,7 @@ mainClassName = 'com.enonic.cms2xp.Main'
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'org.slf4j:slf4j-simple:1.7.12'
-    compile 'com.enonic.cms:cms-core:4.7.11'
+    compile 'com.enonic.cms:cms-core:4.7.18'
     compile "com.enonic.xp:core-api:${xpVersion}"
     compile "com.enonic.xp:toolbox:${xpVersion}"
     compile 'com.samskivert:jmustache:1.10'
@@ -39,18 +56,4 @@ startScripts {
 
 artifacts {
     archives distZip
-}
-
-publishing {
-    publications {
-        mavenJava( MavenPublication ) {
-            from components.java
-            artifact distZip
-        }
-    }
-    repositories {
-        maven {
-            url 'http://repo.enonic.net/artifactory/public'
-        }
-    }
 }
