@@ -14,9 +14,10 @@ public final class TargetConfig
 
     public String applicationRepo;
 
-    // experimental switches
+    @Deprecated
     public boolean exportPublishDateMixin;
 
+    // experimental switches
     public boolean exportMenuMixin = true;
 
     public boolean moveHomeContentToSection = true;

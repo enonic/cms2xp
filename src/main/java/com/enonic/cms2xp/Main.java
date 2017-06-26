@@ -126,6 +126,12 @@ public final class Main
         {
             throw new IllegalArgumentException( "Config exclude and include site cannot be specified at the same time" );
         }
+
+        if ( config.target.exportPublishDateMixin )
+        {
+            System.out.println(
+                "Parameter 'exportPublishDateMixin' is deprecated. CMS publish dates will be exported to XP using the properties introduced in XP 6.8" );
+        }
     }
 
     private static String formatInstant( Instant value )

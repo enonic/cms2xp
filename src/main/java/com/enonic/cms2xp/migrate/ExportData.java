@@ -251,10 +251,6 @@ public final class ExportData
         throws IOException
     {
         logger.info( "Exporting mixins..." );
-        if ( config.target.exportPublishDateMixin )
-        {
-            exportMixin( "publishDate" );
-        }
         if ( config.target.exportMenuMixin )
         {
             exportMixin( "menu-item" );

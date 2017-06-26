@@ -1,5 +1,6 @@
 package com.enonic.cms2xp.converter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +51,10 @@ import com.enonic.cms.core.security.group.GroupEntity;
 import com.enonic.cms.core.security.group.GroupType;
 import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
 
+import static com.enonic.xp.content.ContentPropertyNames.PUBLISH_FROM;
+import static com.enonic.xp.content.ContentPropertyNames.PUBLISH_INFO;
+import static com.enonic.xp.content.ContentPropertyNames.PUBLISH_TO;
+
 public final class ContentNodeConverter
     extends AbstractNodeConverter
 {
@@ -65,6 +70,8 @@ public final class ContentNodeConverter
     private final static Logger logger = LoggerFactory.getLogger( ContentNodeConverter.class );
 
     private static final Form EMPTY_FORM = Form.create().build();
+
+    private static final String PUBLISH_FIRST = "first";
 
     private final NodeIdRegistry nodeIdRegistry;
 
@@ -182,11 +189,9 @@ public final class ContentNodeConverter
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
         data.setInstant( ContentPropertyNames.CREATED_TIME, content.getCreatedAt().toInstant() );
         data.setSet( ContentPropertyNames.DATA, new PropertySet() );
+        addPublishInfo( content, data );
+
         final PropertySet extraData = new PropertySet();
-        if ( config.target.exportPublishDateMixin )
-        {
-            toPublishExtraData( content, extraData );
-        }
         if ( config.target.exportCmsKeyMixin )
         {
             toCmsContentExtraData( content, extraData );
@@ -253,6 +258,27 @@ public final class ContentNodeConverter
         return data;
     }
 
+    private void addPublishInfo( final ContentEntity content, final PropertyTree contentAsData )
+    {
+        if ( content.getAvailableFrom() == null && content.getAvailableTo() == null )
+        {
+            return;
+        }
+
+        final PropertySet publishInfo = contentAsData.addSet( PUBLISH_INFO );
+        if ( content.getAvailableFrom() != null )
+        {
+            final Instant from = content.getAvailableFrom().toInstant();
+            publishInfo.addInstant( PUBLISH_FIRST, from );
+            publishInfo.addInstant( PUBLISH_FROM, from );
+        }
+        if ( content.getAvailableTo() != null )
+        {
+            final Instant to = content.getAvailableTo().toInstant();
+            publishInfo.addInstant( PUBLISH_TO, to );
+        }
+    }
+
     private ContentData getContentData( ContentVersionEntity contentVersion )
     {
         final Document contentDataXml = contentVersion.getContentDataAsJDomDocument();
@@ -263,24 +289,6 @@ public final class ContentNodeConverter
 
         final ContentTypeEntity contentType = contentVersion.getContent().getCategory().getContentType();
         return ContentDataParser.parse( contentDataXml, contentType, null );
-    }
-
-    private void toPublishExtraData( final ContentEntity content, final PropertySet extraData )
-    {
-        final String appId = this.applicationKey.toString().replace( ".", "-" );
-        final PropertySet publishData = new PropertySet();
-        if ( content.getAvailableFrom() != null )
-        {
-            publishData.setInstant( "publishFrom", content.getAvailableFrom().toInstant() );
-        }
-        if ( content.getAvailableTo() != null )
-        {
-            publishData.setInstant( "publishTo", content.getAvailableTo().toInstant() );
-        }
-        final PropertySet appData = new PropertySet();
-        appData.setSet( "publishDate", publishData );
-
-        extraData.addSet( appId, appData );
     }
 
     private void toCmsContentExtraData( final ContentEntity content, final PropertySet extraData )
