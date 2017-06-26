@@ -23,3 +23,11 @@ function handleGet(req) {
 exports.get = handleGet;
 
 
+{{#dataSources}}
+/*
+ * The following DataSources were used in the original CMS page template:
+
+ {{{dataSources}}}
+
+ */
+{{/dataSources}}

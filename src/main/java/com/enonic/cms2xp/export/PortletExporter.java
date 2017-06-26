@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.dom.DOMSource;
+
 import org.apache.commons.io.FilenameUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.NodeList;
 
 import com.enonic.cms2xp.converter.FragmentsNodeConverter;
 import com.enonic.cms2xp.converter.TemplateParameterConverter;
@@ -21,6 +24,8 @@ import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
+
+import com.enonic.cms.framework.xml.XMLDocumentHelper;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
@@ -139,6 +144,8 @@ public class PortletExporter
         final Form form = new TemplateParameterConverter( applicationKey ).toFormXml( portletEntity.getTemplateParameters().values() );
         final String config = new XmlFormSerializer( "config" ).form( form ).serialize().trim();
         mapping.put( "portletConfig", config );
+        final String dataSources = getDataSource( portletEntity );
+        mapping.put( "dataSources", dataSources );
 
         try
         {
@@ -156,6 +163,17 @@ public class PortletExporter
     {
         final String xsltName = FilenameUtils.removeExtension( portletEntity.getStyleKey().getName() );
         return NamePrettyfier.create( xsltName );
+    }
+
+    private String getDataSource( final PortletEntity portletEntity )
+    {
+        final org.w3c.dom.Document xmlDataSource = XMLDocumentHelper.convertToW3CDocument( portletEntity.getXmlDataAsJDOMDocument() );
+        final NodeList dataSources = xmlDataSource.getDocumentElement().getElementsByTagName( "datasources" );
+        if ( dataSources == null || dataSources.getLength() == 0 )
+        {
+            return "";
+        }
+        return XmlHelper.convertToString( new DOMSource( dataSources.item( 0 ) ) );
     }
 
 }

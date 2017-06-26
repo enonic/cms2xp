@@ -16,3 +16,12 @@ function handleGet(req) {
 }
 
 exports.get = handleGet;
+
+{{#dataSources}}
+/*
+ * The following DataSources were used in the original CMS portlet:
+
+{{{dataSources}}}
+
+*/
+{{/dataSources}}

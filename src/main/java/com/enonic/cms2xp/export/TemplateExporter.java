@@ -10,9 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.dom.DOMSource;
+
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.NodeList;
 
 import com.enonic.cms2xp.converter.PageTemplateNodeConverter;
 import com.enonic.cms2xp.converter.SiteTemplatesNodeConverter;
@@ -26,6 +29,8 @@ import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.Nodes;
+
+import com.enonic.cms.framework.xml.XMLDocumentHelper;
 
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
@@ -144,6 +149,8 @@ public class TemplateExporter
         final Form form = new TemplateParameterConverter( applicationKey ).toFormXml( pageTemplateEntity.getTemplateParameters().values() );
         final String config = new XmlFormSerializer( "config" ).form( form ).serialize().trim();
         mapping.put( "pageConfig", config );
+        final String dataSources = getDataSource( pageTemplateEntity );
+        mapping.put( "dataSources", dataSources );
 
         //Copies page templates and applies the mapping on these file
         try
@@ -162,5 +169,16 @@ public class TemplateExporter
     {
         final String xsltName = FilenameUtils.removeExtension( pageTemplateEntity.getStyleKey().getName() );
         return NamePrettyfier.create( xsltName );
+    }
+
+    private String getDataSource( final PageTemplateEntity pageTemplate )
+    {
+        final org.w3c.dom.Document xmlDataSource = XMLDocumentHelper.convertToW3CDocument( pageTemplate.getXmlDataAsJDOMDocument() );
+        final NodeList dataSources = xmlDataSource.getDocumentElement().getElementsByTagName( "datasources" );
+        if ( dataSources == null || dataSources.getLength() == 0 )
+        {
+            return "";
+        }
+        return XmlHelper.convertToString( new DOMSource( dataSources.item( 0 ) ) );
     }
 }
