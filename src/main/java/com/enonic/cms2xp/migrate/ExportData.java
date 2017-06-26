@@ -28,7 +28,6 @@ import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.export.CategoryExporter;
 import com.enonic.cms2xp.export.ContentExporter;
 import com.enonic.cms2xp.export.ContentFilter;
-import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.ContentTypeExporter;
 import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.cms2xp.export.SiteExporter;
@@ -72,8 +71,6 @@ public final class ExportData
 
     private final ApplicationKey applicationKey;
 
-    private final ContentKeyResolver contentKeyResolver;
-
     private final PrincipalKeyResolver principalKeyResolver;
 
     private final NodeIdRegistry nodeIdRegistry;
@@ -84,7 +81,6 @@ public final class ExportData
     {
         this.config = config;
         this.applicationKey = ApplicationKey.from( config.target.applicationName );
-        this.contentKeyResolver = new ContentKeyResolver();
         this.principalKeyResolver = new PrincipalKeyResolver();
         this.nodeIdRegistry = new NodeIdRegistry();
 
@@ -365,8 +361,7 @@ public final class ExportData
         final ContentNodeConverter contentNodeConverter =
             new ContentNodeConverter( contentTypeResolver, this.principalKeyResolver, this.nodeIdRegistry, this.applicationKey, this.config,
                                       imageDescriptionResolver );
-        this.contentExporter =
-            new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, this.contentKeyResolver, contentFilter );
+        this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, contentFilter );
         final CategoryExporter exporter =
             new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config, contentFilter );
 
@@ -388,7 +383,7 @@ public final class ExportData
         final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
         final File partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
         new SiteExporter( session, nodeExporter, this.contentExporter, pagesDirectory, partsDirectory, this.applicationKey,
-                          this.contentKeyResolver, this.nodeIdRegistry, config ).
+                          this.nodeIdRegistry, config ).
             export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
     }
 

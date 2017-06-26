@@ -61,18 +61,14 @@ public class ContentExporter
 
     private final ContentNodeConverter contentNodeConverter;
 
-    private final ContentKeyResolver contentKeyResolver;
-
     private final ContentFilter contentFilter;
 
     public ContentExporter( final NodeExporter nodeExporter, final FileBlobStore fileBlobStore,
-                            final ContentNodeConverter contentNodeConverter, final ContentKeyResolver contentKeyResolver,
-                            final ContentFilter contentFilter )
+                            final ContentNodeConverter contentNodeConverter, final ContentFilter contentFilter )
     {
         this.nodeExporter = nodeExporter;
         this.fileBlobStore = fileBlobStore;
         this.contentNodeConverter = contentNodeConverter;
-        this.contentKeyResolver = contentKeyResolver;
         this.contentFilter = contentFilter;
     }
 
@@ -121,7 +117,6 @@ public class ContentExporter
         {
             logger.warn( "Could not export node '" + contentNode.path() + "'", e );
         }
-        contentKeyResolver.add( content.getKey(), contentNode.id() );
 
         return contentNode;
     }

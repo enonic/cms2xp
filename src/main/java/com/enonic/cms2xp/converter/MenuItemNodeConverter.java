@@ -12,7 +12,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import com.enonic.cms2xp.config.MainConfig;
-import com.enonic.cms2xp.export.ContentKeyResolver;
 import com.enonic.cms2xp.export.PageTemplateResolver;
 import com.enonic.cms2xp.export.PortletToPartResolver;
 import com.enonic.xp.app.ApplicationKey;
@@ -42,8 +41,6 @@ public class MenuItemNodeConverter
 
     private final ApplicationKey applicationKey;
 
-    private final ContentKeyResolver contentKeyResolver;
-
     private final PageTemplateResolver pageTemplateResolver;
 
     private final PortletToPartResolver portletToPartResolver;
@@ -56,12 +53,11 @@ public class MenuItemNodeConverter
 
     private final MainConfig config;
 
-    public MenuItemNodeConverter( final ApplicationKey applicationKey, final ContentKeyResolver contentKeyResolver,
-                                  final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver,
-                                  final NodeIdRegistry nodeIdRegistry, final MainConfig config )
+    public MenuItemNodeConverter( final ApplicationKey applicationKey, final PageTemplateResolver pageTemplateResolver,
+                                  final PortletToPartResolver portletToPartResolver, final NodeIdRegistry nodeIdRegistry,
+                                  final MainConfig config )
     {
         this.applicationKey = applicationKey;
-        this.contentKeyResolver = contentKeyResolver;
         this.pageTemplateResolver = pageTemplateResolver;
         this.portletToPartResolver = portletToPartResolver;
         this.nodeIdRegistry = nodeIdRegistry;
@@ -133,7 +129,7 @@ public class MenuItemNodeConverter
 
             for ( SectionContentEntity sectionContent : sortedSections )
             {
-                final NodeId sectionContentId = this.contentKeyResolver.resolve( sectionContent.getContent().getKey() );
+                final NodeId sectionContentId = nodeIdRegistry.getNodeId( sectionContent.getContent().getKey() );
                 if ( sectionContentId == null )
                 {
 //                    logger.warn( "Cannot resolve NodeId for content with key '" + sectionContent.getContent().getKey() +
@@ -225,7 +221,7 @@ public class MenuItemNodeConverter
         if ( menuItem.getType() == MenuItemType.CONTENT && menuItem.getContent() != null )
         {
             final ContentKey contentParamKey = menuItem.getContent().getKey();
-            final NodeId contentParamId = this.contentKeyResolver.resolve( contentParamKey );
+            final NodeId contentParamId = nodeIdRegistry.getNodeId( contentParamKey );
             cmsContent.setReference( "content", Reference.from( contentParamId.toString() ) );
         }
 
