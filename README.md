@@ -14,6 +14,7 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.7.5 | 6.0.0 | [Download 0.7.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.7.5/cms2xp-0.7.5.zip) |
 | 0.8.0 | 6.0.0 | [Download 0.8.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.8.0/cms2xp-0.8.0.zip) |
 | 0.8.1 | 6.0.0 | [Download 0.8.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.8.1/cms2xp-0.8.1.zip) |
+| 0.9.0 | 6.9.0 | [Download 0.9.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.9.0/cms2xp-0.9.0.zip) |
 
 ## Building
 
@@ -27,7 +28,7 @@ Build all code and run all tests including integration tests:
 
     gradle build
    
-A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.8.1.zip```
+A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.9.0.zip```
    
 
 ## Running
@@ -84,7 +85,6 @@ Example of config.xml:
     <applicationDir>./application</applicationDir>
     <applicationName>com.enonic.xp.app.myApp</applicationName>
     <applicationRepo>starter-vanilla</applicationRepo>
-    <exportPublishDateMixin>false</exportPublishDateMixin>
     <exportMenuMixin>true</exportMenuMixin>
     <moveHomeContentToSection>true</moveHomeContentToSection>
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
@@ -126,7 +126,7 @@ There are also some optional switches for altering the output.
 | applicationDir | Directory path where to generate the XP application. | "./myapp" |
 | applicationName | Name for the generated XP application. | "com.acme.myapp" |
 | applicationRepo | Name of an XP starter app to be used as a skeleton for the generated app. Default is "starter-vanilla". | "starter-vanilla" |
-| exportPublishDateMixin | Whether or not include the publish mixin in the application and content exported. Default is "false" | "true" |
+| ~~exportPublishDateMixin~~ | ~~Whether or not include the publish mixin in the application and content exported.~~ This option is deprecated. CMS publish fields are now exported to map with XP publish fields.  |  |
 | exportMenuMixin | Whether or not convert CMS menu properties ('Menu name', 'Show in menu'), and include the menu mixin in the application. Default is "true" | "false" |
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
 | exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. Also the *Home* menu-item key where the content is published will be included. Default is "false" | "true" |
