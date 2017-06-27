@@ -313,6 +313,10 @@ public class ContentExporter
         }
 
         final BinaryDataEntity binaryData = main.getBinaryData( sourceBinaryKey );
+        if ( binaryData == null )
+        {
+            return;
+        }
 
         final BlobKey blobKey = new BlobKey( binaryData.getBlobKey() );
         final BlobRecord blob = fileBlobStore.getRecord( blobKey );

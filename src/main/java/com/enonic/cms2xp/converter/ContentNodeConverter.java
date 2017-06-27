@@ -308,8 +308,11 @@ public final class ContentNodeConverter
 
         for ( ContentHomeEntity home : content.getContentHomes() )
         {
-            final NodeId homeMenuItemId = nodeIdRegistry.getNodeId( home.getMenuItem().getKey() );
-            cmsContent.setReference( "contentHome", Reference.from( homeMenuItemId.toString() ) );
+            if ( home.getMenuItem() != null )
+            {
+                final NodeId homeMenuItemId = nodeIdRegistry.getNodeId( home.getMenuItem().getKey() );
+                cmsContent.setReference( "contentHome", Reference.from( homeMenuItemId.toString() ) );
+            }
         }
 
         appData.setSet( "cmsContent", cmsContent );
