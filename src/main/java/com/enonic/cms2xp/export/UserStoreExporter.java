@@ -122,7 +122,7 @@ public class UserStoreExporter
             }
             addMemberships( groupUserMembers, groupMembers );
 
-            final Principals members = Principals.from( principals );
+            final Principals members = Principals.from( removeDuplicates( principals ) );
             userStoreMembers.put( userStore, members );
         }
 
@@ -173,12 +173,7 @@ public class UserStoreExporter
         // user memberships
         addMemberships( groupUserMembers, groupMembers );
 
-        final Map<PrincipalKey, Principal> uniquePrincipals = new LinkedHashMap<>();
-        principals.stream().forEach( ( p ) -> uniquePrincipals.put( p.getKey(), p ) );
-        principals.clear();
-        principals.addAll( uniquePrincipals.values() );
-
-        final Principals members = Principals.from( principals );
+        final Principals members = Principals.from( removeDuplicates( principals ) );
         userStoreMembers.put( userStore, members );
     }
 
@@ -246,4 +241,12 @@ public class UserStoreExporter
         }
     }
 
+    private List<Principal> removeDuplicates( final List<Principal> principals )
+    {
+        final Map<PrincipalKey, Principal> uniquePrincipals = new LinkedHashMap<>();
+        principals.stream().forEach( ( p ) -> uniquePrincipals.put( p.getKey(), p ) );
+        principals.clear();
+        principals.addAll( uniquePrincipals.values() );
+        return principals;
+    }
 }
