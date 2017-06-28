@@ -70,8 +70,8 @@ Example of config.xml:
     <exclude>
       <site>old_site</site>
       <site>42</site>
-      <contentPath>/content/old</contentPath>
-      <contentPath>/content/images/not_in_use</contentPath>
+      <contentPath>/old_content</contentPath>
+      <contentPath>/images/not_in_use</contentPath>
     </exclude>
     <include>
       <!-- specify either exclude or include, but not both at the same time -->
