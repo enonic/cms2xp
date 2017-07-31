@@ -2,6 +2,7 @@ package com.enonic.cms2xp.export;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.hibernate.Session;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 
 import com.enonic.cms2xp.converter.UserStoreConverter;
 import com.enonic.cms2xp.hibernate.UserStoreRetriever;
@@ -33,6 +35,8 @@ import com.enonic.cms.core.security.user.UserKey;
 import com.enonic.cms.core.security.userstore.UserStoreEntity;
 import com.enonic.cms.core.security.userstore.UserStoreKey;
 
+import static java.util.Comparator.comparing;
+
 public class UserStoreExporter
 {
 
@@ -50,6 +54,8 @@ public class UserStoreExporter
 
     private final PrincipalKeyResolver principalKeyResolver;
 
+    private static final Comparator<PrincipalKey> PRINCIPAL_KEY_COMPARATOR = comparing( PrincipalKey::toString );
+
     public UserStoreExporter( final Session session, final NodeExporter nodeExporter, final PrincipalKeyResolver principalKeyResolver )
     {
         this.session = session;
@@ -57,7 +63,7 @@ public class UserStoreExporter
         this.converter = new UserStoreConverter();
         this.userStores = new HashMap<>();
         this.userStoreMembers = new HashMap<>();
-        this.members = ArrayListMultimap.create();
+        this.members = TreeMultimap.create( PRINCIPAL_KEY_COMPARATOR, PRINCIPAL_KEY_COMPARATOR );
         this.principalKeyResolver = principalKeyResolver;
     }
 
