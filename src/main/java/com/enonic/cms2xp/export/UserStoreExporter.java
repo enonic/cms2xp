@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.hibernate.Session;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -56,6 +55,10 @@ public class UserStoreExporter
 
     private static final Comparator<PrincipalKey> PRINCIPAL_KEY_COMPARATOR = comparing( PrincipalKey::toString );
 
+    private static final Comparator<GroupKey> GROUP_KEY_COMPARATOR = comparing( GroupKey::toString );
+
+    private static final Comparator<UserKey> USER_KEY_COMPARATOR = comparing( UserKey::toString );
+
     public UserStoreExporter( final Session session, final NodeExporter nodeExporter, final PrincipalKeyResolver principalKeyResolver )
     {
         this.session = session;
@@ -72,8 +75,8 @@ public class UserStoreExporter
         final UserStoreRetriever usr = new UserStoreRetriever();
         final List<UserStoreEntity> userStoreEntities = usr.retrieveUserStores( session );
 
-        final Multimap<GroupKey, UserKey> groupUserMembers = ArrayListMultimap.create();
-        final Multimap<GroupKey, GroupKey> groupMembers = ArrayListMultimap.create();
+        final Multimap<GroupKey, UserKey> groupUserMembers = TreeMultimap.create( GROUP_KEY_COMPARATOR, USER_KEY_COMPARATOR );
+        final Multimap<GroupKey, GroupKey> groupMembers = TreeMultimap.create( GROUP_KEY_COMPARATOR, GROUP_KEY_COMPARATOR );
 
         exportGlobalGroups( groupUserMembers, groupMembers );
 
