@@ -30,6 +30,8 @@ import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.content.contentdata.custom.stringbased.HtmlAreaDataEntry;
 import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.substringAfter;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 
@@ -97,11 +99,14 @@ public class HtmlAreaConverter
             final String src = image.attr( "src" );
             try
             {
+//                 System.out.println( "    -->    " + image.outerHtml() );
                 final String processedUrl = processUrl( src, image );
                 if ( !src.equals( processedUrl ) )
                 {
                     image.attr( "src", processedUrl );
                 }
+
+//                 System.out.println( image.parent().outerHtml() );
             }
             catch ( InvalidKeyException e )
             {
@@ -142,33 +147,17 @@ public class HtmlAreaConverter
             final ContentKey contentKey = new ContentKey( id );
             String imageUrl = "image://" + this.nodeIdRegistry.getNodeId( contentKey );
             final Map<String, String> params = getUrlParams( url );
-            final String sizeParam = params.get( "_size" );
 
-            final ImageAlignment imageAlignment = getAlignment( imageElement );
+            final String sizeParam = params.get( "_size" );
             final ImageSize size = ImageSize.from( sizeParam );
 
-            switch ( size )
+            final String filterParam = params.get( "_filter" );
+            final String filterWidth = parseFilterWidth( filterParam );
+
+            processImageElement( imageElement, size, filterWidth, contentKey );
+            if ( size == ImageSize.ORIGINAL )
             {
-                case CUSTOM:
-                case LIST:
-                case THUMBNAIL:
-                case REGULAR:
-                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
-                    break;
-
-                case WIDE:
-                case SQUARE:
-                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
-                    break;
-
-                case FULL:
-                    setImageAlignment( imageElement, ImageAlignment.JUSTIFIED, size, contentKey );
-                    break;
-                case ORIGINAL:
-                    // keep size + alignment
-                    imageUrl = imageUrl + KEEP_SIZE_TRUE;
-                    setImageAlignment( imageElement, imageAlignment, size, contentKey );
-                    break;
+                imageUrl = imageUrl + KEEP_SIZE_TRUE;
             }
             return imageUrl;
         }
@@ -176,95 +165,92 @@ public class HtmlAreaConverter
         return url;
     }
 
-    private void setImageAlignment( Element img, final ImageAlignment alignment, final ImageSize size, final ContentKey contentKey )
+    private String parseFilterWidth( final String filterParam )
     {
-        if ( img == null )
+        if ( isBlank( filterParam ) )
         {
-            return;
+            return null;
         }
-
-        final String styles = img.attr( "style" );
-        final Map<String, String> cssStyles = new LinkedHashMap<>();
-        if ( !StringUtils.isEmpty( styles ) )
+        if ( filterParam.startsWith( "scale" ) )
         {
-            final String[] stylePairs = styles.split( ";" );
-            for ( String style : stylePairs )
+            String w = StringUtils.substringBetween( filterParam, "(", ")" );
+            if ( !w.endsWith( "px" ) )
             {
-                final String name = substringBefore( style, ":" );
-                final String value = substringAfter( style, ":" );
-                cssStyles.put( name, value );
+                w = w + "px";
             }
+            return w;
+
         }
+        return null;
+    }
 
-        cssStyles.put( "text-align", alignment.getId() );
-        cssStyles.put( "width", "100%" );
-
-        Joiner.MapJoiner joiner = Joiner.on( ";" ).withKeyValueSeparator( ": " );
-        final String newStyleAttr = joiner.join( cssStyles );
-        img.attr( "style", newStyleAttr );
+    private void processImageElement( final Element img, final ImageSize size, final String width, final ContentKey contentKey )
+    {
+        final Map<String, String> imgStyles = getStyles( img );
+        if ( !imgStyles.isEmpty() )
+        {
+            Joiner.MapJoiner joiner = Joiner.on( ";" ).withKeyValueSeparator( ": " );
+            final String imgStyleAttr = joiner.join( imgStyles );
+            img.attr( "style", imgStyleAttr );
+        }
 
         // figure wrapper
-        final boolean isImageInOriginalSize = size == ImageSize.FULL;
-        final String styleFormat = "float: %s; margin: %s;" + ( isImageInOriginalSize ? "" : "width: %s;" );
-        String styleAttr = "text-align: " + alignment.getId() + ";";
-        switch ( alignment )
-        {
-            case LEFT:
-            case RIGHT:
-                styleAttr = String.format( styleFormat, alignment.getId(), "15px", "40%" );
-                break;
-            case CENTER:
-                styleAttr = styleAttr + String.format( styleFormat, "none", "auto", "60%" );
-                break;
-        }
         final Attributes figureAttr = new Attributes();
-        figureAttr.put( "style", styleAttr );
-
         final Element figureEl = new Element( Tag.valueOf( "figure" ), "", figureAttr );
+        if ( img.hasClass( "editor-image-right" ) )
+        {
+            img.removeClass( "editor-image-right" );
+            if ( img.classNames().isEmpty() )
+            {
+                img.removeAttr( "class" );
+            }
+            figureEl.addClass( "editor-right" );
+        }
+        if ( img.hasClass( "editor-image-left" ) )
+        {
+            img.removeClass( "editor-image-left" );
+            if ( img.classNames().isEmpty() )
+            {
+                img.removeAttr( "class" );
+            }
+            figureEl.addClass( "editor-left" );
+        }
+        figureEl.addClass( size.getId() );
+        if ( isNotBlank( width ) )
+        {
+            figureEl.attr( "style", "width: " + width );
+        }
+
         img.replaceWith( figureEl );
         figureEl.appendChild( img );
 
         final String caption = imageDescriptionResolver.getImageDescription( contentKey );
-        if ( StringUtils.isNotBlank( caption ) )
+        if ( isNotBlank( caption ) )
         {
             final Attributes figCaptionAttr = new Attributes();
-            figCaptionAttr.put( "style", "text-align: left" );
             final Element figCaption = new Element( Tag.valueOf( "figcaption" ), "", figCaptionAttr );
             figCaption.text( caption );
             figureEl.appendChild( figCaption );
         }
     }
 
-    private ImageAlignment getAlignment( final Element imageElement )
+    private Map<String, String> getStyles( final Element element )
     {
-        if ( imageElement == null || !"img".equals( imageElement.tagName() ) )
+        final String styles = element.attr( "style" );
+        final Map<String, String> cssStyles = new LinkedHashMap<>();
+        if ( StringUtils.isEmpty( styles ) )
         {
-            return ImageAlignment.LEFT;
+            return cssStyles;
         }
 
-        if ( imageElement.hasClass( "editor-image-right" ) )
+        final String[] stylePairs = styles.split( ";" );
+        for ( String style : stylePairs )
         {
-            return ImageAlignment.RIGHT;
+            final String name = substringBefore( style, ":" );
+            final String value = substringAfter( style, ":" );
+            cssStyles.put( name.trim(), value.trim() );
         }
-        if ( imageElement.hasClass( "editor-image-left" ) )
-        {
-            return ImageAlignment.LEFT;
-        }
-
-        final Element parent = imageElement.parent();
-        if ( parent != null && "p".equals( parent.tagName() ) )
-        {
-            if ( parent.hasClass( "editor-p-center" ) )
-            {
-                return ImageAlignment.CENTER;
-            }
-            if ( parent.hasClass( "editor-p-block" ) )
-            {
-                return ImageAlignment.JUSTIFIED;
-            }
-        }
-
-        return ImageAlignment.LEFT;
+        return cssStyles;
     }
 
     private Map<String, String> getUrlParams( final String url )

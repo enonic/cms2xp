@@ -31,6 +31,10 @@ public enum ImageSize
         this.id = id;
     }
 
+    public String getId()
+    {
+        return id;
+    }
 
     public static ImageSize from( final String id )
     {
