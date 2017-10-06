@@ -3,6 +3,7 @@ package com.enonic.cms2xp.export;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.Nodes;
 
 import com.enonic.cms.core.content.ContentEntity;
+import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
@@ -44,6 +46,8 @@ public class SiteExporter
 
     private final MainConfig config;
 
+    private final Set<ContentKey> contentKeysMovedToSection;
+
     public SiteExporter( final Session session, final NodeExporter nodeExporter, final ContentExporter contentExporter,
                          final File pageDirectory, final File partDirectory, final ApplicationKey applicationKey,
                          final NodeIdRegistry nodeIdRegistry, final MainConfig config )
@@ -58,6 +62,7 @@ public class SiteExporter
         this.menuItemNodeConverter =
             new MenuItemNodeConverter( applicationKey, pageTemplateResolver, this.portletExporter, nodeIdRegistry, config );
         this.config = config;
+        this.contentKeysMovedToSection = new HashSet<>();
     }
 
     public void export( final List<SiteEntity> siteEntities, final NodePath parentNodePath )
@@ -130,7 +135,7 @@ public class SiteExporter
             }
             nodeExporter.writeNodeOrderList( menuItemNode, Nodes.from( menuNodes ) );
         }
-        nodes.sort( ( n1, n2 ) -> Long.compare( n1.getManualOrderValue(), n2.getManualOrderValue() ) );
+        nodes.sort( Comparator.comparingLong( Node::getManualOrderValue ) );
         return nodes;
     }
 
@@ -145,6 +150,10 @@ public class SiteExporter
             if ( home != null )
             {
                 final ContentEntity content = home.getContent();
+                if ( contentKeysMovedToSection.contains( content.getKey() ) )
+                {
+                    continue;
+                }
                 if ( addedContentKeys.contains( content.getKey().toInt() ) )
                 {
                     continue;
@@ -152,6 +161,7 @@ public class SiteExporter
 
                 final Node node = contentExporter.export( content, parentPath );
                 addedContentKeys.add( content.getKey().toInt() );
+                contentKeysMovedToSection.add( content.getKey() );
 
                 if ( node != null )
                 {
