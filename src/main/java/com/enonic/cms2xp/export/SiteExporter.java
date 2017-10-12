@@ -123,12 +123,14 @@ public class SiteExporter
             menuItemNode = nodeExporter.exportNode( menuItemNode );
             nodes.add( menuItemNode );
             List<Node> sectionHomeContent = null;
+
+
+            final List<Node> menuNodes = exportMenuItems( menuItemNode, menuItemEntity.getChildren() );
+
             if ( config.target.moveHomeContentToSection && menuItemEntity.isSection() )
             {
                 sectionHomeContent = exportSingleHomeSectionContent( menuItemEntity, menuItemNode.path() );
             }
-
-            final List<Node> menuNodes = exportMenuItems( menuItemNode, menuItemEntity.getChildren() );
             if ( sectionHomeContent != null )
             {
                 menuNodes.addAll( sectionHomeContent );
