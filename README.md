@@ -19,7 +19,7 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.9.2 | 6.9.0 | [Download 0.9.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.9.2/cms2xp-0.9.2.zip) |
 | 0.10.0 | 6.9.0 | [Download 0.10.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.0/cms2xp-0.10.0.zip) |
 | 0.10.1 | 6.9.0 | [Download 0.10.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.1/cms2xp-0.10.1.zip) |
-| **0.10.2** | **6.9.0** | **[Download 0.10.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.2/cms2xp-0.10.2zip)** |
+| **0.10.2** | **6.9.0** | **[Download 0.10.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.2/cms2xp-0.10.2.zip)** |
 
 ## Building
 
