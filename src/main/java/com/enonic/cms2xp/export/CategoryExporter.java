@@ -96,7 +96,7 @@ public class CategoryExporter
                 build();
 
             //Exports the node
-            nodeExporter.exportNode( categoryNode );
+            categoryNode = nodeExporter.exportNode( categoryNode );
 
             //Calls the export on the children
             // It's important to export categories first so it's the content (not the category folder) that gets renamed in case 2 nodes get the same path
@@ -171,7 +171,7 @@ public class CategoryExporter
             childOrder( DEFAULT_CHILD_ORDER ).
             build();
 
-        nodeExporter.exportNode( topArchiveNode );
+        topArchiveNode = nodeExporter.exportNode( topArchiveNode );
 
         return topArchiveNode;
     }

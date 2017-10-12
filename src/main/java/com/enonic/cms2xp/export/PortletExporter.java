@@ -111,7 +111,7 @@ public class PortletExporter
         templateFolderNode = Node.create( templateFolderNode ).
             parentPath( parentNode ).
             build();
-        nodeExporter.exportNode( templateFolderNode );
+        templateFolderNode = nodeExporter.exportNode( templateFolderNode );
 
         for ( PortletEntity portlet : portletEntities )
         {
@@ -124,7 +124,7 @@ public class PortletExporter
 
             try
             {
-                nodeExporter.exportNode( contentNode );
+                contentNode = nodeExporter.exportNode( contentNode );
             }
             catch ( Exception e )
             {

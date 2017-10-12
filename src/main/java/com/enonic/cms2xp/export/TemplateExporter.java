@@ -74,7 +74,7 @@ public class TemplateExporter
             parentPath( parentNodePath ).
             childOrder( ChildOrder.manualOrder() ).
             build();
-        nodeExporter.exportNode( templateFolderNode );
+        templateFolderNode = nodeExporter.exportNode( templateFolderNode );
 
         final Set<PageTemplateEntity> pageTemplateEntities = siteEntity.getPageTemplates();
         if ( pageTemplateEntities != null )
@@ -97,7 +97,7 @@ public class TemplateExporter
                     pageTemplateNode = Node.create( pageTemplateNode ).
                         parentPath( templateFolderNode.path() ).
                         build();
-                    nodeExporter.exportNode( pageTemplateNode );
+                    pageTemplateNode = nodeExporter.exportNode( pageTemplateNode );
                     children.add( pageTemplateNode );
                     pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
                 }

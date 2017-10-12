@@ -56,9 +56,9 @@ public class NodeExporter
         // writeNodeOrderList( parentNode, allCurrentLevelChildren.build() );
     }
 
-    public void exportNode( final Node node )
+    public Node exportNode( final Node node )
     {
-        writeNode( node );
+        return writeNode( node );
     }
 
     public void exportNodeBinary( final Node node, final BinaryReference reference, final ByteSource byteSource )
@@ -90,7 +90,7 @@ public class NodeExporter
         return node;
     }
 
-    private void writeNode( final Node sourceNode )
+    private Node writeNode( final Node sourceNode )
     {
         NodePath newParentPath = resolveNewParentPath( sourceNode );
         Path nodeDataFolder = resolveNodeDataFolder( sourceNode );
@@ -119,6 +119,7 @@ public class NodeExporter
         final String serializedNode = serializer.serialize();
 
         exportWriter.writeElement( nodeXmlPath, serializedNode );
+        return relativeNode;
     }
 
     private Node renameNodeWithSuffix( final Node node, final int suffix )

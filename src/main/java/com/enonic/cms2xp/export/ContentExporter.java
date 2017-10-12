@@ -111,7 +111,7 @@ public class ContentExporter
         //Exports the node
         try
         {
-            nodeExporter.exportNode( contentNode );
+            contentNode = nodeExporter.exportNode( contentNode );
         }
         catch ( Exception e )
         {

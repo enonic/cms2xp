@@ -79,7 +79,7 @@ public class SiteExporter
                 build();
 
             //Exports the node
-            nodeExporter.exportNode( siteNode );
+            siteNode = nodeExporter.exportNode( siteNode );
 
             final Node portletsNode = portletExporter.export( siteEntity, siteNode.path() );
 
@@ -100,7 +100,7 @@ public class SiteExporter
             parentPath( parentNodePath ).
             build();
 
-        nodeExporter.exportNode( topSiteNode );
+        topSiteNode = nodeExporter.exportNode( topSiteNode );
 
         return topSiteNode;
     }
@@ -120,7 +120,7 @@ public class SiteExporter
                 build();
 
             //Exports the node
-            nodeExporter.exportNode( menuItemNode );
+            menuItemNode = nodeExporter.exportNode( menuItemNode );
             nodes.add( menuItemNode );
             List<Node> sectionHomeContent = null;
             if ( config.target.moveHomeContentToSection && menuItemEntity.isSection() )
