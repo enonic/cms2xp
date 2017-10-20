@@ -122,7 +122,7 @@ public final class ContentTypeConverter
         {
             try
             {
-                form = convertConfig( parseContentTypeConfig( ct ) );
+                form = convertConfig( ct.getContentTypeKey(), parseContentTypeConfig( ct ) );
             }
             catch ( IllegalArgumentException e )
             {
@@ -169,7 +169,7 @@ public final class ContentTypeConverter
         Element contentTypeRootEl = contentTypeDoc.getRootElement();
         if ( "config".equals( contentTypeRootEl.getName() ) )
         {
-            return ContentTypeConfigParser.parse( contentHandlerName, contentTypeRootEl );
+            return ContentTypeConfigParser.parse( ct.getContentTypeKey(), contentHandlerName, contentTypeRootEl );
         }
 
         Element contentTypeConfigEl = contentTypeRootEl.getChild( "config" );
@@ -178,7 +178,7 @@ public final class ContentTypeConverter
             return null;
         }
 
-        return ContentTypeConfigParser.parse( contentHandlerName, contentTypeConfigEl );
+        return ContentTypeConfigParser.parse( ct.getContentTypeKey(), contentHandlerName, contentTypeConfigEl );
     }
 
     private Form newsletterForm()
@@ -222,7 +222,7 @@ public final class ContentTypeConverter
         return form.build();
     }
 
-    private Form convertConfig( final ContentTypeConfig contentTypeConfig )
+    private Form convertConfig( final ContentTypeKey contentTypeKey, final ContentTypeConfig contentTypeConfig )
     {
         if ( contentTypeConfig == null )
         {
@@ -238,15 +238,15 @@ public final class ContentTypeConverter
             final FormItem formItem;
             if ( ctyConfig.hasGroupXPath() )
             {
-                formItem = addFormItemSet( ctyConfig );
+                formItem = addFormItemSet( contentTypeKey, ctyConfig );
             }
             else if ( blockHasCommonXpathPrefix( ctyConfig ) )
             {
-                formItem = addVisualBlockAsFormItemSet( ctyConfig );
+                formItem = addVisualBlockAsFormItemSet( contentTypeKey, ctyConfig );
             }
             else
             {
-                formItem = addFieldSet( ctyConfig );
+                formItem = addFieldSet( contentTypeKey, ctyConfig );
             }
 
             if ( addedItemNames.contains( formItem.getName() ) && formItem instanceof FormItemSet )
@@ -352,7 +352,7 @@ public final class ContentTypeConverter
         return "/" + Joiner.on( "/" ).join( xpathParts );
     }
 
-    private FormItem addFieldSet( final CtySetConfig ctyConfig )
+    private FormItem addFieldSet( final ContentTypeKey contentTypeKey, final CtySetConfig ctyConfig )
     {
         final FieldSet.Builder fieldSet = FieldSet.create();
         fieldSet.name( ctyConfig.getName().replace( ".", " " ).trim() );
@@ -368,7 +368,7 @@ public final class ContentTypeConverter
             {
                 for ( DataEntryConfig entry : entries )
                 {
-                    fieldSet.addFormItem( convertConfigEntry( entry ) );
+                    fieldSet.addFormItem( convertConfigEntry( contentTypeKey, entry ) );
                 }
             }
             else
@@ -386,7 +386,7 @@ public final class ContentTypeConverter
                 }
                 for ( DataEntryConfig entry : entries )
                 {
-                    is.addFormItem( convertConfigEntry( entry ) );
+                    is.addFormItem( convertConfigEntry( contentTypeKey, entry ) );
                 }
             }
         }
@@ -445,7 +445,7 @@ public final class ContentTypeConverter
         return map;
     }
 
-    private FormItem addFormItemSet( final CtySetConfig ctyConfig )
+    private FormItem addFormItemSet( final ContentTypeKey contentTypeKey, final CtySetConfig ctyConfig )
     {
         final String blockName = StringUtils.substringAfterLast( ctyConfig.getGroupXPath(), "/" );
         final FormItemSet.Builder formItemSet = FormItemSet.create();
@@ -455,7 +455,7 @@ public final class ContentTypeConverter
 
         for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
         {
-            formItemSet.addFormItem( convertConfigEntry( entry ) );
+            formItemSet.addFormItem( convertConfigEntry( contentTypeKey, entry ) );
         }
         final FormItemSet res = formItemSet.build();
 
@@ -479,7 +479,7 @@ public final class ContentTypeConverter
         return res;
     }
 
-    private FormItem addVisualBlockAsFormItemSet( final CtySetConfig ctyConfig )
+    private FormItem addVisualBlockAsFormItemSet( final ContentTypeKey contentTypeKey, final CtySetConfig ctyConfig )
     {
         String groupXpath = substringBeforeLast( normalizeXpath( ctyConfig.getInputConfigs().get( 0 ).getXpath() ), "/" );
         groupXpath = groupXpath.substring( 0, groupXpath.length() );
@@ -492,7 +492,7 @@ public final class ContentTypeConverter
 
         for ( DataEntryConfig entry : ctyConfig.getInputConfigs() )
         {
-            formItemSet.addFormItem( convertConfigEntry( entry ) );
+            formItemSet.addFormItem( convertConfigEntry( contentTypeKey, entry ) );
         }
         final FormItemSet res = formItemSet.build();
 
@@ -510,7 +510,7 @@ public final class ContentTypeConverter
         return res;
     }
 
-    private FormItem convertConfigEntry( final DataEntryConfig entry )
+    private FormItem convertConfigEntry( final ContentTypeKey contentTypeKey, final DataEntryConfig entry )
     {
         final String label = Strings.isNullOrEmpty( entry.getDisplayName() ) ? entry.getName() : entry.getDisplayName();
         final String entryPathName = StringUtils.substringAfterLast( entry.getXpath(), "/" );
@@ -522,7 +522,7 @@ public final class ContentTypeConverter
             return convertImagesEntry( inputName, label, (ImagesDataEntryConfig) entry );
         }
 
-        final String helpText = entry.getXpath().equals( entry.getRelativeXPath() ) ? null : entry.getRelativeXPath();
+        final String helpText = ContentTypeHelpMapper.getHelpText( contentTypeKey, entry );
         final Input.Builder input = Input.create().
             name( inputName ).
             label( label ).

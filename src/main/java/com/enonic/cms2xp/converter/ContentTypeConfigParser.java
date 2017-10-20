@@ -1,6 +1,5 @@
 package com.enonic.cms2xp.converter;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.jdom.Attribute;
@@ -9,6 +8,7 @@ import org.jdom.Element;
 import com.enonic.cms.core.content.contenttype.ContentHandlerName;
 import com.enonic.cms.core.content.contenttype.ContentTypeConfig;
 import com.enonic.cms.core.content.contenttype.ContentTypeImportConfigParser;
+import com.enonic.cms.core.content.contenttype.ContentTypeKey;
 import com.enonic.cms.core.content.contenttype.CtyFormConfig;
 import com.enonic.cms.core.content.contenttype.CtyImportConfig;
 import com.enonic.cms.core.content.contenttype.CtySetConfig;
@@ -22,7 +22,8 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigTy
 public class ContentTypeConfigParser
 {
 
-    public static ContentTypeConfig parse( final ContentHandlerName contentHandlerName, final Element configEl )
+    public static ContentTypeConfig parse( final ContentTypeKey contentTypeKey, final ContentHandlerName contentHandlerName,
+                                           final Element configEl )
     {
 
         final String rootElementName = configEl.getName();
@@ -35,7 +36,7 @@ public class ContentTypeConfigParser
 
         /* Parse form */
         final ContentTypeConfigParser parser = new ContentTypeConfigParser();
-        final CtyFormConfig form = parser.parseForm( configEl, config );
+        final CtyFormConfig form = parser.parseForm( contentTypeKey, configEl, config );
         config.setForm( form );
 
         /* Parse imports */
@@ -51,7 +52,7 @@ public class ContentTypeConfigParser
         // no access
     }
 
-    private CtyFormConfig parseForm( Element configEl, ContentTypeConfig config )
+    private CtyFormConfig parseForm( final ContentTypeKey contentTypeKey, Element configEl, ContentTypeConfig config )
     {
 
         Element formEl = configEl.getChild( "form" );
@@ -71,7 +72,7 @@ public class ContentTypeConfigParser
         int blockPosition = 1;
         for ( Element blockEl : blockEls )
         {
-            form.addBlock( parseBlock( form, blockEl, blockPosition++, titleInputName ) );
+            form.addBlock( parseBlock( contentTypeKey, form, blockEl, blockPosition++, titleInputName ) );
         }
 
         if ( form.getTitleInput() == null )
@@ -89,7 +90,8 @@ public class ContentTypeConfigParser
         return form;
     }
 
-    private CtySetConfig parseBlock( final CtyFormConfig form, final Element blockEl, int blockPosition, String titleField )
+    private CtySetConfig parseBlock( final ContentTypeKey contentTypeKey, final CtyFormConfig form, final Element blockEl,
+                                     int blockPosition, String titleField )
     {
         String blockName = parseBlockName( blockEl, blockPosition );
         CtySetConfig block = new CtySetConfig( form, blockName, blockEl.getAttributeValue( "group" ) );
@@ -105,7 +107,7 @@ public class ContentTypeConfigParser
                 final String help = inputEl.getChild( "help" ).getText();
                 if ( inputConfig instanceof AbstractBaseDataEntryConfig )
                 {
-                    setHelpTextInEntry( (AbstractBaseDataEntryConfig) inputConfig, help );
+                    ContentTypeHelpMapper.setHelpText( contentTypeKey, inputConfig, help );
                 }
             }
 
@@ -123,20 +125,6 @@ public class ContentTypeConfigParser
             block.addInput( inputConfig );
         }
         return block;
-    }
-
-    private void setHelpTextInEntry( final AbstractBaseDataEntryConfig entry, final String text )
-    {
-        try
-        {   // set value in private field using reflection
-            Field f1 = AbstractBaseDataEntryConfig.class.getDeclaredField( "relativeXPath" );
-            f1.setAccessible( true );
-            f1.set( entry, text );
-        }
-        catch ( IllegalAccessException | NoSuchFieldException e )
-        {
-            e.printStackTrace();
-        }
     }
 
     private String parseBlockName( final Element blockEl, final int blockPosition )
