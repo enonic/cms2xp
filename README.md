@@ -20,7 +20,12 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.10.0 | 6.9.0 | [Download 0.10.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.0/cms2xp-0.10.0.zip) |
 | 0.10.1 | 6.9.0 | [Download 0.10.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.1/cms2xp-0.10.1.zip) |
 | 0.10.2 | 6.9.0 | [Download 0.10.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.2/cms2xp-0.10.2.zip) |
-| **0.10.3** | **6.9.0** | **[Download 0.10.3 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.3/cms2xp-0.10.3.zip)** |
+| 0.10.3 | 6.9.0 | [Download 0.10.3 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.3/cms2xp-0.10.3.zip) |
+| **0.10.4** | **6.9.0** | **[Download 0.10.4 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.4/cms2xp-0.10.4.zip)** |
+
+## Download
+
+[Download the latest version: 0.10.4](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.4/cms2xp-0.10.4.zip)
 
 ## Building
 
@@ -34,7 +39,7 @@ Build all code and run all tests including integration tests:
 
     gradle build
    
-A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.3.zip```
+A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.4.zip```
    
 
 ## Running
