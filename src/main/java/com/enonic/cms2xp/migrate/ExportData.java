@@ -165,6 +165,7 @@ public final class ExportData
         final FormItemSet parameters = FormItemSet.create().
             name( "parameters" ).
             label( "Menu item parameters" ).
+            occurrences( 0, 0 ).
             addFormItem( Input.create().
                 name( "name" ).
                 label( "Parameter name" ).
