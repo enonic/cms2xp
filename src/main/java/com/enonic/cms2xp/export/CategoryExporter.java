@@ -2,12 +2,15 @@ package com.enonic.cms2xp.export;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Ordering;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.CategoryNodeConverter;
@@ -39,6 +42,8 @@ public class CategoryExporter
     private static final OrderExpr DEFAULT_ORDER = FieldOrderExpr.create( IndexPath.from( MODIFIED_TIME ), OrderExpr.Direction.DESC );
 
     private static final ChildOrder DEFAULT_CHILD_ORDER = ChildOrder.create().add( DEFAULT_ORDER ).build();
+
+    private static final Ordering<String> CASE_SENSITIVE_NULL_SAFE_ORDER = Ordering.from( String::compareTo ).nullsLast();
 
     private final NodeExporter nodeExporter;
 
@@ -114,18 +119,17 @@ public class CategoryExporter
             {
                 final List<ContentEntity> sortedContent = contents.stream().
                     filter( ( c ) -> !c.isDeleted() ).
-                    sorted( ( c1, c2 ) ->
-                            {
-                                int res = c1.getName().compareTo( c2.getName() );
-                                if ( res == 0 )
-                                {
-                                    // if same name, first the approved one
-                                    final ContentStatus st1 = c1.getMainVersion().getStatus();
-                                    final ContentStatus st2 = c2.getMainVersion().getStatus();
-                                    return st1 == st2 ? 0 : st1 == ContentStatus.APPROVED ? -1 : 1;
-                                }
-                                return res;
-                            } ).
+                    sorted( ( c1, c2 ) -> {
+                        int res = Objects.compare( c1.getName(), c2.getName(), CASE_SENSITIVE_NULL_SAFE_ORDER );
+                        if ( res == 0 )
+                        {
+                            // if same name, first the approved one
+                            final ContentStatus st1 = c1.getMainVersion().getStatus();
+                            final ContentStatus st2 = c2.getMainVersion().getStatus();
+                            return st1 == st2 ? 0 : st1 == ContentStatus.APPROVED ? -1 : 1;
+                        }
+                        return res;
+                    } ).
                     collect( Collectors.toList() );
 
                 int contentCount = 0;
