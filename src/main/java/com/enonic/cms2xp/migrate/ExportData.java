@@ -8,10 +8,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,10 @@ public final class ExportData
     private static final String LIB_MENU_VERSION = "1.2.0";
 
     private static final String LIB_MENU = "com.enonic.lib:menu:" + LIB_MENU_VERSION;
+
+    private static final String LIB_URLREDIRECT_VERSION = "2.0.0";
+
+    private static final String LIB_URLREDIRECT = "com.enonic.lib:urlredirect:" + LIB_URLREDIRECT_VERSION;
 
     private final MainConfig config;
 
@@ -127,6 +133,9 @@ public final class ExportData
 
             // include external Libs
             includeLibs();
+
+            // add site controller mappings
+            includeMappings();
 
             //Retrieves, converts and exports the Categories
             exportCategories( session, contentTypeConverter );
@@ -246,6 +255,14 @@ public final class ExportData
         {
             includeLib( LIB_MENU );
         }
+        includeLib( LIB_URLREDIRECT );
+    }
+
+    private void includeMappings()
+        throws IOException
+    {
+        logger.info( "Including controller mappings..." );
+        addMapping( "urlredirect" );
     }
 
     private void exportMixins()
@@ -288,6 +305,41 @@ public final class ExportData
                 break;
             }
         }
+        Files.write( siteXml, siteXmlLines, StandardCharsets.UTF_8 );
+    }
+
+    private void addMapping( final String name )
+        throws IOException
+    {
+        final InputStream resource = getClass().getResourceAsStream( "/templates/mappings/" + name + ".xml" );
+        String mapping = IOUtils.toString( resource );
+        mapping = mapping.replace( "[APP_NAME]", this.applicationKey.toString() );
+        List<String> mappingLines = Arrays.asList( mapping.split( "\\r?\\n" ) );
+
+        // add lines to site.xml
+        final Path siteXml = config.target.applicationDir.toPath().resolve( "src/main/resources/site/site.xml" );
+        final List<String> siteXmlLines = CharStreams.readLines( new FileReader( siteXml.toFile() ) );
+        for ( int i = 0; i < siteXmlLines.size(); i++ )
+        {
+            final String line = siteXmlLines.get( i );
+            if ( line.trim().contains( "</mappings>" ) )
+            {
+                mappingLines = mappingLines.stream().map( ( l ) -> "    " + l ).collect( Collectors.toList() );
+                siteXmlLines.addAll( i, mappingLines );
+                break;
+            }
+
+            if ( line.trim().equals( "</site>" ) )
+            {
+                mappingLines = mappingLines.stream().map( ( l ) -> "    " + l ).collect( Collectors.toList() );
+                mappingLines.add( 0, "  <mappings>" );
+                mappingLines.add( "  </mappings>" );
+
+                siteXmlLines.addAll( i, mappingLines );
+                break;
+            }
+        }
+
         Files.write( siteXml, siteXmlLines, StandardCharsets.UTF_8 );
     }
 

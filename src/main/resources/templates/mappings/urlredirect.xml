@@ -1,0 +1,3 @@
+<mapping controller="/lib/enonic/url-redirect/index.js">
+  <match>type:'[APP_NAME]:url'</match>
+</mapping>

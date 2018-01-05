@@ -51,6 +51,8 @@ public class MenuItemNodeConverter
 
     private final ContentTypeName pageType;
 
+    private final ContentTypeName urlType;
+
     private final MainConfig config;
 
     public MenuItemNodeConverter( final ApplicationKey applicationKey, final PageTemplateResolver pageTemplateResolver,
@@ -63,6 +65,7 @@ public class MenuItemNodeConverter
         this.nodeIdRegistry = nodeIdRegistry;
         this.sectionType = ContentTypeName.from( this.applicationKey, "section" );
         this.pageType = ContentTypeName.from( this.applicationKey, "page" );
+        this.urlType = ContentTypeName.from( this.applicationKey, "url" );
         this.config = config;
     }
 
@@ -74,8 +77,21 @@ public class MenuItemNodeConverter
     private PropertyTree toData( final MenuItemEntity menuItem )
     {
         final boolean isShortcut = menuItem.getType() == MenuItemType.SHORTCUT;
+        final boolean isUrl = menuItem.getType() == MenuItemType.URL;
         final boolean isDefaultPage = menuItem.getType() == MenuItemType.PAGE;
-        final ContentTypeName type = menuItem.isSection() ? sectionType : isShortcut ? ContentTypeName.shortcut() : pageType;
+        final ContentTypeName type;
+        if ( menuItem.isSection() )
+        {
+            type = sectionType;
+        }
+        else if ( isUrl )
+        {
+            type = urlType;
+        }
+        else
+        {
+            type = isShortcut ? ContentTypeName.shortcut() : pageType;
+        }
 
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
@@ -112,6 +128,15 @@ public class MenuItemNodeConverter
                 subData.setProperty( "target", ValueFactory.newReference( Reference.from( forwardNodeId.toString() ) ) );
             }
         }
+        else if ( isUrl )
+        {
+            final String url = menuItem.getUrl();
+            menuItem.isOpenNewWindowForURL();
+            if ( url != null )
+            {
+                subData.setString( "url", url );
+            }
+        }
         else if ( isDefaultPage )
         {
             final PageTemplateKey pageTemplate = page.getTemplate().getPageTemplateKey();
@@ -124,7 +149,7 @@ public class MenuItemNodeConverter
         else if ( menuItem.isSection() )
         {
             final Set<SectionContentEntity> sectionContents = menuItem.getSectionContents();
-            final Comparator<SectionContentEntity> byOrder = ( s1, s2 ) -> Integer.compare( s1.getOrder(), s2.getOrder() );
+            final Comparator<SectionContentEntity> byOrder = Comparator.comparingInt( SectionContentEntity::getOrder );
             final List<SectionContentEntity> sortedSections = sectionContents.stream().sorted( byOrder ).collect( Collectors.toList() );
 
             for ( SectionContentEntity sectionContent : sortedSections )
@@ -236,14 +261,13 @@ public class MenuItemNodeConverter
         }
 
         menuItem.getRequestParameters().
-            forEach( ( key, item ) ->
-                     {
-                         PropertySet paramData = new PropertySet();
-                         paramData.setString( "name", item.getName() );
-                         paramData.setString( "value", item.getValue() );
-                         paramData.setBoolean( "override", item.isOverridableByRequest() );
-                         appData.addSet( "parameters", paramData );
-                     } );
+            forEach( ( key, item ) -> {
+                PropertySet paramData = new PropertySet();
+                paramData.setString( "name", item.getName() );
+                paramData.setString( "value", item.getValue() );
+                paramData.setBoolean( "override", item.isOverridableByRequest() );
+                appData.addSet( "parameters", paramData );
+            } );
     }
 
     private void toMenuItemExtraData( final MenuItemEntity menuItem, final PropertySet extraData )
