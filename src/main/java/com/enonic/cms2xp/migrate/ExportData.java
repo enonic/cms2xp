@@ -61,7 +61,7 @@ public final class ExportData
 {
     private final static Logger logger = LoggerFactory.getLogger( ExportData.class );
 
-    private static final String LIB_MENU_VERSION = "1.2.0";
+    private static final String LIB_MENU_VERSION = "1.3.0";
 
     private static final String LIB_MENU = "com.enonic.lib:menu:" + LIB_MENU_VERSION;
 

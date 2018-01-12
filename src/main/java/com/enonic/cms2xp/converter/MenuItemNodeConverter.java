@@ -131,7 +131,6 @@ public class MenuItemNodeConverter
         else if ( isUrl )
         {
             final String url = menuItem.getUrl();
-            menuItem.isOpenNewWindowForURL();
             if ( url != null )
             {
                 subData.setString( "url", url );
@@ -279,6 +278,21 @@ public class MenuItemNodeConverter
             menuItemData.setString( "menuName", menuItem.getMenuName() );
         }
         menuItemData.setBoolean( "menuItem", menuItem.showInMenu() );
+
+        boolean newWindow = false;
+        try
+        {
+            newWindow = menuItem.isOpenNewWindowForURL();
+        }
+        catch ( Exception ignored )
+        {
+            // DO NOTHING
+        }
+        if ( menuItem.getType() == MenuItemType.URL )
+        {
+            menuItemData.setBoolean( "newWindow", newWindow );
+        }
+
         final PropertySet appData = new PropertySet();
         appData.setSet( "menu-item", menuItemData );
 
