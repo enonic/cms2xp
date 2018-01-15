@@ -12,6 +12,7 @@ import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.region.FragmentComponent;
+import com.enonic.xp.region.PartComponent;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.Reference;
 
@@ -20,11 +21,14 @@ import com.enonic.cms.core.structure.page.template.PageTemplatePortletEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateType;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
+import com.enonic.cms.core.structure.portlet.PortletKey;
 
 public final class PageTemplateNodeConverter
     extends AbstractNodeConverter
 {
     private static final String FRAGMENT_COMPONENT = FragmentComponent.class.getSimpleName();
+
+    private static final String PART_COMPONENT = PartComponent.class.getSimpleName();
 
     private final ApplicationKey applicationKey;
 
@@ -40,18 +44,19 @@ public final class PageTemplateNodeConverter
         this.pageTemplateResolver = pageTemplateResolver;
     }
 
-    public Node toNode( final PageTemplateEntity pageTemplateEntity, final String pageName )
+    public Node toNode( final PageTemplateEntity pageTemplateEntity, final String pageName, final Set<PortletKey> singleUsePortlets )
     {
         if ( pageTemplateEntity.getType() == PageTemplateType.PAGE )
         {
-            final PropertySet pageData = getPageData( pageTemplateEntity, pageName );
+            final PropertySet pageData = getPageData( pageTemplateEntity, pageName, singleUsePortlets );
             this.pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageData.toTree().copy() );
             return null;
         }
-        return createNode( new NodeId(), pageTemplateEntity.getName(), toData( pageTemplateEntity, pageName ) );
+        return createNode( new NodeId(), pageTemplateEntity.getName(), toData( pageTemplateEntity, pageName, singleUsePortlets ) );
     }
 
-    private PropertyTree toData( final PageTemplateEntity pageTemplateEntity, final String pageName )
+    private PropertyTree toData( final PageTemplateEntity pageTemplateEntity, final String pageName,
+                                 final Set<PortletKey> singleUsePortlets )
     {
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
@@ -71,14 +76,15 @@ public final class PageTemplateNodeConverter
 
         data.setSet( ContentPropertyNames.DATA, subData );
 
-        final PropertySet pageData = getPageData( pageTemplateEntity, pageName );
+        final PropertySet pageData = getPageData( pageTemplateEntity, pageName, singleUsePortlets );
         data.setSet( ContentPropertyNames.PAGE, pageData );
 
         data.setSet( ContentPropertyNames.EXTRA_DATA, new PropertySet() );
         return data;
     }
 
-    private PropertySet getPageData( final PageTemplateEntity pageTemplateEntity, final String pageName )
+    private PropertySet getPageData( final PageTemplateEntity pageTemplateEntity, final String pageName,
+                                     final Set<PortletKey> singleUsePortlets )
     {
         final PropertySet pageData = new PropertySet();
         pageData.setProperty( "controller", ValueFactory.newString( applicationKey.toString() + ":" + pageName ) );
@@ -94,14 +100,29 @@ public final class PageTemplateNodeConverter
             for ( PageTemplatePortletEntity portletTemplate : regionPortlets )
             {
                 final PortletEntity portlet = portletTemplate.getPortlet();
+                final boolean makeFragment = !singleUsePortlets.contains( portlet.getPortletKey() );
+
                 final PropertySet componentData = new PropertySet();
-                componentData.setString( "type", FRAGMENT_COMPONENT );
-                final PropertySet fragmentData = new PropertySet();
-                fragmentData.setString( "name", portlet.getName() );
-                fragmentData.setSet( "config", new PropertySet() );
-                final NodeId fragmentNodeId = portletToPartResolver.fragmentReferenceFromPortlet( portlet.getPortletKey() );
-                fragmentData.setReference( "fragment", new Reference( fragmentNodeId ) );
-                componentData.setSet( FRAGMENT_COMPONENT, fragmentData );
+                if ( makeFragment )
+                {
+                    componentData.setString( "type", FRAGMENT_COMPONENT );
+                    final PropertySet fragmentData = new PropertySet();
+                    fragmentData.setString( "name", portlet.getName() );
+                    fragmentData.setSet( "config", new PropertySet() );
+                    final NodeId fragmentNodeId = portletToPartResolver.fragmentReferenceFromPortlet( portlet.getPortletKey() );
+                    fragmentData.setReference( "fragment", new Reference( fragmentNodeId ) );
+                    componentData.setSet( FRAGMENT_COMPONENT, fragmentData );
+                }
+                else
+                {
+                    componentData.setString( "type", PART_COMPONENT );
+                    final PropertySet partComponentData = new PropertySet();
+                    partComponentData.setString( "name", portlet.getName() );
+                    partComponentData.setSet( "config", new PropertySet() );
+                    final String partName = portletToPartResolver.partNameFromPortlet( portlet );
+                    partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
+                    componentData.setSet( PART_COMPONENT, partComponentData );
+                }
                 regionsData.addSet( "component", componentData );
             }
             pageData.addProperty( "region", ValueFactory.newPropertySet( regionsData ) );

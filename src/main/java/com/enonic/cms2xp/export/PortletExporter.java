@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.transform.dom.DOMSource;
 
@@ -75,11 +76,11 @@ public class PortletExporter
         return fragmentToPortletMapping.get( portletKey );
     }
 
-    public Node export( final SiteEntity siteEntity, final NodePath parentNode )
+    public Node export( final SiteEntity siteEntity, final NodePath parentNode, final Set<PortletKey> singleUsePortlets )
     {
         final List<PortletEntity> portletEntities = new PortletRetriever( session ).retrievePortlets( siteEntity.getKey() );
         exportParts( portletEntities );
-        return exportFragments( portletEntities, parentNode );
+        return exportFragments( portletEntities, parentNode, singleUsePortlets );
     }
 
     private void exportParts( Iterable<PortletEntity> portletEntities )
@@ -104,9 +105,9 @@ public class PortletExporter
         }
     }
 
-    private Node exportFragments( final Iterable<PortletEntity> portletEntities, final NodePath parentNode )
+    private Node exportFragments( final Iterable<PortletEntity> portletEntities, final NodePath parentNode,
+                                  final Set<PortletKey> singleUsePortlets )
     {
-
         Node templateFolderNode = fragmentsNodeConverter.getFragmentsNode();
         templateFolderNode = Node.create( templateFolderNode ).
             parentPath( parentNode ).
@@ -115,7 +116,12 @@ public class PortletExporter
 
         for ( PortletEntity portlet : portletEntities )
         {
-
+            if ( singleUsePortlets.contains( portlet.getPortletKey() ) )
+            {
+                logger.info(
+                    "Skipping conversion of portlet '" + portlet.getName() + "' to fragment since it is only used in one page template." );
+                continue;
+            }
             Node contentNode = fragmentsNodeConverter.toNode( portlet );
             contentNode = Node.create( contentNode ).
                 parentPath( templateFolderNode.path() ).

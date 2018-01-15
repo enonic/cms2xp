@@ -35,6 +35,7 @@ import com.enonic.cms.framework.xml.XMLDocumentHelper;
 import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
 import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
+import com.enonic.cms.core.structure.portlet.PortletKey;
 
 public class TemplateExporter
     extends AbstractAppComponentExporter
@@ -66,7 +67,7 @@ public class TemplateExporter
         this.xsltExported = new HashMap<>();
     }
 
-    public Node export( final SiteEntity siteEntity, final NodePath parentNodePath )
+    public Node export( final SiteEntity siteEntity, final NodePath parentNodePath, final Set<PortletKey> singleUsePortlets )
     {
 
         Node templateFolderNode = siteTemplatesNodeConverter.toNode( siteEntity );
@@ -77,34 +78,36 @@ public class TemplateExporter
         templateFolderNode = nodeExporter.exportNode( templateFolderNode );
 
         final Set<PageTemplateEntity> pageTemplateEntities = siteEntity.getPageTemplates();
-        if ( pageTemplateEntities != null )
+        if ( pageTemplateEntities == null )
         {
-            // sort page templates to make sure the first one (default) has regions
-            Comparator<PageTemplateEntity> byOrder = Comparator.comparing( p -> p.getPageTemplateRegions().isEmpty() );
-            byOrder = byOrder.thenComparing( PageTemplateEntity::getName );
-            final List<PageTemplateEntity> pageTemplates = pageTemplateEntities.stream().sorted( byOrder ).collect( Collectors.toList() );
-
-            exportPages( pageTemplates );
-            final List<Node> children = new ArrayList<>();
-            for ( PageTemplateEntity pageTemplateEntity : pageTemplates )
-            {
-                //Exports the PageTemplateEntity as a template node
-                final String xsltPath = pageTemplateEntity.getStyleKey().toString();
-                final String pageName = this.xsltExported.get( xsltPath );
-                Node pageTemplateNode = pageTemplateNodeConverter.toNode( pageTemplateEntity, pageName );
-                if ( pageTemplateNode != null )
-                {
-                    pageTemplateNode = Node.create( pageTemplateNode ).
-                        parentPath( templateFolderNode.path() ).
-                        build();
-                    pageTemplateNode = nodeExporter.exportNode( pageTemplateNode );
-                    children.add( pageTemplateNode );
-                    pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
-                }
-            }
-
-            nodeExporter.writeNodeOrderList( templateFolderNode, Nodes.from( children ) );
+            return templateFolderNode;
         }
+
+        // sort page templates to make sure the first one (default) has regions
+        Comparator<PageTemplateEntity> byOrder = Comparator.comparing( p -> p.getPageTemplateRegions().isEmpty() );
+        byOrder = byOrder.thenComparing( PageTemplateEntity::getName );
+        final List<PageTemplateEntity> pageTemplates = pageTemplateEntities.stream().sorted( byOrder ).collect( Collectors.toList() );
+
+        exportPages( pageTemplates );
+        final List<Node> children = new ArrayList<>();
+        for ( PageTemplateEntity pageTemplateEntity : pageTemplates )
+        {
+            //Exports the PageTemplateEntity as a template node
+            final String xsltPath = pageTemplateEntity.getStyleKey().toString();
+            final String pageName = this.xsltExported.get( xsltPath );
+            Node pageTemplateNode = pageTemplateNodeConverter.toNode( pageTemplateEntity, pageName, singleUsePortlets );
+            if ( pageTemplateNode != null )
+            {
+                pageTemplateNode = Node.create( pageTemplateNode ).
+                    parentPath( templateFolderNode.path() ).
+                    build();
+                pageTemplateNode = nodeExporter.exportNode( pageTemplateNode );
+                children.add( pageTemplateNode );
+                pageTemplateResolver.add( pageTemplateEntity.getPageTemplateKey(), pageTemplateNode.id() );
+            }
+        }
+
+        nodeExporter.writeNodeOrderList( templateFolderNode, Nodes.from( children ) );
         return templateFolderNode;
     }
 

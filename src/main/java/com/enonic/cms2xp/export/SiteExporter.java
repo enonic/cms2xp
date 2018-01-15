@@ -4,9 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 
@@ -27,6 +30,8 @@ import com.enonic.cms.core.structure.SiteEntity;
 import com.enonic.cms.core.structure.menuitem.ContentHomeEntity;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
 import com.enonic.cms.core.structure.menuitem.section.SectionContentEntity;
+import com.enonic.cms.core.structure.page.template.PageTemplateEntity;
+import com.enonic.cms.core.structure.portlet.PortletKey;
 
 import static com.google.common.collect.Iterables.getFirst;
 
@@ -81,9 +86,11 @@ public class SiteExporter
             //Exports the node
             siteNode = nodeExporter.exportNode( siteNode );
 
-            final Node portletsNode = portletExporter.export( siteEntity, siteNode.path() );
+            final Set<PortletKey> singleUsePortlets = findSingleUsePortlets( siteEntity.getPageTemplates() );
 
-            final Node templatesNode = templateExporter.export( siteEntity, siteNode.path() );
+            final Node portletsNode = portletExporter.export( siteEntity, siteNode.path(), singleUsePortlets );
+
+            final Node templatesNode = templateExporter.export( siteEntity, siteNode.path(), singleUsePortlets );
 
             //Export site menu items
             final List<Node> menuNodes = exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
@@ -91,6 +98,22 @@ public class SiteExporter
             menuNodes.add( templatesNode );
             nodeExporter.writeNodeOrderList( siteNode, Nodes.from( menuNodes ) );
         }
+    }
+
+    private Set<PortletKey> findSingleUsePortlets( final Collection<PageTemplateEntity> pageTemplates )
+    {
+        final Map<PortletKey, Integer> portletCount = new HashMap<>();
+        for ( PageTemplateEntity pageTemplateEntity : pageTemplates )
+        {
+            pageTemplateEntity.getPortlets().forEach( ( portlet ) -> {
+                final PortletKey key = portlet.getPortlet().getPortletKey();
+                portletCount.put( key, portletCount.getOrDefault( key, 0 ) + 1 );
+            } );
+        }
+        return portletCount.entrySet().stream().
+            filter( ( entry ) -> entry.getValue() == 1 ).
+            map( Map.Entry::getKey ).
+            collect( Collectors.toSet() );
     }
 
     private Node createSiteParent( final NodePath parentNodePath )
@@ -123,7 +146,6 @@ public class SiteExporter
             menuItemNode = nodeExporter.exportNode( menuItemNode );
             nodes.add( menuItemNode );
             List<Node> sectionHomeContent = null;
-
 
             final List<Node> menuNodes = exportMenuItems( menuItemNode, menuItemEntity.getChildren() );
 
