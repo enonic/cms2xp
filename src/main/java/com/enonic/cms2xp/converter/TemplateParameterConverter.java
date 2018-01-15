@@ -13,6 +13,8 @@ import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.cms.core.structure.TemplateParameter;
 import com.enonic.cms.core.structure.TemplateParameterType;
 
+import static com.enonic.cms2xp.migrate.ExportData.PAGE_TYPE;
+
 public class TemplateParameterConverter
 {
     private final ApplicationKey applicationKey;
@@ -23,7 +25,7 @@ public class TemplateParameterConverter
     public TemplateParameterConverter( final ApplicationKey applicationKey )
     {
         this.applicationKey = applicationKey;
-        this.pageContentType = ContentTypeName.from( this.applicationKey, "page" );
+        this.pageContentType = ContentTypeName.from( this.applicationKey, PAGE_TYPE );
     }
 
     public Form toFormXml( final Collection<TemplateParameter> parameters )

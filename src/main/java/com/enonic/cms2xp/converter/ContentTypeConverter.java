@@ -64,6 +64,8 @@ import com.enonic.cms.core.content.contenttype.dataentryconfig.UrlDataEntryConfi
 import com.enonic.cms.core.content.contenttype.dataentryconfig.XmlDataEntryConfig;
 
 import static com.enonic.cms.core.content.contenttype.dataentryconfig.DataEntryConfigType.IMAGES;
+import static com.enonic.cms2xp.migrate.ExportData.PAGE_TYPE;
+import static com.enonic.cms2xp.migrate.ExportData.SECTION_TYPE;
 import static org.apache.commons.lang.StringUtils.substringBeforeLast;
 
 public final class ContentTypeConverter
@@ -85,12 +87,11 @@ public final class ContentTypeConverter
     {
         contentTypeEntities.stream().
             filter( this::isConvertible ).
-            forEach( ( ct ) ->
-                     {
-                         final ContentType contentType = convert( ct );
-                         this.typeResolver.put( ct.getContentTypeKey(), contentType );
-                         logger.info( "Converted content type: {}", contentType.getName() );
-                     } );
+            forEach( ( ct ) -> {
+                final ContentType contentType = convert( ct );
+                this.typeResolver.put( ct.getContentTypeKey(), contentType );
+                logger.info( "Converted content type: {}", contentType.getName() );
+            } );
         return ImmutableList.copyOf( typeResolver.values() );
     }
 
@@ -205,8 +206,8 @@ public final class ContentTypeConverter
             required( true ).
             multiple( false ).
             build() );
-        final ContentTypeName pageContentType = ContentTypeName.from( this.appKey, "page" );
-        final ContentTypeName sectionContentType = ContentTypeName.from( this.appKey, "section" );
+        final ContentTypeName pageContentType = ContentTypeName.from( this.appKey, PAGE_TYPE );
+        final ContentTypeName sectionContentType = ContentTypeName.from( this.appKey, SECTION_TYPE );
         form.addFormItem( Input.create().
             name( "page" ).
             label( "Newsletter page" ).

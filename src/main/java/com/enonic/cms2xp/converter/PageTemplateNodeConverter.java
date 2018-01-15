@@ -23,6 +23,9 @@ import com.enonic.cms.core.structure.page.template.PageTemplateType;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
 import com.enonic.cms.core.structure.portlet.PortletKey;
 
+import static com.enonic.cms2xp.migrate.ExportData.PAGE_TYPE;
+import static com.enonic.cms2xp.migrate.ExportData.SECTION_TYPE;
+
 public final class PageTemplateNodeConverter
     extends AbstractNodeConverter
 {
@@ -68,10 +71,10 @@ public final class PageTemplateNodeConverter
         data.setInstant( ContentPropertyNames.CREATED_TIME, pageTemplateEntity.getTimestamp().toInstant() );
 
         final PropertySet subData = new PropertySet();
-        subData.setProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":page" ) );
+        subData.setProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":" + PAGE_TYPE ) );
         if ( pageTemplateEntity.getType() == PageTemplateType.SECTIONPAGE )
         {
-            subData.addProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":section" ) );
+            subData.addProperty( "supports", ValueFactory.newString( applicationKey.toString() + ":" + SECTION_TYPE ) );
         }
 
         data.setSet( ContentPropertyNames.DATA, subData );

@@ -34,6 +34,9 @@ import com.enonic.cms.core.structure.page.template.PageTemplateKey;
 import com.enonic.cms.core.structure.page.template.PageTemplateRegionEntity;
 import com.enonic.cms.core.structure.portlet.PortletEntity;
 
+import static com.enonic.cms2xp.migrate.ExportData.PAGE_TYPE;
+import static com.enonic.cms2xp.migrate.ExportData.SECTION_TYPE;
+
 public class MenuItemNodeConverter
     extends AbstractNodeConverter
 {
@@ -63,8 +66,8 @@ public class MenuItemNodeConverter
         this.pageTemplateResolver = pageTemplateResolver;
         this.portletToPartResolver = portletToPartResolver;
         this.nodeIdRegistry = nodeIdRegistry;
-        this.sectionType = ContentTypeName.from( this.applicationKey, "section" );
-        this.pageType = ContentTypeName.from( this.applicationKey, "page" );
+        this.sectionType = ContentTypeName.from( this.applicationKey, SECTION_TYPE );
+        this.pageType = ContentTypeName.from( this.applicationKey, PAGE_TYPE );
         this.urlType = ContentTypeName.from( this.applicationKey, "url" );
         this.config = config;
     }

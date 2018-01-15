@@ -69,6 +69,10 @@ public final class ExportData
 
     private static final String LIB_URLREDIRECT = "com.enonic.lib:urlredirect:" + LIB_URLREDIRECT_VERSION;
 
+    public static final String SECTION_TYPE = "cms2xp_section";
+
+    public static final String PAGE_TYPE = "cms2xp_page";
+
     private final MainConfig config;
 
     private final NodeExporter nodeExporter;
@@ -205,7 +209,7 @@ public final class ExportData
             build();
 
         final ContentType pageContentType = ContentType.create().
-            name( ContentTypeName.from( this.applicationKey, "page" ) ).
+            name( ContentTypeName.from( this.applicationKey, PAGE_TYPE ) ).
             displayName( "Page" ).
             description( "" ).
             createdTime( Instant.now() ).
@@ -227,7 +231,7 @@ public final class ExportData
             build();
 
         final ContentType sectionContentType = ContentType.create().
-            name( ContentTypeName.from( this.applicationKey, "section" ) ).
+            name( ContentTypeName.from( this.applicationKey, SECTION_TYPE ) ).
             displayName( "Section" ).
             description( "" ).
             createdTime( Instant.now() ).
