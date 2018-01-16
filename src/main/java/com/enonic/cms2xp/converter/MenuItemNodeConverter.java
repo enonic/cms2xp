@@ -82,6 +82,7 @@ public class MenuItemNodeConverter
         final boolean isShortcut = menuItem.getType() == MenuItemType.SHORTCUT;
         final boolean isUrl = menuItem.getType() == MenuItemType.URL;
         final boolean isDefaultPage = menuItem.getType() == MenuItemType.PAGE;
+        final boolean isLabel = menuItem.getType() == MenuItemType.LABEL;
         final ContentTypeName type;
         if ( menuItem.isSection() )
         {
@@ -90,6 +91,10 @@ public class MenuItemNodeConverter
         else if ( isUrl )
         {
             type = urlType;
+        }
+        else if ( isLabel )
+        {
+            type = ContentTypeName.folder();
         }
         else
         {
