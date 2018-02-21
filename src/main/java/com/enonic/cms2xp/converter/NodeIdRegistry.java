@@ -6,6 +6,7 @@ import java.util.Map;
 import com.enonic.xp.node.NodeId;
 
 import com.enonic.cms.core.content.ContentKey;
+import com.enonic.cms.core.content.category.CategoryKey;
 import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 
 public class NodeIdRegistry
@@ -13,6 +14,8 @@ public class NodeIdRegistry
     private final Map<ContentKey, NodeId> nodeIdByContentKeyMap = new HashMap<>();
 
     private final Map<MenuItemKey, NodeId> nodeIdByMenuKeyMap = new HashMap<>();
+
+    private final Map<CategoryKey, NodeId> nodeIdByCategoryKeyMap = new HashMap<>();
 
     public NodeId getNodeId( ContentKey contentKey )
     {
@@ -32,6 +35,17 @@ public class NodeIdRegistry
         {
             nodeId = new NodeId();
             nodeIdByMenuKeyMap.put( menuItemKey, nodeId );
+        }
+        return nodeId;
+    }
+
+    public NodeId getNodeId( final CategoryKey categoryKey )
+    {
+        NodeId nodeId = nodeIdByCategoryKeyMap.get( categoryKey );
+        if ( nodeId == null )
+        {
+            nodeId = new NodeId();
+            nodeIdByCategoryKeyMap.put( categoryKey, nodeId );
         }
         return nodeId;
     }

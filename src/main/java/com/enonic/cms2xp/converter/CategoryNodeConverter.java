@@ -18,15 +18,19 @@ public final class CategoryNodeConverter
 
     private final ApplicationKey applicationKey;
 
-    public CategoryNodeConverter( final ApplicationKey applicationKey, final MainConfig config )
+    private final NodeIdRegistry nodeIdRegistry;
+
+    public CategoryNodeConverter( final ApplicationKey applicationKey, final MainConfig config, final NodeIdRegistry nodeIdRegistry )
     {
         this.applicationKey = applicationKey;
         this.config = config;
+        this.nodeIdRegistry = nodeIdRegistry;
     }
 
     public Node toNode( final CategoryEntity category )
     {
-        return createNode( new NodeId(), category.getName(), toData( category ) );
+        final NodeId categoryNodeId = nodeIdRegistry.getNodeId( category.getKey() );
+        return createNode( categoryNodeId, category.getName(), toData( category ) );
     }
 
     private PropertyTree toData( final CategoryEntity category )

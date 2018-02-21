@@ -14,6 +14,7 @@ import com.google.common.collect.Ordering;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.CategoryNodeConverter;
+import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.converter.SiteNodeConverter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.xp.app.ApplicationKey;
@@ -60,14 +61,15 @@ public class CategoryExporter
     private final ContentFilter contentFilter;
 
     public CategoryExporter( final Session session, final NodeExporter nodeExporter, final ContentExporter contentExporter,
-                             final ApplicationKey applicationKey, final MainConfig config, final ContentFilter contentFilter )
+                             final ApplicationKey applicationKey, final MainConfig config, final ContentFilter contentFilter,
+                             final NodeIdRegistry nodeIdRegistry )
     {
         this.session = session;
         this.nodeExporter = nodeExporter;
         this.contentExporter = contentExporter;
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.config = config;
-        this.categoryNodeConverter = new CategoryNodeConverter( applicationKey, config );
+        this.categoryNodeConverter = new CategoryNodeConverter( applicationKey, config, nodeIdRegistry );
         this.contentFilter = contentFilter;
     }
 

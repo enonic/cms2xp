@@ -416,7 +416,7 @@ public final class ExportData
                                       imageDescriptionResolver );
         this.contentExporter = new ContentExporter( nodeExporter, fileBlobStore, contentNodeConverter, contentFilter );
         final CategoryExporter exporter =
-            new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config, contentFilter );
+            new CategoryExporter( session, nodeExporter, this.contentExporter, applicationKey, this.config, contentFilter, nodeIdRegistry );
 
         exporter.export( categories, ContentConstants.CONTENT_ROOT_PATH );
     }
