@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
@@ -38,6 +40,7 @@ import static java.util.Comparator.comparing;
 
 public class UserStoreExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( UserStoreExporter.class );
 
     private final NodeExporter nodeExporter;
 
@@ -82,6 +85,8 @@ public class UserStoreExporter
 
         for ( UserStoreEntity us : userStoreEntities )
         {
+            logger.info( "Exporting user store " + us.getName() );
+
             final UserStore userStore = converter.convert( us );
             final UserStoreKey key = us.getKey();
             this.userStores.put( key, userStore );

@@ -153,7 +153,6 @@ public final class ExportData
             //Writes additional export information
             nodeExporter.writeExportProperties( "6.0.0" );
 
-            logger.info( "Export completed successfully" );
         }
         catch ( Throwable t )
         {
@@ -460,6 +459,7 @@ public final class ExportData
 
     private void exportUserStores( final Session session )
     {
+        logger.info( "Exporting user stores..." );
         final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter, this.principalKeyResolver );
         exporter.export();
     }

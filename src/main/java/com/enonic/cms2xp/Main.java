@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -20,6 +22,7 @@ import com.enonic.cms2xp.config.ExcludeConfig;
 import com.enonic.cms2xp.config.IncludeConfig;
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.config.MainConfigLoader;
+import com.enonic.cms2xp.config.TargetConfig;
 import com.enonic.cms2xp.migrate.ExportData;
 import com.enonic.xp.toolbox.app.InitAppCommand;
 
@@ -29,6 +32,8 @@ public final class Main
     private final static String DEFAULT_APPLICATION_NAME = "com.enonic.xp.app.myApp";
 
     public static final String DEFAULT_APP_REPO = "starter-vanilla";
+
+    private static Logger logger;
 
     public static void main( final String... args )
         throws Exception
@@ -49,6 +54,19 @@ public final class Main
         final MainConfig config = loader.load();
         validateConfig( config );
 
+        setupLogger( config );
+
+        System.out.println( "CMS2XP - Export started" );
+        logger.info( "CMS2XP - Export started" );
+        System.out.println();
+        System.out.println( "Config path: " + configFile.getAbsolutePath() );
+        logger.info( "Config path: " + configFile.getAbsolutePath() );
+        if ( config.target.logFile != null && !config.target.logFile.isEmpty() )
+        {
+            System.out.println( "Logging path: " + config.target.logFile );
+        }
+        System.out.println();
+
         //TODO Remove
         FileUtils.deleteDirectory( config.target.exportDir );
         FileUtils.deleteDirectory( config.target.userExportDir );
@@ -67,12 +85,17 @@ public final class Main
         {
             final Duration duration = Duration.between( t1, Instant.now() );
             final String durationStr = LocalTime.MIDNIGHT.plus( duration ).format( DateTimeFormatter.ofPattern( "HH:mm:ss" ) );
-            System.out.printf( formatInstant( Instant.now() ) + " - Total time: " + durationStr );
+            System.out.println( "Export successful - Total time: " + durationStr );
+            final Logger logger = LoggerFactory.getLogger( Main.class );
+            logger.info( "Export completed successfully - Total time: " + durationStr );
+            logger.info( "----------------------------------------------------" );
         }
     }
 
     private static void initApp( final MainConfig config )
     {
+        logger.info( "Downloading application repo: " + config.target.applicationRepo );
+
         final InitAppCommand initAppCommand = new InitAppCommand();
         initAppCommand.destination = config.target.applicationDir.getAbsolutePath();
         initAppCommand.name = config.target.applicationName;
@@ -138,5 +161,23 @@ public final class Main
     {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" ).withZone( ZoneId.systemDefault() );
         return formatter.format( value );
+    }
+
+    private static void setupLogger( final MainConfig config )
+    {
+        final TargetConfig target = config.target;
+        final String logFile = StringUtils.trimToEmpty( target.logFile );
+        if ( !logFile.isEmpty() )
+        {
+            System.setProperty( "org.slf4j.simpleLogger.logFile", logFile );
+        }
+
+        System.setProperty( "org.slf4j.simpleLogger.showLogName", "false" );
+        System.setProperty( "org.slf4j.simpleLogger.showThreadName", "false" );
+        System.setProperty( "org.slf4j.simpleLogger.showDateTime", "true" );
+        System.setProperty( "org.slf4j.simpleLogger.dateTimeFormat", "HH:mm:ss.SSS" );
+//        System.setProperty( "org.slf4j.simpleLogger.log.com.enonic", "off" );
+
+        logger = LoggerFactory.getLogger( Main.class );
     }
 }

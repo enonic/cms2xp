@@ -131,7 +131,7 @@ public final class ContentNodeConverter
             {
                 if ( !car.getGroup().isBuiltIn() )
                 {
-                    System.err.println( "Principal not found: " + car.getGroup().getQualifiedName() );
+                    logger.warn( "Principal not found: " + car.getGroup().getQualifiedName() );
                 }
             }
         }

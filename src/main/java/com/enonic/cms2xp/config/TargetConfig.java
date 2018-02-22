@@ -25,4 +25,7 @@ public final class TargetConfig
     public boolean exportCmsKeyMixin;
 
     public boolean exportCmsMenuKeyMixin;
+
+    public String logFile;
+
 }

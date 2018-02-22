@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.enonic.cms2xp.config.MainConfig;
 import com.enonic.cms2xp.converter.MenuItemNodeConverter;
@@ -37,6 +39,8 @@ import static com.google.common.collect.Iterables.getFirst;
 
 public class SiteExporter
 {
+    private final static Logger logger = LoggerFactory.getLogger( SiteExporter.class );
+
     private final NodeExporter nodeExporter;
 
     private final SiteNodeConverter siteNodeConverter;
@@ -52,6 +56,8 @@ public class SiteExporter
     private final MainConfig config;
 
     private final Set<ContentKey> contentKeysMovedToSection;
+
+    private int menuCount = 0;
 
     public SiteExporter( final Session session, final NodeExporter nodeExporter, final ContentExporter contentExporter,
                          final File pageDirectory, final File partDirectory, final ApplicationKey applicationKey,
@@ -76,6 +82,8 @@ public class SiteExporter
 
         for ( SiteEntity siteEntity : siteEntities )
         {
+            logger.info( "Exporting site " + siteEntity.getName() );
+
             //Converts the site to a node
             Node siteNode = siteNodeConverter.convertToNode( siteEntity );
             siteNode = Node.create( siteNode ).
@@ -89,11 +97,16 @@ public class SiteExporter
             final Set<PortletKey> singleUsePortlets = findSingleUsePortlets( siteEntity.getPageTemplates() );
 
             final Node portletsNode = portletExporter.export( siteEntity, siteNode.path(), singleUsePortlets );
+            logger.info( "Exporting site portlets (" + siteEntity.getName() + ")" );
 
             final Node templatesNode = templateExporter.export( siteEntity, siteNode.path(), singleUsePortlets );
+            logger.info( "Exporting site templates (" + siteEntity.getName() + ")" );
 
             //Export site menu items
+            logger.info( "Exporting site menu items (" + siteEntity.getName() + ")" );
+            menuCount = 0;
             final List<Node> menuNodes = exportMenuItems( siteNode, siteEntity.getTopMenuItems() );
+
             menuNodes.add( portletsNode );
             menuNodes.add( templatesNode );
             nodeExporter.writeNodeOrderList( siteNode, Nodes.from( menuNodes ) );
@@ -133,6 +146,12 @@ public class SiteExporter
         final List<Node> nodes = new ArrayList<>();
         for ( MenuItemEntity menuItemEntity : menuItems )
         {
+            menuCount++;
+            if ( menuCount % 20 == 0 )
+            {
+                logger.info( menuCount + " menu items exported" );
+            }
+
             //Converts the menu item to a node
             Node menuItemNode = menuItemNodeConverter.convertToNode( menuItemEntity );
             final long order = menuItemEntity.getOrder().longValue();

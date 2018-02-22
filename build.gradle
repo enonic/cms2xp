@@ -30,9 +30,13 @@ mainClassName = 'com.enonic.cms2xp.Main'
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'org.slf4j:slf4j-simple:1.7.12'
-    compile 'com.enonic.cms:cms-core:4.7.18'
+    compile( 'com.enonic.cms:cms-core:4.7.18' ) {
+        exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+    }
     compile "com.enonic.xp:core-api:${xpVersion}"
-    compile "com.enonic.xp:toolbox:${xpVersion}"
+    compile( "com.enonic.xp:toolbox:${xpVersion}" ) {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
     compile 'com.samskivert:jmustache:1.10'
     compile 'org.jsoup:jsoup:1.8.3'
     testCompile 'junit:junit:4.12'

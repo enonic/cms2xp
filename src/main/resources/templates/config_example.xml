@@ -33,5 +33,6 @@
     <exportMenuMixin>true</exportMenuMixin>
     <moveHomeContentToSection>true</moveHomeContentToSection>
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
+    <logFile>cms2xp.log</logFile>
   </target>
 </config>

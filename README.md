@@ -24,12 +24,13 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.10.4 | 6.9.0 | [Download 0.10.4 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.4/cms2xp-0.10.4.zip) |
 | 0.10.5 | 6.9.0 | [Download 0.10.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.5/cms2xp-0.10.5.zip) |
 | 0.10.6 | 6.9.0 | [Download 0.10.6 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.6/cms2xp-0.10.6.zip) |
-| **0.10.7** | **6.9.0** | **[Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip)** |
+| 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
+| **0.10.8** | **6.9.0** | **[Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip)** |
 
 ## Download
 
 
-[Download the latest version: 0.10.7](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip)
+[Download the latest version: 0.10.8](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip)
 
 ## Building
 
@@ -104,6 +105,7 @@ Example of config.xml:
     <moveHomeContentToSection>true</moveHomeContentToSection>
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
     <exportCmsMenuKeyMixin>true</exportCmsMenuKeyMixin>
+    <logFile>cms2xp.log</logFile>
   </target>
 </config>
 ```
@@ -146,6 +148,7 @@ There are also some optional switches for altering the output.
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
 | exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. Also the *Home* menu-item key where the content is published will be included. Default is "false" | "true" |
 | exportCmsMenuKeyMixin | Whether or not include the cmsMenu mixin and add the menu item key as a property in every content exported. Default is "false" | "true" |
+| logFile | Path of file where to write export log info. If not set it will send log info to standard output. |  |
 
 
 
