@@ -2,12 +2,8 @@ package com.enonic.cms2xp.converter;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -26,11 +22,7 @@ import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.content.ContentKey;
-import com.enonic.cms.core.content.category.CategoryKey;
-import com.enonic.cms.core.structure.TemplateParameter;
-import com.enonic.cms.core.structure.TemplateParameterType;
 import com.enonic.cms.core.structure.menuitem.MenuItemEntity;
-import com.enonic.cms.core.structure.menuitem.MenuItemKey;
 import com.enonic.cms.core.structure.menuitem.MenuItemType;
 import com.enonic.cms.core.structure.menuitem.section.SectionContentEntity;
 import com.enonic.cms.core.structure.page.PageEntity;
@@ -45,8 +37,6 @@ import static com.enonic.cms2xp.migrate.ExportData.SECTION_TYPE;
 public class MenuItemNodeConverter
     extends AbstractNodeConverter
 {
-    private final static Logger logger = LoggerFactory.getLogger( MenuItemNodeConverter.class );
-
     private final ApplicationKey applicationKey;
 
     private final PageTemplateResolver pageTemplateResolver;
@@ -54,6 +44,8 @@ public class MenuItemNodeConverter
     private final PortletToPartResolver portletToPartResolver;
 
     private final NodeIdRegistry nodeIdRegistry;
+
+    private final PortletConfigConverter portletConfigConverter;
 
     private final ContentTypeName sectionType;
 
@@ -75,6 +67,7 @@ public class MenuItemNodeConverter
         this.pageType = ContentTypeName.from( this.applicationKey, PAGE_TYPE );
         this.urlType = ContentTypeName.from( this.applicationKey, "url" );
         this.config = config;
+        this.portletConfigConverter = new PortletConfigConverter( nodeIdRegistry );
     }
 
     public Node convertToNode( final MenuItemEntity menuItemEntity )
@@ -214,7 +207,7 @@ public class MenuItemNodeConverter
 
                     final String partName = portletToPartResolver.partNameFromPortlet( portlet );
                     partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
-                    partComponentData.setSet( "config", convertPortletParametersToPartConfig( portlet ) );
+                    partComponentData.setSet( "config", portletConfigConverter.convertPortletParametersToPartConfig( portlet ) );
                     componentData.setSet( "PartComponent", partComponentData );
                     regionsData.addSet( "component", componentData );
                 }
@@ -238,52 +231,6 @@ public class MenuItemNodeConverter
         data.setSet( ContentPropertyNames.EXTRA_DATA, extraData );
 
         return data;
-    }
-
-    private PropertySet convertPortletParametersToPartConfig( final PortletEntity portlet )
-    {
-        final PropertySet params = new PropertySet();
-        final Map<String, TemplateParameter> templateParams = portlet.getTemplateParameters();
-        for ( final String paramName : templateParams.keySet() )
-        {
-            final TemplateParameter templateParam = templateParams.get( paramName );
-            final String value = templateParam.getValue();
-            if ( value == null || value.trim().isEmpty() )
-            {
-                continue;
-            }
-            try
-            {
-                final TemplateParameterType type = templateParam.getType() != null ? templateParam.getType() : TemplateParameterType.OBJECT;
-                switch ( type )
-                {
-                    case CATEGORY:
-                        final CategoryKey categoryKey = new CategoryKey( value );
-                        params.setReference( paramName, new Reference( nodeIdRegistry.getNodeId( categoryKey ) ) );
-                        break;
-
-                    case CONTENT:
-                        final ContentKey contentKey = new ContentKey( value );
-                        params.setReference( paramName, new Reference( nodeIdRegistry.getNodeId( contentKey ) ) );
-                        break;
-
-                    case PAGE:
-                        final MenuItemKey menu = new MenuItemKey( value );
-                        params.setReference( paramName, new Reference( nodeIdRegistry.getNodeId( menu ) ) );
-                        break;
-
-                    case OBJECT:
-                        params.setString( paramName, value );
-                        break;
-                }
-            }
-            catch ( Exception e )
-            {
-                logger.warn( "Could not convert parameter '" + paramName + "' in portlet '" + portlet.getName() + "': " + value );
-                params.setString( paramName, value );
-            }
-        }
-        return params;
     }
 
     private void toCmsMenuKeyExtraData( final MenuItemEntity menuItem, final PropertySet extraData )

@@ -69,7 +69,7 @@ public class SiteExporter
         this.siteNodeConverter = new SiteNodeConverter( applicationKey );
         this.portletExporter = new PortletExporter( session, partDirectory, nodeExporter, applicationKey );
         this.templateExporter =
-            new TemplateExporter( nodeExporter, pageDirectory, applicationKey, pageTemplateResolver, this.portletExporter );
+            new TemplateExporter( nodeExporter, pageDirectory, applicationKey, pageTemplateResolver, this.portletExporter, nodeIdRegistry );
         this.menuItemNodeConverter =
             new MenuItemNodeConverter( applicationKey, pageTemplateResolver, this.portletExporter, nodeIdRegistry, config );
         this.config = config;

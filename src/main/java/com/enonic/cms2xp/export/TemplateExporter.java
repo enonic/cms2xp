@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
+import com.enonic.cms2xp.converter.NodeIdRegistry;
 import com.enonic.cms2xp.converter.PageTemplateNodeConverter;
 import com.enonic.cms2xp.converter.SiteTemplatesNodeConverter;
 import com.enonic.cms2xp.converter.TemplateParameterConverter;
@@ -57,11 +58,13 @@ public class TemplateExporter
     private final ApplicationKey applicationKey;
 
     public TemplateExporter( final NodeExporter nodeExporter, final File pageDirectory, final ApplicationKey applicationKey,
-                             final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver )
+                             final PageTemplateResolver pageTemplateResolver, final PortletToPartResolver portletToPartResolver,
+                             final NodeIdRegistry nodeIdRegistry )
     {
         this.nodeExporter = nodeExporter;
         this.applicationKey = applicationKey;
-        this.pageTemplateNodeConverter = new PageTemplateNodeConverter( applicationKey, portletToPartResolver, pageTemplateResolver );
+        this.pageTemplateNodeConverter =
+            new PageTemplateNodeConverter( applicationKey, portletToPartResolver, pageTemplateResolver, nodeIdRegistry );
         this.pageDirectory = pageDirectory;
         this.pageTemplateResolver = pageTemplateResolver;
         this.xsltExported = new HashMap<>();

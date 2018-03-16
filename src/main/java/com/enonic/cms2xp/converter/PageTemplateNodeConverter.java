@@ -39,12 +39,15 @@ public final class PageTemplateNodeConverter
 
     private final PageTemplateResolver pageTemplateResolver;
 
+    private final PortletConfigConverter portletConfigConverter;
+
     public PageTemplateNodeConverter( final ApplicationKey applicationKey, final PortletToPartResolver portletToPartResolver,
-                                      final PageTemplateResolver pageTemplateResolver )
+                                      final PageTemplateResolver pageTemplateResolver, final NodeIdRegistry nodeIdRegistry )
     {
         this.applicationKey = applicationKey;
         this.portletToPartResolver = portletToPartResolver;
         this.pageTemplateResolver = pageTemplateResolver;
+        this.portletConfigConverter = new PortletConfigConverter( nodeIdRegistry );
     }
 
     public Node toNode( final PageTemplateEntity pageTemplateEntity, final String pageName, final Set<PortletKey> singleUsePortlets )
@@ -111,7 +114,7 @@ public final class PageTemplateNodeConverter
                     componentData.setString( "type", FRAGMENT_COMPONENT );
                     final PropertySet fragmentData = new PropertySet();
                     fragmentData.setString( "name", portlet.getName() );
-                    fragmentData.setSet( "config", new PropertySet() );
+                    fragmentData.setSet( "config", portletConfigConverter.convertPortletParametersToPartConfig( portlet ) );
                     final NodeId fragmentNodeId = portletToPartResolver.fragmentReferenceFromPortlet( portlet.getPortletKey() );
                     fragmentData.setReference( "fragment", new Reference( fragmentNodeId ) );
                     componentData.setSet( FRAGMENT_COMPONENT, fragmentData );
@@ -121,7 +124,7 @@ public final class PageTemplateNodeConverter
                     componentData.setString( "type", PART_COMPONENT );
                     final PropertySet partComponentData = new PropertySet();
                     partComponentData.setString( "name", portlet.getName() );
-                    partComponentData.setSet( "config", new PropertySet() );
+                    partComponentData.setSet( "config", portletConfigConverter.convertPortletParametersToPartConfig( portlet ) );
                     final String partName = portletToPartResolver.partNameFromPortlet( portlet );
                     partComponentData.setString( "template", applicationKey.toString() + ":" + partName );
                     componentData.setSet( PART_COMPONENT, partComponentData );
