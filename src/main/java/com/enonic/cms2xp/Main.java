@@ -94,6 +94,11 @@ public final class Main
 
     private static void initApp( final MainConfig config )
     {
+        if ( !config.target.exportApplication )
+        {
+            logger.info( "Skip generating application" );
+            return;
+        }
         logger.info( "Downloading application repo: " + config.target.applicationRepo );
 
         final InitAppCommand initAppCommand = new InitAppCommand();
@@ -111,7 +116,8 @@ public final class Main
         Preconditions.checkArgument( config.source.blobStoreDir.exists(), "Blob store directory '%s' not found",
                                      config.source.blobStoreDir.getAbsolutePath() );
 
-        Preconditions.checkArgument( config.target.applicationDir != null, "Missing parameter 'applicationDir' in config.xml" );
+        Preconditions.checkArgument( !config.target.exportApplication || config.target.applicationDir != null,
+                                     "Missing parameter 'applicationDir' in config.xml" );
         Preconditions.checkArgument( config.target.exportDir != null, "Missing parameter 'exportDir' in config.xml" );
 
         if ( config.target.applicationName == null )

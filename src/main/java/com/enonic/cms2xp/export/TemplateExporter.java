@@ -139,7 +139,10 @@ public class TemplateExporter
 
     private void exportAsPage( final PageTemplateEntity pageTemplateEntity, final String pageName )
     {
-        //Prepares the mappings
+        if ( pageDirectory == null )
+        {
+            return;
+        }
         final String pageTemplateDisplayName = pageName;// pageTemplateEntity.getName();
 
         final List<String> pageTemplateRegions = pageTemplateEntity.getPageTemplateRegions().

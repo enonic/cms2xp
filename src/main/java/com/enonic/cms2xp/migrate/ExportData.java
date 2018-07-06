@@ -244,15 +244,21 @@ public final class ExportData
             add( pageContentType ).add( sectionContentType ).
             build();
 
-        //Exports the ContentTypes
-        logger.info( "Exporting content types..." );
-        final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
-        new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
+        if ( config.target.exportApplication )
+        {
+            logger.info( "Exporting content types..." );
+            final Path contentTypesPath = config.target.applicationDir.toPath().resolve( "src/main/resources/site/content-types" );
+            new ContentTypeExporter( contentTypesPath ).export( contentTypeList );
+        }
     }
 
     private void includeLibs()
         throws IOException
     {
+        if ( !config.target.exportApplication )
+        {
+            return;
+        }
         logger.info( "Including external libs..." );
         if ( config.target.exportMenuMixin )
         {
@@ -264,6 +270,10 @@ public final class ExportData
     private void includeMappings()
         throws IOException
     {
+        if ( !config.target.exportApplication )
+        {
+            return;
+        }
         logger.info( "Including controller mappings..." );
         addMapping( "urlredirect" );
     }
@@ -271,6 +281,10 @@ public final class ExportData
     private void exportMixins()
         throws IOException
     {
+        if ( !config.target.exportApplication )
+        {
+            return;
+        }
         logger.info( "Exporting mixins..." );
         if ( config.target.exportMenuMixin )
         {
@@ -432,8 +446,18 @@ public final class ExportData
 
         //Converts and exports the Sites
         logger.info( "Exporting sites and children..." );
-        final File pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
-        final File partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
+        final File pagesDirectory;
+        final File partsDirectory;
+        if ( config.target.exportApplication )
+        {
+            pagesDirectory = new File( config.target.applicationDir, "src/main/resources/site/pages" );
+            partsDirectory = new File( config.target.applicationDir, "src/main/resources/site/parts" );
+        }
+        else
+        {
+            pagesDirectory = null;
+            partsDirectory = null;
+        }
         new SiteExporter( session, nodeExporter, this.contentExporter, pagesDirectory, partsDirectory, this.applicationKey,
                           this.nodeIdRegistry, config ).
             export( siteEntities, ContentConstants.CONTENT_ROOT_PATH );
@@ -441,6 +465,10 @@ public final class ExportData
 
     private void exportResources()
     {
+        if ( !config.target.exportApplication )
+        {
+            return;
+        }
         logger.info( "Exporting resources..." );
         File source = config.source.resourcesDir.toPath().resolve( "_public" ).toFile();
         File target = new File( config.target.applicationDir, "src/main/resources/site/assets" );

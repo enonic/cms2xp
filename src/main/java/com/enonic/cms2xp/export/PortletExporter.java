@@ -142,6 +142,10 @@ public class PortletExporter
 
     private void exportAsPart( final PortletEntity portletEntity, final String partName )
     {
+        if ( target == null )
+        {
+            return;
+        }
         final String portletDisplayName = partName; // portletEntity.getName();
 
         final Map<String, Object> mapping = new HashMap<>();

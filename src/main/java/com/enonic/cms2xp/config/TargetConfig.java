@@ -14,6 +14,8 @@ public final class TargetConfig
 
     public String applicationRepo;
 
+    public boolean exportApplication = true;
+
     @Deprecated
     public boolean exportPublishDateMixin;
 

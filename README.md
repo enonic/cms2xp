@@ -101,6 +101,7 @@ Example of config.xml:
     <applicationDir>./application</applicationDir>
     <applicationName>com.enonic.xp.app.myApp</applicationName>
     <applicationRepo>starter-vanilla</applicationRepo>
+    <exportApplication>true</exportApplication>
     <exportMenuMixin>true</exportMenuMixin>
     <moveHomeContentToSection>true</moveHomeContentToSection>
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
@@ -143,6 +144,7 @@ There are also some optional switches for altering the output.
 | applicationDir | Directory path where to generate the XP application. | "./myapp" |
 | applicationName | Name for the generated XP application. | "com.acme.myapp" |
 | applicationRepo | Name of an XP starter app to be used as a skeleton for the generated app. Default is "starter-vanilla". | "starter-vanilla" |
+| exportApplication | If set to "false" the XP application will not be generated. | "true" |
 | ~~exportPublishDateMixin~~ | ~~Whether or not include the publish mixin in the application and content exported.~~ This option is deprecated. CMS publish fields are now exported to map with XP publish fields.  |  |
 | exportMenuMixin | Whether or not convert CMS menu properties ('Menu name', 'Show in menu'), and include the menu mixin in the application. Default is "true" | "false" |
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
