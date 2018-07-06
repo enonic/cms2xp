@@ -88,6 +88,7 @@ Example of config.xml:
       <site>42</site>
       <contentPath>/old_content</contentPath>
       <contentPath>/images/not_in_use</contentPath>
+      <userStore>legacyUserStore</userStore>
     </exclude>
     <include>
       <!-- specify either exclude or include, but not both at the same time -->
@@ -126,6 +127,7 @@ The source parameters include the details necessary for connecting to the CMS da
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
 | exclude/site | Site key or name in the CMS to be excluded from the export. Optional. | "old_Site", "33" |
 | exclude/contentPath | Content path prefix in the CMS to exclude from the export. If the path corresponds with a category, none of its subcategories will be exported. Optional. | "MyContent/old/data" |
+| exclude/userStore | User store key or name to exclude from the export. Optional. | "my_user_store", "42" |
 | include/site | Site key or name in the CMS to be included in the export. Optional. | "new_Site", "42" |
 | include/contentPath | Content path prefix in the CMS to include in the export. If the path corresponds with a category, all its subcategories will be exported. Optional. | "MyContent/new/data" |
 
@@ -219,3 +221,7 @@ In addition, if ``<moveHomeContentToSection>`` is set to true in the cms2xp conf
 - CMS global groups is currently converted to roles in XP. But due to roles not allowing to be member of other roles in XP, the memberships of global groups are skipped on the exported data.
 
 For questions, feature requests, or reporting issues, please use the [Enonic Discuss forum](https://discuss.enonic.com/).
+
+## Change log
+
+[See change log for the released versions here](https://github.com/enonic/cms2xp/releases)

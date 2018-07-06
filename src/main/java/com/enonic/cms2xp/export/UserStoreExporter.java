@@ -56,13 +56,16 @@ public class UserStoreExporter
 
     private final PrincipalKeyResolver principalKeyResolver;
 
+    private final UserStoreFilter userStoreFilter;
+
     private static final Comparator<PrincipalKey> PRINCIPAL_KEY_COMPARATOR = comparing( PrincipalKey::toString );
 
     private static final Comparator<GroupKey> GROUP_KEY_COMPARATOR = comparing( GroupKey::toString );
 
     private static final Comparator<UserKey> USER_KEY_COMPARATOR = comparing( UserKey::toString );
 
-    public UserStoreExporter( final Session session, final NodeExporter nodeExporter, final PrincipalKeyResolver principalKeyResolver )
+    public UserStoreExporter( final Session session, final NodeExporter nodeExporter, final PrincipalKeyResolver principalKeyResolver,
+                              final UserStoreFilter userStoreFilter )
     {
         this.session = session;
         this.nodeExporter = nodeExporter;
@@ -71,6 +74,7 @@ public class UserStoreExporter
         this.userStoreMembers = new HashMap<>();
         this.members = TreeMultimap.create( PRINCIPAL_KEY_COMPARATOR, PRINCIPAL_KEY_COMPARATOR );
         this.principalKeyResolver = principalKeyResolver;
+        this.userStoreFilter = userStoreFilter;
     }
 
     public void export()
@@ -85,6 +89,11 @@ public class UserStoreExporter
 
         for ( UserStoreEntity us : userStoreEntities )
         {
+            if ( userStoreFilter.excludeUserStore( us ) )
+            {
+                logger.info( "User store '" + us.getName() + "' has been configured to be excluded. Skipping user store from export" );
+                continue;
+            }
             logger.info( "Exporting user store " + us.getName() );
 
             final UserStore userStore = converter.convert( us );

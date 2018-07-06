@@ -35,6 +35,7 @@ import com.enonic.cms2xp.export.PrincipalKeyResolver;
 import com.enonic.cms2xp.export.SiteExporter;
 import com.enonic.cms2xp.export.SiteFilter;
 import com.enonic.cms2xp.export.UserStoreExporter;
+import com.enonic.cms2xp.export.UserStoreFilter;
 import com.enonic.cms2xp.hibernate.CategoryRetriever;
 import com.enonic.cms2xp.hibernate.ContentTypeRetriever;
 import com.enonic.cms2xp.hibernate.HibernateSessionProvider;
@@ -488,7 +489,8 @@ public final class ExportData
     private void exportUserStores( final Session session )
     {
         logger.info( "Exporting user stores..." );
-        final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter, this.principalKeyResolver );
+        final UserStoreFilter userStoreFilter = new UserStoreFilter( config.source.exclude );
+        final UserStoreExporter exporter = new UserStoreExporter( session, userNodeExporter, this.principalKeyResolver, userStoreFilter );
         exporter.export();
     }
 }

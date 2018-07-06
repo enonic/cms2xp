@@ -146,6 +146,10 @@ public final class Main
         {
             config.source.exclude.site = new String[0];
         }
+        if ( config.source.exclude.userStore == null )
+        {
+            config.source.exclude.userStore = new String[0];
+        }
 
         if ( config.source.include.contentPath.length > 0 && config.source.exclude.contentPath.length > 0 )
         {
