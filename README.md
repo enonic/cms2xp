@@ -7,6 +7,10 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 <img align="right" style="margin-top:10px;" alt="Enonic XP" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-xp-shield-logo.svg" width="200">  
 <br/><br/>
 
+## Download
+
+[Download the latest version: 0.10.9](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip)
+
 ## Releases
 
 | CMS2XP version | Required XP version | Download |
@@ -25,12 +29,13 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.10.5 | 6.9.0 | [Download 0.10.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.5/cms2xp-0.10.5.zip) |
 | 0.10.6 | 6.9.0 | [Download 0.10.6 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.6/cms2xp-0.10.6.zip) |
 | 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
-| **0.10.8** | **6.9.0** | **[Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip)** |
+| 0.10.8 | 6.9.0 | [Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip) |
+| **0.10.9** | **6.9.0** | **[Download 0.10.9 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip)** |
 
-## Download
 
+## Change log
 
-[Download the latest version: 0.10.8](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip)
+[See change log for the released versions here](https://github.com/enonic/cms2xp/releases)
 
 ## Building
 
@@ -44,7 +49,7 @@ Build all code and run all tests including integration tests:
 
     gradle build
    
-A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.6.zip```
+A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.9.zip```
    
 
 ## Running
@@ -221,7 +226,3 @@ In addition, if ``<moveHomeContentToSection>`` is set to true in the cms2xp conf
 - CMS global groups is currently converted to roles in XP. But due to roles not allowing to be member of other roles in XP, the memberships of global groups are skipped on the exported data.
 
 For questions, feature requests, or reporting issues, please use the [Enonic Discuss forum](https://discuss.enonic.com/).
-
-## Change log
-
-[See change log for the released versions here](https://github.com/enonic/cms2xp/releases)
