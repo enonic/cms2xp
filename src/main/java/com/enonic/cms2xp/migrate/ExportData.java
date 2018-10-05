@@ -295,6 +295,10 @@ public final class ExportData
         {
             exportMixin( "cmsContent" );
         }
+        if ( config.target.exportCmsImageMixin )
+        {
+            exportMixin( "cmsImage" );
+        }
         if ( config.target.exportCmsMenuKeyMixin )
         {
             exportMixin( "cmsMenu" );

@@ -70,7 +70,10 @@ public final class Main
         //TODO Remove
         FileUtils.deleteDirectory( config.target.exportDir );
         FileUtils.deleteDirectory( config.target.userExportDir );
-        FileUtils.deleteDirectory( config.target.applicationDir );
+        if ( config.target.exportApplication )
+        {
+            FileUtils.deleteDirectory( config.target.applicationDir );
+        }
 
         //Initiates the application structure
         initApp( config );

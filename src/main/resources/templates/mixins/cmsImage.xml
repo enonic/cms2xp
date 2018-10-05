@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mixin>
+  <display-name>CMS Image</display-name>
+  <items>
+    <input type="ContentSelector" name="relatedFile ">
+      <label>Related file</label>
+      <occurrences minimum="0" maximum="0"/>
+    </input>
+  </items>
+</mixin>

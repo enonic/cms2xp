@@ -112,6 +112,7 @@ Example of config.xml:
     <moveHomeContentToSection>true</moveHomeContentToSection>
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
     <exportCmsMenuKeyMixin>true</exportCmsMenuKeyMixin>
+    <exportCmsImageMixin>true</exportCmsImageMixin>
     <logFile>cms2xp.log</logFile>
   </target>
 </config>
@@ -157,6 +158,7 @@ There are also some optional switches for altering the output.
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
 | exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. Also the *Home* menu-item key where the content is published will be included. Default is "false" | "true" |
 | exportCmsMenuKeyMixin | Whether or not include the cmsMenu mixin and add the menu item key as a property in every content exported. Default is "false" | "true" |
+| exportCmsImageMixin | Whether or not include the cmsImage mixin and add the "Related file" field from CMS in every image exported. Default is "true" | "false" |
 | logFile | Path of file where to write export log info. If not set log info will be sent to standard output. |  |
 
 

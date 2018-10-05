@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jdom.Document;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ import com.enonic.xp.security.acl.Permission;
 import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.content.ContentEntity;
+import com.enonic.cms.core.content.ContentKey;
 import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.access.ContentAccessEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
@@ -250,12 +252,44 @@ public final class ContentNodeConverter
             {
                 logger.info( "Unsupported ContentData: " + content.getClass().getSimpleName() );
             }
+
+            final ContentTypeEntity contentType = mainVersion.getContent().getCategory().getContentType();
+
+            if ( config.target.exportCmsImageMixin && contentType.getContentHandlerName() == ContentHandlerName.IMAGE )
+            {
+                final Set<ContentKey> relatedFileContentKeys = contentData.resolveRelatedContentKeys();
+                if ( !relatedFileContentKeys.isEmpty() )
+                {
+                    addImageRelatedFiles( relatedFileContentKeys, extraData );
+                }
+            }
         }
         catch ( Exception e )
         {
             logger.warn( "Cannot get ContentData from '" + content.getPathAsString() + "'", e );
         }
         return data;
+    }
+
+    private void addImageRelatedFiles( final Collection<ContentKey> relatedContentKeys, final PropertySet extraData )
+    {
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+
+        final PropertySet cmsImage = new PropertySet();
+        for ( ContentKey contentKey : relatedContentKeys )
+        {
+            final NodeId contentId = this.nodeIdRegistry.getNodeId( contentKey );
+            cmsImage.addReference( "relatedFile", Reference.from( contentId.toString() ) );
+        }
+
+        PropertySet appData = extraData.getSet( appId );
+        if ( appData == null )
+        {
+            appData = new PropertySet();
+            extraData.addSet( appId, appData );
+        }
+
+        appData.setSet( "cmsImage", cmsImage );
     }
 
     private void addPublishInfo( final ContentEntity content, final PropertyTree contentAsData )
