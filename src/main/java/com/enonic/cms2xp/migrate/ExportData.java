@@ -303,6 +303,10 @@ public final class ExportData
         {
             exportMixin( "cmsMenu" );
         }
+        if ( config.target.exportCmsStatusMixin )
+        {
+            exportMixin( "cmsStatus" );
+        }
     }
 
     private void exportMixin( final String name )

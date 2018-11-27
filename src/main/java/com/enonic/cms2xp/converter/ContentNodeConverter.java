@@ -37,6 +37,7 @@ import com.enonic.xp.util.Reference;
 
 import com.enonic.cms.core.content.ContentEntity;
 import com.enonic.cms.core.content.ContentKey;
+import com.enonic.cms.core.content.ContentStatus;
 import com.enonic.cms.core.content.ContentVersionEntity;
 import com.enonic.cms.core.content.access.ContentAccessEntity;
 import com.enonic.cms.core.content.contentdata.ContentData;
@@ -263,12 +264,36 @@ public final class ContentNodeConverter
                     addImageRelatedFiles( relatedFileContentKeys, extraData );
                 }
             }
+
+            if ( config.target.exportCmsStatusMixin )
+            {
+                addCmsStatus( mainVersion.getStatus(), extraData );
+            }
         }
         catch ( Exception e )
         {
             logger.warn( "Cannot get ContentData from '" + content.getPathAsString() + "'", e );
         }
         return data;
+    }
+
+    private void addCmsStatus( final ContentStatus status, final PropertySet extraData )
+    {
+        if ( status == null )
+        {
+            return;
+        }
+
+        final String appId = this.applicationKey.toString().replace( ".", "-" );
+        PropertySet appData = extraData.getSet( appId );
+        if ( appData == null )
+        {
+            appData = new PropertySet();
+            extraData.addSet( appId, appData );
+        }
+        final PropertySet cmsStatus = new PropertySet();
+        cmsStatus.setString( "status", status.getName() );
+        appData.setSet( "cmsStatus", cmsStatus );
     }
 
     private void addImageRelatedFiles( final Collection<ContentKey> relatedContentKeys, final PropertySet extraData )

@@ -15,19 +15,6 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 
 | CMS2XP version | Required XP version | Download |
 | -------------- | ------------------- | -------- |
-| 0.7.5 | 6.0.0 | [Download 0.7.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.7.5/cms2xp-0.7.5.zip) |
-| 0.8.0 | 6.0.0 | [Download 0.8.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.8.0/cms2xp-0.8.0.zip) |
-| 0.8.1 | 6.0.0 | [Download 0.8.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.8.1/cms2xp-0.8.1.zip) |
-| 0.9.0 | 6.9.0 | [Download 0.9.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.9.0/cms2xp-0.9.0.zip) |
-| 0.9.1 | 6.9.0 | [Download 0.9.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.9.1/cms2xp-0.9.1.zip) |
-| 0.9.2 | 6.9.0 | [Download 0.9.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.9.2/cms2xp-0.9.2.zip) |
-| 0.10.0 | 6.9.0 | [Download 0.10.0 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.0/cms2xp-0.10.0.zip) |
-| 0.10.1 | 6.9.0 | [Download 0.10.1 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.1/cms2xp-0.10.1.zip) |
-| 0.10.2 | 6.9.0 | [Download 0.10.2 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.2/cms2xp-0.10.2.zip) |
-| 0.10.3 | 6.9.0 | [Download 0.10.3 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.3/cms2xp-0.10.3.zip) |
-| 0.10.4 | 6.9.0 | [Download 0.10.4 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.4/cms2xp-0.10.4.zip) |
-| 0.10.5 | 6.9.0 | [Download 0.10.5 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.5/cms2xp-0.10.5.zip) |
-| 0.10.6 | 6.9.0 | [Download 0.10.6 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.6/cms2xp-0.10.6.zip) |
 | 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
 | 0.10.8 | 6.9.0 | [Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip) |
 | 0.10.9 | 6.9.0 | [Download 0.10.9 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip) |
@@ -114,6 +101,7 @@ Example of config.xml:
     <exportCmsKeyMixin>false</exportCmsKeyMixin>
     <exportCmsMenuKeyMixin>true</exportCmsMenuKeyMixin>
     <exportCmsImageMixin>true</exportCmsImageMixin>
+    <exportCmsStatusMixin>true</exportCmsStatusMixin>
     <logFile>cms2xp.log</logFile>
   </target>
 </config>
@@ -160,6 +148,7 @@ There are also some optional switches for altering the output.
 | exportCmsKeyMixin | Whether or not include the cmsContent mixin and add the content key (or category key) as a property in every content exported. Also the *Home* menu-item key where the content is published will be included. Default is "false" | "true" |
 | exportCmsMenuKeyMixin | Whether or not include the cmsMenu mixin and add the menu item key as a property in every content exported. Default is "false" | "true" |
 | exportCmsImageMixin | Whether or not include the cmsImage mixin and add the "Related file" field from CMS in every image exported. Default is "true" | "false" |
+| exportCmsStatusMixin | Whether or not include the cmsStatus mixin and add the "Content Status" field from CMS in every content exported. Default is "true" | "false" |
 | logFile | Path of file where to write export log info. If not set log info will be sent to standard output. |  |
 
 
@@ -222,6 +211,7 @@ See XP documentation for more details about the [import](http://xp.readthedocs.i
 
 There are some remarks and limitations on the exported data:
 - The source CMS data must be from Enonic CMS version 4.7. To convert from an older installation (e.g. 4.5.x, 4.4.x) it is necessary to first upgrade to the latest CMS 4.7 version.
+- Only the 'main' version of each content is exported (not its whole version history).
 - The Menu tree of the sites is exported maintaining the same structure. CMS page templates are converted to XP page-template, and portlets are converted to XP fragments. 
 But the parts and pages generated in the app are placeholders. The xsl logic and datasources from CMS is currently **not** converted to XP.
 - CMS section does not have an equivalent in XP. Content published in a section is referenced in a "sectionContents" property of the section content type. 

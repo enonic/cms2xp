@@ -30,6 +30,8 @@ public final class TargetConfig
 
     public boolean exportCmsImageMixin = true;
 
+    public boolean exportCmsStatusMixin = true;
+
     public String logFile;
 
 }
