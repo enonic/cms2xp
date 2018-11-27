@@ -110,7 +110,6 @@ public class MenuItemNodeConverter
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, menuItem.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
-        //TODO No created time info?
         data.setInstant( ContentPropertyNames.CREATED_TIME, menuItem.getTimestamp().toInstant() );
 
         final PropertySet subData = new PropertySet();

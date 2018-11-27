@@ -38,14 +38,13 @@ public class SiteNodeConverter
         data.setInstant( ContentPropertyNames.MODIFIED_TIME, siteEntity.getTimestamp().toInstant() );
         data.setString( ContentPropertyNames.MODIFIER, SUPER_USER_KEY );
         data.setString( ContentPropertyNames.CREATOR, SUPER_USER_KEY );
-        //TODO No created time info?
         data.setInstant( ContentPropertyNames.CREATED_TIME, siteEntity.getTimestamp().toInstant() );
 
         final PropertySet siteConfig = new PropertySet();
         siteConfig.setProperty( "applicationKey", ValueFactory.newString( applicationKey.toString() ) );
         siteConfig.setProperty( "config", ValueFactory.newPropertySet( new PropertySet() ) );
         final PropertySet subData = new PropertySet();
-        subData.setProperty( "description", ValueFactory.newString( siteEntity.getName() ) ); //TODO No description?
+        subData.setProperty( "description", ValueFactory.newString( siteEntity.getName() ) );
         subData.setProperty( "siteConfig", ValueFactory.newPropertySet( siteConfig ) );
         data.setSet( ContentPropertyNames.DATA, subData );
 

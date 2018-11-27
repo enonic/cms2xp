@@ -67,7 +67,6 @@ public final class Main
         }
         System.out.println();
 
-        //TODO Remove
         FileUtils.deleteDirectory( config.target.exportDir );
         FileUtils.deleteDirectory( config.target.userExportDir );
         if ( config.target.exportApplication )

@@ -63,13 +63,13 @@ public class DataEntryValuesConverter
 
         switch ( dataEntry.getType() )
         {
-            case BINARY: //TODO
+            case BINARY:
                 break;
             case BOOLEAN:
                 return single( toValue( (BooleanDataEntry) dataEntry ) );
             case DATE:
                 return single( toValue( (DateDataEntry) dataEntry ) );
-            case GROUP: //TODO
+            case GROUP:
                 //Obsolete?
                 break;
             case IMAGES:

@@ -602,7 +602,6 @@ public final class ContentTypeConverter
 
     private void convertMultipleChoiceEntry( final MultipleChoiceDataEntryConfig entry, final Input.Builder input )
     {
-        // TODO ignore?
         input.inputType( InputTypeName.COMBO_BOX );
     }
 

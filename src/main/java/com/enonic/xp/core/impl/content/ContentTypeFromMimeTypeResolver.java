@@ -79,7 +79,6 @@ public final class ContentTypeFromMimeTypeResolver
         MAP.put( "application/msword", ContentTypeName.documentMedia() );
 
         // Executable
-        // TODO
 
         // Presentation
         MAP.put( "application/vnd.openxmlformats-officedocument.presentationml.presentation", ContentTypeName.presentationMedia() );
