@@ -9,12 +9,13 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 
 ## Download
 
-[Download the latest version: 0.10.10](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.10/cms2xp-0.10.10.zip)
+[Download the latest version: 0.10.11](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.11/cms2xp-0.10.11.zip)
 
 ## Releases
 
 | CMS2XP version | Required XP version | Download |
 | -------------- | ------------------- | -------- |
+| 0.10.6 | 6.9.0 | [Download 0.10.6 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.6/cms2xp-0.10.6.zip) |
 | 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
 | 0.10.8 | 6.9.0 | [Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip) |
 | 0.10.9 | 6.9.0 | [Download 0.10.9 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip) |
