@@ -121,6 +121,7 @@ public class CategoryExporter
             {
                 final List<ContentEntity> sortedContent = contents.stream().
                     filter( ( c ) -> !c.isDeleted() ).
+                    filter( ( c ) -> !ignoreDrafts( c )).
                     sorted( ( c1, c2 ) -> {
                         int res = Objects.compare( c1.getName(), c2.getName(), CASE_SENSITIVE_NULL_SAFE_ORDER );
                         if ( res == 0 )
@@ -167,6 +168,12 @@ public class CategoryExporter
                 }
             }
         }
+    }
+
+    private boolean ignoreDrafts( final ContentEntity c )
+    {
+        if (!config.source.ignoreDrafts) return false;
+        return ( c.getMainVersion().getStatus() == ContentStatus.DRAFT);
     }
 
     private Node createArchiveParent( final NodePath parentNodePath )

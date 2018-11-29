@@ -18,7 +18,8 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 | 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
 | 0.10.8 | 6.9.0 | [Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip) |
 | 0.10.9 | 6.9.0 | [Download 0.10.9 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip) |
-| **0.10.10** | **6.9.0** | **[Download 0.10.10 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.10/cms2xp-0.10.10.zip)** |
+| 0.10.10 | 6.9.0 | [Download 0.10.10 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.10/cms2xp-0.10.10.zip) |
+| **0.10.11** | **6.9.0** | **[Download 0.10.11 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.11/cms2xp-0.10.11.zip)** |
 
 
 ## Change log
@@ -120,6 +121,7 @@ The source parameters include the details necessary for connecting to the CMS da
 | blobStoreDir | Local file path to the blobs directory of the CMS. | "./cms-home/data/blobs" |
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
 | resourcesDir | Local file path to the resources directory of the CMS. | "./import/home/data/resources" |
+| ignoreDrafts | Skips content where the main version is a draft.  Default is false. | "true" |
 | exclude/site | Site key or name in the CMS to be excluded from the export. Optional. | "old_Site", "33" |
 | exclude/contentPath | Content path prefix in the CMS to exclude from the export. If the path corresponds with a category, none of its subcategories will be exported. Optional. | "MyContent/old/data" |
 | exclude/userStore | User store key or name to exclude from the export. Optional. | "my_user_store", "42" |
@@ -141,7 +143,7 @@ There are also some optional switches for altering the output.
 | applicationDir | Directory path where to generate the XP application. | "./myapp" |
 | applicationName | Name for the generated XP application. | "com.acme.myapp" |
 | applicationRepo | Name of an XP starter app to be used as a skeleton for the generated app. Default is "starter-vanilla". | "starter-vanilla" |
-| exportApplication | If set to "false" the XP application will not be generated. | "true" |
+| exportApplication | If set to "false" the XP application will not be generated.  Default is "true". | "false" |
 | ~~exportPublishDateMixin~~ | ~~Whether or not include the publish mixin in the application and content exported.~~ This option is deprecated. CMS publish fields are now exported to map with XP publish fields.  |  |
 | exportMenuMixin | Whether or not convert CMS menu properties ('Menu name', 'Show in menu'), and include the menu mixin in the application. Default is "true" | "false" |
 | moveHomeContentToSection | Move content that is published on a single section, under the content corresponding to the section in XP. Set to "false" to avoid moving the content. Default is "true" | "false" |
