@@ -16,6 +16,8 @@ public final class SourceConfig
 
     public File resourcesDir;
 
+    public boolean ignoreDrafts = false;
+
     public ExcludeConfig exclude;
 
     public IncludeConfig include;

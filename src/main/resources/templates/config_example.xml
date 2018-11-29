@@ -8,6 +8,7 @@
     <jdbcPassword>***</jdbcPassword>
     <blobStoreDir>./cms-home/data/blobs</blobStoreDir>
     <resourcesDir>./cms-home/data/resources</resourcesDir>
+    <ignoreDrafts>true</ignoreDrafts>
 
     <exclude>
       <site>old_site</site>
