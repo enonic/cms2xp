@@ -102,6 +102,7 @@ public class MenuItemNodeConverter
         final PropertyTree data = new PropertyTree();
         data.setBoolean( ContentPropertyNames.VALID, true );
         data.setString( ContentPropertyNames.DISPLAY_NAME, menuItem.getDisplayName() );
+        data.setString( ContentPropertyNames.METADATA, menuItem.getDescription() );
         data.setString( ContentPropertyNames.TYPE, type.toString() );
         if ( menuItem.getLanguage() != null )
         {
