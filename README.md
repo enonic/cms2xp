@@ -1,7 +1,7 @@
 # Enonic CMS to XP migration tool
 This repository contains the code for the CMS to XP migration tool.
 
-The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
+The migration works from ```CMS 4.7``` to ```XP 6.x```.
 
 <img align="left" alt="Enonic CMS" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-cms-logo.png" width="200">
 <img align="right" style="margin-top:10px;" alt="Enonic XP" src="https://rawgithub.com/enonic/cms2xp/master/src/main/resources/icons/enonic-xp-shield-logo.svg" width="200">  
@@ -9,18 +9,17 @@ The migration works from ```CMS 4.7``` to ```XP 6.x``` or higher.
 
 ## Download
 
-[Download the latest version: 0.10.11](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.11/cms2xp-0.10.11.zip)
+[Download the latest version: 0.10.12](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.12/cms2xp-0.10.12.zip)
 
 ## Releases
 
 | CMS2XP version | Required XP version | Download |
 | -------------- | ------------------- | -------- |
-| 0.10.6 | 6.9.0 | [Download 0.10.6 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.6/cms2xp-0.10.6.zip) |
-| 0.10.7 | 6.9.0 | [Download 0.10.7 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.7/cms2xp-0.10.7.zip) |
 | 0.10.8 | 6.9.0 | [Download 0.10.8 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.8/cms2xp-0.10.8.zip) |
 | 0.10.9 | 6.9.0 | [Download 0.10.9 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.9/cms2xp-0.10.9.zip) |
 | 0.10.10 | 6.9.0 | [Download 0.10.10 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.10/cms2xp-0.10.10.zip) |
-| **0.10.11** | **6.9.0** | **[Download 0.10.11 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.11/cms2xp-0.10.11.zip)** |
+| 0.10.11 | 6.9.0 | [Download 0.10.11 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.11/cms2xp-0.10.11.zip) |
+| **0.10.12** | **6.9.0** | **[Download 0.10.12 distribution](http://repo.enonic.com/public/com/enonic/tools/cms2xp/0.10.12/cms2xp-0.10.12.zip)** |
 
 
 ## Change log
@@ -39,7 +38,7 @@ Build all code and run all tests including integration tests:
 
     gradle build
    
-A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.11.zip```
+A distribution zip, containing all the required files for running the tool, will be generated in ```build/distributions/cms2xp-0.10.12.zip```
    
 
 ## Running
